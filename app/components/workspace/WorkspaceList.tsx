@@ -3,7 +3,10 @@
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from '@/app/store/store'
-import { fetchWorkspaces } from '@/app/features/workspace/workspaceSlice'
+import {
+	fetchWorkspaces,
+	setActiveWorkspace,
+} from '@/app/features/workspace/workspaceSlice'
 import { useSession } from 'next-auth/react'
 import WorkspaceLeftMenu from '@/app/components/workspace/WorkspaceLeftMenu'
 import WorkspaceRightMenu from '@/app/components/workspace/WorkspaceRightMenu'
@@ -15,7 +18,7 @@ import SpaceList from '@/app/components/space/SpaceList'
 const WorkspaceList = () => {
 	const dispatch = useDispatch<AppDispatch>()
 	const { status } = useSession()
-	const { workspaces, loading, error } = useSelector(
+	const { workspaces, loading, error, activeWorkspaceId } = useSelector(
 		(state: RootState) => state.workspace,
 	)
 
@@ -24,6 +27,12 @@ const WorkspaceList = () => {
 			dispatch(fetchWorkspaces())
 		}
 	}, [dispatch, status])
+
+	useEffect(() => {
+		if (workspaces.length > 0 && !activeWorkspaceId) {
+			dispatch(setActiveWorkspace(workspaces[0].id))
+		}
+	}, [workspaces, activeWorkspaceId, dispatch])
 
 	if (status === 'loading' || loading)
 		return <div className="text-zinc-50">読み込み中...</div>
@@ -53,8 +62,16 @@ const WorkspaceList = () => {
 			</div>
 			{workspaces.map((workspace) => (
 				<div key={workspace.id} className="">
-					<div className="flex items-center justify-between group">
-						<div className="flex items-center flex-grow mt-6">
+					{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
+					<div
+						className="flex items-center justify-between group"
+						onClick={() => dispatch(setActiveWorkspace(workspace.id))}
+					>
+						<div
+							className={`flex items-center flex-grow mt-6 ${
+								activeWorkspaceId === workspace.id ? 'bg-gray-100' : ''
+							}`}
+						>
 							<div className="flex items-center cursor-grab">
 								<Button className="rounded-full py-1 pl-1 pr-2 ml-2">
 									<ChevronRight className="w-6 h-6 text-gray-500" />

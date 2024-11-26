@@ -1,14 +1,19 @@
 import { Plus, SquarePlus } from 'lucide-react'
-import React from 'react'
+import React, { useState } from 'react'
 import {
 	Button,
+	Dialog,
+	DialogTrigger,
 	Menu,
 	MenuItem,
 	MenuTrigger,
+	Modal,
+	ModalOverlay,
 	Popover,
 } from 'react-aria-components'
-
+import SpaceCreateForm from '@/app/components/space/SpaceCreateForm'
 const WorkspaceLeftMenu = () => {
+	const [isOpen, setIsOpen] = useState(false)
 	return (
 		<>
 			<MenuTrigger>
@@ -19,9 +24,7 @@ const WorkspaceLeftMenu = () => {
 					<Menu className="bg-zinc-50 outline-none border rounded-sm shadow-md min-w-[160px]">
 						<MenuItem
 							className="pl-4 pr-4 py-2 outline-none hover:cursor-pointer"
-							onAction={() => {
-								console.log('New Space')
-							}}
+							onAction={() => setIsOpen(true)}
 							aria-label="New Space"
 						>
 							<div className="flex items-center gap-3 text-sm">
@@ -32,6 +35,16 @@ const WorkspaceLeftMenu = () => {
 					</Menu>
 				</Popover>
 			</MenuTrigger>
+
+			<DialogTrigger isOpen={isOpen} onOpenChange={setIsOpen}>
+				<ModalOverlay className="fixed inset-0 bg-black/30 flex items-center justify-center">
+					<Modal className="bg-white p-6 rounded-lg">
+						<Dialog className="outline-none">
+							{({ close }) => <SpaceCreateForm onClose={close} />}
+						</Dialog>
+					</Modal>
+				</ModalOverlay>
+			</DialogTrigger>
 		</>
 	)
 }
