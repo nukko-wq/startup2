@@ -10,6 +10,7 @@ import WorkspaceRightMenu from '@/app/components/workspace/WorkspaceRightMenu'
 import { ChevronRight, Layers } from 'lucide-react'
 import DefaultWorkSpaceRightMenu from '@/app/components/workspace/DefaultWorkSpaceRightMenu'
 import { Button } from 'react-aria-components'
+import SpaceList from '@/app/components/space/SpaceList'
 
 const WorkspaceList = () => {
 	const dispatch = useDispatch<AppDispatch>()
@@ -70,6 +71,7 @@ const WorkspaceList = () => {
 							</div>
 						</div>
 					</div>
+					<SpaceList workspaceId={workspace.id} />
 				</div>
 			))}
 		</div>
