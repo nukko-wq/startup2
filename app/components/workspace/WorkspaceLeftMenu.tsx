@@ -12,7 +12,12 @@ import {
 	Popover,
 } from 'react-aria-components'
 import SpaceCreateForm from '@/app/components/space/SpaceCreateForm'
-const WorkspaceLeftMenu = () => {
+
+interface WorkspaceLeftMenuProps {
+	workspaceId: string
+}
+
+const WorkspaceLeftMenu = ({ workspaceId }: WorkspaceLeftMenuProps) => {
 	const [isOpen, setIsOpen] = useState(false)
 	return (
 		<>
@@ -40,7 +45,9 @@ const WorkspaceLeftMenu = () => {
 				<ModalOverlay className="fixed inset-0 bg-black/30 flex items-center justify-center">
 					<Modal className="bg-white p-6 rounded-lg">
 						<Dialog className="outline-none">
-							{({ close }) => <SpaceCreateForm onClose={close} />}
+							{({ close }) => (
+								<SpaceCreateForm onClose={close} workspaceId={workspaceId} />
+							)}
 						</Dialog>
 					</Modal>
 				</ModalOverlay>

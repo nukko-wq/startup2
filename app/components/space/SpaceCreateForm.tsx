@@ -7,13 +7,14 @@ import { createSpace } from '@/app/features/space/spaceSlice'
 
 interface SpaceCreateFormProps {
 	onClose: () => void
+	workspaceId: string
 }
 
 interface FormData {
 	name: string
 }
 
-const SpaceCreateForm = ({ onClose }: SpaceCreateFormProps) => {
+const SpaceCreateForm = ({ onClose, workspaceId }: SpaceCreateFormProps) => {
 	const dispatch = useDispatch<AppDispatch>()
 	const activeWorkspaceId = useSelector(
 		(state: RootState) => state.workspace.activeWorkspaceId,
@@ -37,22 +38,12 @@ const SpaceCreateForm = ({ onClose }: SpaceCreateFormProps) => {
 	})
 
 	const onSubmit = async (data: FormData) => {
-		if (!activeWorkspaceId) {
-			console.error('No active workspace selected')
-			return
-		}
 		setIsSubmitting(true)
-
 		try {
-			console.log('Creating space with:', {
-				name: data.name,
-				workspaceId: activeWorkspaceId,
-			})
-
 			await dispatch(
 				createSpace({
 					name: data.name,
-					workspaceId: activeWorkspaceId,
+					workspaceId,
 				}),
 			).unwrap()
 			onClose()
