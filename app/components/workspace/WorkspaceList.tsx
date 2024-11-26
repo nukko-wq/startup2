@@ -40,8 +40,10 @@ const WorkspaceList = () => {
 		}
 	}, [workspaces, activeWorkspaceId, dispatch])
 
+	/*
 	if (status === 'loading' || loading)
 		return <div className="text-zinc-50">読み込み中...</div>
+	*/
 	if (status === 'unauthenticated')
 		return <div className="text-zinc-50">ログインしてください</div>
 	if (error) return <div className="text-zinc-50">エラーが発生しました</div>

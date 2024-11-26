@@ -29,8 +29,10 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 		}
 	}, [dispatch, workspaceId])
 
+	/*
 	if (workspaceSpaces.loading)
 		return <div className="text-zinc-50">読み込み中...</div>
+	*/
 	if (workspaceSpaces.error)
 		return <div className="text-zinc-50">{workspaceSpaces.error}</div>
 
