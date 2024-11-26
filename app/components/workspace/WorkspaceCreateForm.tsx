@@ -5,12 +5,13 @@ import { Button, Form, Input, Label, TextField } from 'react-aria-components'
 import { useDispatch } from 'react-redux'
 import { createWorkspace } from '@/app/features/workspace/workspaceSlice'
 import type { AppDispatch } from '@/app/store/store'
+import { Loader2 } from 'lucide-react'
 
 interface FormData {
 	name: string
 }
 
-const CreateWorkspaceForm = ({ onClose }: { onClose: () => void }) => {
+const WorkspaceCreateForm = ({ onClose }: { onClose: () => void }) => {
 	const dispatch = useDispatch<AppDispatch>()
 	const {
 		register,
@@ -41,13 +42,22 @@ const CreateWorkspaceForm = ({ onClose }: { onClose: () => void }) => {
 			</TextField>
 
 			<div className="flex justify-end gap-2">
-				<Button onPress={onClose} type="button">
+				<Button
+					onPress={onClose}
+					type="button"
+					className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 outline-none"
+				>
 					キャンセル
 				</Button>
-				<Button type="submit">作成</Button>
+				<Button
+					type="submit"
+					className="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600 outline-none"
+				>
+					作成
+				</Button>
 			</div>
 		</Form>
 	)
 }
 
-export default CreateWorkspaceForm
+export default WorkspaceCreateForm

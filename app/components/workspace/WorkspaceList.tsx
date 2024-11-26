@@ -31,7 +31,7 @@ const WorkspaceList = () => {
 	if (error) return <div className="text-zinc-50">エラーが発生しました</div>
 
 	return (
-		<div className="p-4">
+		<div className="space-y-1">
 			{/*デフォルトワークスペースを表示 */}
 			<div className="mb-4">
 				<div className="flex items-center">
@@ -51,25 +51,22 @@ const WorkspaceList = () => {
 				</div>
 			</div>
 			{workspaces.map((workspace) => (
-				<div
-					key={workspace.id}
-					className="p-2 mb-2 bg-gray-700 rounded cursor-pointer hover:bg-gray-600 text-zinc-50"
-				>
-					<div className="flex items-center flex-grow mt-6">
-						<div className="flex items-center cursor-grab">
-							<Button className="rounded-full py-1 pl-1 pr-2 ml-2">
-								<ChevronRight className="w-6 h-6 text-gray-500" />
-							</Button>
-						</div>
-						<div className="flex justify-between items-center">
+				<div key={workspace.id} className="">
+					<div className="flex items-center justify-between group">
+						<div className="flex items-center flex-grow mt-6">
+							<div className="flex items-center cursor-grab">
+								<Button className="rounded-full py-1 pl-1 pr-2 ml-2">
+									<ChevronRight className="w-6 h-6 text-gray-500" />
+								</Button>
+							</div>
 							<div className="flex items-center flex-grow justify-between hover:border-b-2 hover:border-blue-500 pb-1">
 								<span className="font-medium text-gray-500">
 									{workspace.name}
 								</span>
-							</div>
-							<div className="flex items-center">
-								<WorkspaceLeftMenu />
-								<WorkspaceRightMenu workspaceId={workspace.id} />
+								<div className="flex items-center">
+									<WorkspaceLeftMenu />
+									<WorkspaceRightMenu workspaceId={workspace.id} />
+								</div>
 							</div>
 						</div>
 					</div>

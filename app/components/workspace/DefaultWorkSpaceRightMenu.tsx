@@ -12,9 +12,8 @@ import {
 	ModalOverlay,
 	Popover,
 } from 'react-aria-components'
-import CreateWorkspaceForm from './CreateWorkspaceForm'
 import { useState } from 'react'
-
+import WorkspaceCreateForm from '@/app/components/workspace/WorkspaceCreateForm'
 const DefaultWorkSpaceRightMenu = () => {
 	const [isOpen, setIsOpen] = useState(false)
 
@@ -58,7 +57,7 @@ const DefaultWorkSpaceRightMenu = () => {
 								<h2 className="text-lg font-semibold mb-4">
 									新しいワークスペースを作成
 								</h2>
-								<CreateWorkspaceForm onClose={() => setIsOpen(false)} />
+								<WorkspaceCreateForm onClose={() => setIsOpen(false)} />
 							</div>
 						</Dialog>
 					</Modal>
