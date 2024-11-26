@@ -9,6 +9,8 @@ import {
 } from 'react-aria-components'
 import WorkspaceRenameDialog from './WorkspaceRenameDialog'
 import WorkspaceDeleteDialog from './WorkspaceDeleteDialog'
+import { useSelector } from 'react-redux'
+import type { RootState } from '@/app/store/store'
 
 interface WorkspaceRightMenuProps {
 	workspaceId: string
@@ -17,6 +19,9 @@ interface WorkspaceRightMenuProps {
 const WorkspaceRightMenu = ({ workspaceId }: WorkspaceRightMenuProps) => {
 	const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+	const workspace = useSelector((state: RootState) =>
+		state.workspace.workspaces.find((w) => w.id === workspaceId),
+	)
 
 	return (
 		<>
@@ -26,7 +31,7 @@ const WorkspaceRightMenu = ({ workspaceId }: WorkspaceRightMenuProps) => {
 				</Button>
 				<Popover>
 					<Menu className="bg-zinc-50 outline-none border rounded-sm shadow-md min-w-[160px]">
-						<MenuItem>
+						<MenuItem onAction={() => setIsRenameDialogOpen(true)}>
 							<div className="flex items-center gap-3">
 								<Pencil className="w-4 h-4" />
 								<span>Rename</span>
@@ -45,7 +50,14 @@ const WorkspaceRightMenu = ({ workspaceId }: WorkspaceRightMenuProps) => {
 				</Popover>
 			</MenuTrigger>
 
-			<WorkspaceRenameDialog />
+			{workspace && (
+				<WorkspaceRenameDialog
+					isOpen={isRenameDialogOpen}
+					onOpenChange={setIsRenameDialogOpen}
+					workspaceId={workspaceId}
+					currentName={workspace.name}
+				/>
+			)}
 			<WorkspaceDeleteDialog
 				isOpen={isDeleteDialogOpen}
 				onOpenChange={setIsDeleteDialogOpen}

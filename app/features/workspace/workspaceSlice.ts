@@ -57,6 +57,29 @@ export const deleteWorkspace = createAsyncThunk(
 	},
 )
 
+interface RenameWorkspacePayload {
+	workspaceId: string
+	name: string
+}
+
+export const renameWorkspace = createAsyncThunk(
+	'workspace/renameWorkspace',
+	async ({ workspaceId, name }: RenameWorkspacePayload) => {
+		const response = await fetch(`/api/workspaces/${workspaceId}`, {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ name }),
+		})
+		if (!response.ok) {
+			throw new Error('ワークスペースの更新に失敗しました')
+		}
+		const data = await response.json()
+		return data
+	},
+)
+
 const workspaceSlice = createSlice({
 	name: 'workspace',
 	initialState,
@@ -102,6 +125,23 @@ const workspaceSlice = createSlice({
 				state.loading = false
 			})
 			.addCase(deleteWorkspace.rejected, (state, action) => {
+				state.loading = false
+				state.error = action.error.message || 'エラーが発生しました'
+			})
+			.addCase(renameWorkspace.pending, (state) => {
+				state.loading = true
+				state.error = null
+			})
+			.addCase(renameWorkspace.fulfilled, (state, action) => {
+				const index = state.workspaces.findIndex(
+					(w) => w.id === action.payload.id,
+				)
+				if (index !== -1) {
+					state.workspaces[index] = action.payload
+				}
+				state.loading = false
+			})
+			.addCase(renameWorkspace.rejected, (state, action) => {
 				state.loading = false
 				state.error = action.error.message || 'エラーが発生しました'
 			})

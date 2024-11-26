@@ -7,8 +7,9 @@ import { fetchWorkspaces } from '@/app/features/workspace/workspaceSlice'
 import { useSession } from 'next-auth/react'
 import WorkspaceLeftMenu from '@/app/components/workspace/WorkspaceLeftMenu'
 import WorkspaceRightMenu from '@/app/components/workspace/WorkspaceRightMenu'
-import { Layers } from 'lucide-react'
+import { ChevronRight, Layers } from 'lucide-react'
 import DefaultWorkSpaceRightMenu from '@/app/components/workspace/DefaultWorkSpaceRightMenu'
+import { Button } from 'react-aria-components'
 
 const WorkspaceList = () => {
 	const dispatch = useDispatch<AppDispatch>()
@@ -54,11 +55,22 @@ const WorkspaceList = () => {
 					key={workspace.id}
 					className="p-2 mb-2 bg-gray-700 rounded cursor-pointer hover:bg-gray-600 text-zinc-50"
 				>
-					<div className="flex justify-between items-center">
-						<div>{workspace.name}</div>
-						<div className="flex items-center">
-							<WorkspaceLeftMenu />
-							<WorkspaceRightMenu workspaceId={workspace.id} />
+					<div className="flex items-center flex-grow mt-6">
+						<div className="flex items-center cursor-grab">
+							<Button className="rounded-full py-1 pl-1 pr-2 ml-2">
+								<ChevronRight className="w-6 h-6 text-gray-500" />
+							</Button>
+						</div>
+						<div className="flex justify-between items-center">
+							<div className="flex items-center flex-grow justify-between hover:border-b-2 hover:border-blue-500 pb-1">
+								<span className="font-medium text-gray-500">
+									{workspace.name}
+								</span>
+							</div>
+							<div className="flex items-center">
+								<WorkspaceLeftMenu />
+								<WorkspaceRightMenu workspaceId={workspace.id} />
+							</div>
 						</div>
 					</div>
 				</div>

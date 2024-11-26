@@ -36,3 +36,31 @@ export async function DELETE(request: Request) {
 		return new NextResponse('Internal Error', { status: 500 })
 	}
 }
+
+export async function PATCH(
+	request: Request,
+	{ params }: { params: { workspaceId: string } },
+) {
+	try {
+		const user = await getCurrentUser()
+		if (!user) {
+			return new NextResponse('Unauthorized', { status: 401 })
+		}
+
+		const workspaceId = await params.workspaceId
+		const { name } = await request.json()
+
+		const workspace = await prisma.workspace.update({
+			where: {
+				id: workspaceId,
+				userId: user.id,
+			},
+			data: { name },
+		})
+
+		return NextResponse.json(workspace)
+	} catch (error) {
+		console.error('Error updating workspace:', error)
+		return new NextResponse('Internal Error', { status: 500 })
+	}
+}
