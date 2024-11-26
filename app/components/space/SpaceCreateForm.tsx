@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Button, Form, Input, Label, TextField } from 'react-aria-components'
 import { Controller, useForm } from 'react-hook-form'
-import { useDispatch, useSelector } from 'react-redux'
-import type { AppDispatch, RootState } from '@/app/store/store'
+import { useDispatch } from 'react-redux'
+import type { AppDispatch } from '@/app/store/store'
 import { createSpace } from '@/app/features/space/spaceSlice'
 
 interface SpaceCreateFormProps {
@@ -16,15 +16,7 @@ interface FormData {
 
 const SpaceCreateForm = ({ onClose, workspaceId }: SpaceCreateFormProps) => {
 	const dispatch = useDispatch<AppDispatch>()
-	const activeWorkspaceId = useSelector(
-		(state: RootState) => state.workspace.activeWorkspaceId,
-	)
 	const [isSubmitting, setIsSubmitting] = useState(false)
-
-	// デバッグ用
-	useEffect(() => {
-		console.log('Active Workspace ID:', activeWorkspaceId)
-	}, [activeWorkspaceId])
 
 	const {
 		control,

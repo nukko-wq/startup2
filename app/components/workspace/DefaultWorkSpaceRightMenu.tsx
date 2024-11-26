@@ -13,12 +13,24 @@ import {
 	Popover,
 } from 'react-aria-components'
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
+import type { RootState } from '@/app/store/store'
 import WorkspaceCreateForm from '@/app/components/workspace/WorkspaceCreateForm'
+import SpaceCreateForm from '../space/SpaceCreateForm'
+
 const DefaultWorkSpaceRightMenu = () => {
-	const [isOpen, setIsOpen] = useState(false)
+	const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false)
+	const [isSpaceOpen, setIsSpaceOpen] = useState(false)
+	const defaultWorkspace = useSelector(
+		(state: RootState) => state.workspace.defaultWorkspace,
+	)
 
 	const handleNewWorkspace = () => {
-		setIsOpen(true)
+		setIsWorkspaceOpen(true)
+	}
+
+	const handleNewSpace = () => {
+		setIsSpaceOpen(true)
 	}
 
 	return (
@@ -29,7 +41,10 @@ const DefaultWorkSpaceRightMenu = () => {
 				</Button>
 				<Popover>
 					<Menu className="bg-zinc-50 outline-none border shadow-md min-w-[200px] rounded-sm">
-						<MenuItem className="p-2 outline-none hover:bg-zinc-200 cursor-pointer">
+						<MenuItem
+							onAction={handleNewSpace}
+							className="p-2 outline-none hover:bg-zinc-200 cursor-pointer"
+						>
 							<div className="flex items-center gap-2 text-zinc-800">
 								<SquarePlus className="w-4 h-4" />
 								<span>New Space</span>
@@ -48,7 +63,7 @@ const DefaultWorkSpaceRightMenu = () => {
 				</Popover>
 			</MenuTrigger>
 
-			<DialogTrigger isOpen={isOpen} onOpenChange={setIsOpen}>
+			<DialogTrigger isOpen={isWorkspaceOpen} onOpenChange={setIsWorkspaceOpen}>
 				<Button className="hidden">Open Dialog</Button>
 				<ModalOverlay className="fixed inset-0 bg-black/25 flex min-h-full items-center justify-center p-4 text-center backdrop-blur">
 					<Modal className="w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl">
@@ -57,12 +72,35 @@ const DefaultWorkSpaceRightMenu = () => {
 								<h2 className="text-lg font-semibold mb-4">
 									新しいワークスペースを作成
 								</h2>
-								<WorkspaceCreateForm onClose={() => setIsOpen(false)} />
+								<WorkspaceCreateForm
+									onClose={() => setIsWorkspaceOpen(false)}
+								/>
 							</div>
 						</Dialog>
 					</Modal>
 				</ModalOverlay>
 			</DialogTrigger>
+
+			{defaultWorkspace && (
+				<DialogTrigger isOpen={isSpaceOpen} onOpenChange={setIsSpaceOpen}>
+					<Button className="hidden">Open Dialog</Button>
+					<ModalOverlay className="fixed inset-0 bg-black/25 flex min-h-full items-center justify-center p-4 text-center backdrop-blur">
+						<Modal className="w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl">
+							<Dialog className="outline-none">
+								<div>
+									<h2 className="text-lg font-semibold mb-4">
+										新しいスペースを作成
+									</h2>
+									<SpaceCreateForm
+										workspaceId={defaultWorkspace.id}
+										onClose={() => setIsSpaceOpen(false)}
+									/>
+								</div>
+							</Dialog>
+						</Modal>
+					</ModalOverlay>
+				</DialogTrigger>
+			)}
 		</>
 	)
 }
