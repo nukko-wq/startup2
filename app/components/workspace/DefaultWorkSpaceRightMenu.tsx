@@ -12,6 +12,7 @@ import {
 	ModalOverlay,
 	Popover,
 } from 'react-aria-components'
+import CreateWorkspaceForm from './CreateWorkspaceForm'
 
 const DefaultWorkSpaceRightMenu = () => {
 	return (
@@ -27,7 +28,10 @@ const DefaultWorkSpaceRightMenu = () => {
 							<span>New Space</span>
 						</div>
 					</MenuItem>
-					<MenuItem className="p-2 outline-none hover:bg-zinc-200 cursor-pointer">
+					<MenuItem
+						onAction={() => {}}
+						className="p-2 outline-none hover:bg-zinc-200 cursor-pointer"
+					>
 						<div className="flex items-center gap-2 text-zinc-800">
 							<SquarePlus className="w-4 h-4" />
 							<span>New Workspace</span>
@@ -45,6 +49,7 @@ const DefaultWorkSpaceRightMenu = () => {
 								<h2 className="text-lg font-semibold mb-4">
 									新しいワークスペースを作成
 								</h2>
+								<CreateWorkspaceForm />
 							</div>
 						</Dialog>
 					</Modal>
