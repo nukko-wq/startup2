@@ -3,6 +3,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 interface WorkspaceState {
 	workspaces: Workspace[]
 	activeWorkspaceId: string | null
+	defaultWorkspace: Workspace | null
 	loading: boolean
 	error: string | null
 }
@@ -10,6 +11,7 @@ interface WorkspaceState {
 const initialState: WorkspaceState = {
 	workspaces: [],
 	activeWorkspaceId: null,
+	defaultWorkspace: null,
 	loading: false,
 	error: null,
 }
@@ -80,6 +82,35 @@ export const renameWorkspace = createAsyncThunk(
 	},
 )
 
+export const createDefaultWorkspace = createAsyncThunk(
+	'workspace/createDefaultWorkspace',
+	async () => {
+		const response = await fetch('/api/workspaces/default', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ name: 'Spaces' }),
+		})
+		if (!response.ok) {
+			throw new Error('デフォルトワークスペースの作成に失敗しました')
+		}
+		const data = await response.json()
+		return data
+	},
+)
+
+// Workspaceインターフェースを追加
+interface Workspace {
+	id: string
+	name: string
+	order: number
+	isDefault: boolean
+	userId: string
+	createdAt: string
+	updatedAt: string
+}
+
 const workspaceSlice = createSlice({
 	name: 'workspace',
 	initialState,
@@ -95,7 +126,15 @@ const workspaceSlice = createSlice({
 				state.error = null
 			})
 			.addCase(fetchWorkspaces.fulfilled, (state, action) => {
-				state.workspaces = action.payload
+				const defaultWorkspace = action.payload.find(
+					(w: Workspace) => w.isDefault && w.order === 0,
+				)
+				const normalWorkspaces = action.payload.filter(
+					(w: Workspace) => !w.isDefault,
+				)
+
+				state.defaultWorkspace = defaultWorkspace || null
+				state.workspaces = normalWorkspaces
 				state.loading = false
 			})
 			.addCase(fetchWorkspaces.rejected, (state, action) => {
@@ -144,6 +183,10 @@ const workspaceSlice = createSlice({
 			.addCase(renameWorkspace.rejected, (state, action) => {
 				state.loading = false
 				state.error = action.error.message || 'エラーが発生しました'
+			})
+			.addCase(createDefaultWorkspace.fulfilled, (state, action) => {
+				state.defaultWorkspace = action.payload
+				state.loading = false
 			})
 	},
 })
