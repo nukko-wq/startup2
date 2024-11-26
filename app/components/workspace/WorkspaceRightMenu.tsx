@@ -10,7 +10,11 @@ import {
 import WorkspaceRenameDialog from './WorkspaceRenameDialog'
 import WorkspaceDeleteDialog from './WorkspaceDeleteDialog'
 
-const WorkspaceRightMenu = () => {
+interface WorkspaceRightMenuProps {
+	workspaceId: string
+}
+
+const WorkspaceRightMenu = ({ workspaceId }: WorkspaceRightMenuProps) => {
 	const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
@@ -42,7 +46,11 @@ const WorkspaceRightMenu = () => {
 			</MenuTrigger>
 
 			<WorkspaceRenameDialog />
-			<WorkspaceDeleteDialog />
+			<WorkspaceDeleteDialog
+				isOpen={isDeleteDialogOpen}
+				onOpenChange={setIsDeleteDialogOpen}
+				workspaceId={workspaceId}
+			/>
 		</>
 	)
 }

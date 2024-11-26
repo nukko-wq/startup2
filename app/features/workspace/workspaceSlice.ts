@@ -44,6 +44,19 @@ export const createWorkspace = createAsyncThunk(
 	},
 )
 
+export const deleteWorkspace = createAsyncThunk(
+	'workspace/deleteWorkspace',
+	async (workspaceId: string) => {
+		const response = await fetch(`/api/workspaces/${workspaceId}`, {
+			method: 'DELETE',
+		})
+		if (!response.ok) {
+			throw new Error('ワークスペースの削除に失敗しました')
+		}
+		return workspaceId
+	},
+)
+
 const workspaceSlice = createSlice({
 	name: 'workspace',
 	initialState,
@@ -75,6 +88,20 @@ const workspaceSlice = createSlice({
 				state.loading = false
 			})
 			.addCase(createWorkspace.rejected, (state, action) => {
+				state.loading = false
+				state.error = action.error.message || 'エラーが発生しました'
+			})
+			.addCase(deleteWorkspace.pending, (state) => {
+				state.loading = true
+				state.error = null
+			})
+			.addCase(deleteWorkspace.fulfilled, (state, action) => {
+				state.workspaces = state.workspaces.filter(
+					(workspace) => workspace.id !== action.payload,
+				)
+				state.loading = false
+			})
+			.addCase(deleteWorkspace.rejected, (state, action) => {
 				state.loading = false
 				state.error = action.error.message || 'エラーが発生しました'
 			})

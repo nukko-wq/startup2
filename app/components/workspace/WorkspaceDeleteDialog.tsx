@@ -1,4 +1,8 @@
-import React from 'react'
+'use client'
+
+import { useDispatch } from 'react-redux'
+import { deleteWorkspace } from '@/app/features/workspace/workspaceSlice'
+import type { AppDispatch } from '@/app/store/store'
 import {
 	Button,
 	Dialog,
@@ -7,10 +11,36 @@ import {
 	Modal,
 	ModalOverlay,
 } from 'react-aria-components'
+import { useState } from 'react'
 
-const WorkspaceDeleteDialog = () => {
+interface WorkspaceDeleteDialogProps {
+	isOpen: boolean
+	onOpenChange: (isOpen: boolean) => void
+	workspaceId: string
+}
+
+const WorkspaceDeleteDialog = ({
+	isOpen,
+	onOpenChange,
+	workspaceId,
+}: WorkspaceDeleteDialogProps) => {
+	const dispatch = useDispatch<AppDispatch>()
+	const [isDeleting, setIsDeleting] = useState(false)
+
+	const handleDelete = async () => {
+		try {
+			setIsDeleting(true)
+			await dispatch(deleteWorkspace(workspaceId)).unwrap()
+			onOpenChange(false)
+		} catch (error) {
+			console.error('Failed to delete workspace:', error)
+		} finally {
+			setIsDeleting(false)
+		}
+	}
+
 	return (
-		<DialogTrigger>
+		<DialogTrigger isOpen={isOpen} onOpenChange={onOpenChange}>
 			<Button className="hidden">Open Dialog</Button>
 			<ModalOverlay className="fixed inset-0 z-10 overflow-y-auto bg-black/25 flex min-h-full items-center justify-center p-4 text-center backdrop-blur">
 				<Modal className="w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl">
@@ -27,16 +57,16 @@ const WorkspaceDeleteDialog = () => {
 									<Button
 										onPress={close}
 										className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300 outline-none"
-										isDisabled={}
+										isDisabled={isDeleting}
 									>
 										キャンセル
 									</Button>
 									<Button
-										onPress={() => {}}
+										onPress={handleDelete}
 										className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 outline-none flex items-center gap-2"
-										isDisabled={false}
+										isDisabled={isDeleting}
 									>
-										削除
+										{isDeleting ? '削除中...' : '削除'}
 									</Button>
 								</div>
 							</>

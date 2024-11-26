@@ -58,7 +58,7 @@ const WorkspaceList = () => {
 						<div>{workspace.name}</div>
 						<div className="flex items-center">
 							<WorkspaceLeftMenu />
-							<WorkspaceRightMenu />
+							<WorkspaceRightMenu workspaceId={workspace.id} />
 						</div>
 					</div>
 				</div>
