@@ -54,6 +54,25 @@ export const createSpace = createAsyncThunk(
 	},
 )
 
+export const deleteSpace = createAsyncThunk(
+	'space/deleteSpace',
+	async ({
+		spaceId,
+		workspaceId,
+	}: { spaceId: string; workspaceId: string }) => {
+		const response = await fetch(
+			`/api/workspaces/${workspaceId}/spaces/${spaceId}`,
+			{
+				method: 'DELETE',
+			},
+		)
+		if (!response.ok) {
+			throw new Error('スペースの削除に失敗しました')
+		}
+		return { spaceId, workspaceId }
+	},
+)
+
 const spaceSlice = createSlice({
 	name: 'space',
 	initialState,
@@ -124,6 +143,30 @@ const spaceSlice = createSlice({
 				state.spacesByWorkspace[workspaceId].loading = false
 				state.spacesByWorkspace[workspaceId].error =
 					action.error.message || 'エラーが発生しました'
+			})
+			.addCase(deleteSpace.pending, (state, action) => {
+				const { workspaceId } = action.meta.arg
+				if (state.spacesByWorkspace[workspaceId]) {
+					state.spacesByWorkspace[workspaceId].loading = true
+					state.spacesByWorkspace[workspaceId].error = null
+				}
+			})
+			.addCase(deleteSpace.fulfilled, (state, action) => {
+				const { spaceId, workspaceId } = action.payload
+				if (state.spacesByWorkspace[workspaceId]) {
+					state.spacesByWorkspace[workspaceId].spaces = state.spacesByWorkspace[
+						workspaceId
+					].spaces.filter((space) => space.id !== spaceId)
+					state.spacesByWorkspace[workspaceId].loading = false
+				}
+			})
+			.addCase(deleteSpace.rejected, (state, action) => {
+				const { workspaceId } = action.meta.arg
+				if (state.spacesByWorkspace[workspaceId]) {
+					state.spacesByWorkspace[workspaceId].loading = false
+					state.spacesByWorkspace[workspaceId].error =
+						action.error.message || 'エラーが発生しました'
+				}
 			})
 	},
 })

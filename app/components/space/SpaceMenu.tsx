@@ -1,5 +1,5 @@
 import { EllipsisVertical, Pencil, Trash2 } from 'lucide-react'
-import React from 'react'
+import React, { useState } from 'react'
 import {
 	Button,
 	Menu,
@@ -10,7 +10,14 @@ import {
 import SpaceRenameDialog from './SpaceRenameDialog'
 import SpaceDeleteDialog from './SpaceDeleteDialog'
 
-const SpaceMenu = () => {
+interface SpaceMenuProps {
+	spaceId: string
+	workspaceId: string
+}
+
+const SpaceMenu = ({ spaceId, workspaceId }: SpaceMenuProps) => {
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+
 	return (
 		<>
 			<MenuTrigger>
@@ -32,7 +39,7 @@ const SpaceMenu = () => {
 							</div>
 						</MenuItem>
 						<MenuItem
-							onAction={() => {}}
+							onAction={() => setIsDeleteDialogOpen(true)}
 							className="pl-3 pr-4 py-2 outline-none hover:bg-zinc-100 text-red-600 hover:cursor-pointer"
 						>
 							<div className="flex items-center gap-3">
@@ -45,7 +52,12 @@ const SpaceMenu = () => {
 			</MenuTrigger>
 
 			<SpaceRenameDialog />
-			<SpaceDeleteDialog />
+			<SpaceDeleteDialog
+				isOpen={isDeleteDialogOpen}
+				onOpenChange={setIsDeleteDialogOpen}
+				spaceId={spaceId}
+				workspaceId={workspaceId}
+			/>
 		</>
 	)
 }
