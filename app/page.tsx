@@ -1,8 +1,14 @@
+import Sidebar from '@/app/components/sidebar/Sidebar'
+import SectionList from '@/app/components/section/SectionList'
+
 export default function Home() {
 	return (
-		<div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-			<main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-				test
+		<div className="flex w-full h-full">
+			<main className="flex flex-col w-full h-full">
+				<div className="grid grid-cols-[260px_1fr] min-[1921px]:grid-cols-[320px_1fr] bg-slate-50">
+					<Sidebar />
+					<SectionList />
+				</div>
 			</main>
 		</div>
 	)

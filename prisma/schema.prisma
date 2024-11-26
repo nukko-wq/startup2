@@ -138,9 +138,9 @@ model Section {
 model Resource {
   id String @id @default(cuid())
   title String
-  description String
+  description String?
   url String
-  position Int
+  order Int
   faviconUrl String?
   driveFileId String?
   mimeType String?
@@ -152,5 +152,5 @@ model Resource {
   sectionId String
   section Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 
-  @@index([position])
+  @@index([order])
 }
