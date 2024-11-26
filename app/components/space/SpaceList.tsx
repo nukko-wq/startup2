@@ -37,32 +37,37 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 	console.log('workspaceSpaces:', workspaceSpaces)
 
 	return (
-		<div className="pl-8">
-			<GridList
-				aria-label="Spaces"
-				items={workspaceSpaces.spaces}
-				className="flex flex-col outline-none"
-			>
-				{(space) => (
-					<GridListItem key={space.id} className="group">
-						<div className="flex items-center justify-between py-2 hover:bg-zinc-800/50 rounded-md">
+		<GridList
+			aria-label="Spaces"
+			items={workspaceSpaces.spaces}
+			className="flex flex-col outline-none"
+		>
+			{(space) => (
+				<GridListItem
+					key={space.id}
+					className="flex flex-grow justify-between text-gray-400 outline-none cursor-pointer hover:bg-gray-700 hover:bg-opacity-75 group transition duration-200"
+				>
+					<div className="flex flex-grow items-center justify-between py-1 group">
+						<div className="flex items-center cursor-grab">
 							<div className="flex items-center gap-2">
 								<Button className="cursor-grab flex items-center pr-3">
 									<GripVertical className="w-4 h-4 text-zinc-500" />
 								</Button>
-								<Button className="rounded-full p-1">
-									<ChevronRight className="w-4 h-4 text-zinc-500" />
-								</Button>
-								<span className="text-sm text-zinc-50">{space.name}</span>
 							</div>
-							<div className="opacity-0 group-hover:opacity-100">
-								<SpaceMenu />
-							</div>
+							<Button className="rounded-full p-1">
+								<ChevronRight className="w-4 h-4 text-zinc-500" />
+							</Button>
+							<Button className="text-left outline-none text-sm">
+								{space.name}
+							</Button>
 						</div>
-					</GridListItem>
-				)}
-			</GridList>
-		</div>
+						<div className="opacity-0 group-hover:opacity-100">
+							<SpaceMenu />
+						</div>
+					</div>
+				</GridListItem>
+			)}
+		</GridList>
 	)
 }
 
