@@ -5,6 +5,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from '@/app/store/store'
 import { fetchWorkspaces } from '@/app/features/workspace/workspaceSlice'
 import { useSession } from 'next-auth/react'
+import WorkspaceLeftMenu from '@/app/components/workspace/WorkspaceLeftMenu'
+import WorkspaceRightMenu from '@/app/components/workspace/WorkspaceRightMenu'
+import { Layers } from 'lucide-react'
+import DefaultWorkSpaceRightMenu from '@/app/components/workspace/DefaultWorkSpaceRightMenu'
 
 const WorkspaceList = () => {
 	const dispatch = useDispatch<AppDispatch>()
@@ -27,12 +31,36 @@ const WorkspaceList = () => {
 
 	return (
 		<div className="p-4">
+			{/*デフォルトワークスペースを表示 */}
+			<div className="mb-4">
+				<div className="flex items-center">
+					<div className="flex flex-col flex-grow justify-between">
+						<div className="flex items-center justify-between">
+							<div className="flex items-center">
+								<div className="rounded-full py-1 pl-1 pr-2 ml-2">
+									<Layers className="w-6 h-6 text-gray-500" />
+								</div>
+								<span className="font-medium text-gray-500">Spaces</span>
+							</div>
+							<div className="mt-2 space-y-1">
+								<DefaultWorkSpaceRightMenu />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 			{workspaces.map((workspace) => (
 				<div
 					key={workspace.id}
 					className="p-2 mb-2 bg-gray-700 rounded cursor-pointer hover:bg-gray-600 text-zinc-50"
 				>
-					{workspace.name}
+					<div className="flex justify-between items-center">
+						<div>{workspace.name}</div>
+						<div className="flex items-center">
+							<WorkspaceLeftMenu />
+							<WorkspaceRightMenu />
+						</div>
+					</div>
 				</div>
 			))}
 		</div>
