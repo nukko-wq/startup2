@@ -26,6 +26,24 @@ export const fetchWorkspaces = createAsyncThunk(
 	},
 )
 
+export const createWorkspace = createAsyncThunk(
+	'workspace/createWorkspace',
+	async (name: string) => {
+		const response = await fetch('/api/workspaces', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ name }),
+		})
+		if (!response.ok) {
+			throw new Error('ワークスペースの作成に失敗しました')
+		}
+		const data = await response.json()
+		return data
+	},
+)
+
 const workspaceSlice = createSlice({
 	name: 'workspace',
 	initialState,
@@ -45,6 +63,18 @@ const workspaceSlice = createSlice({
 				state.loading = false
 			})
 			.addCase(fetchWorkspaces.rejected, (state, action) => {
+				state.loading = false
+				state.error = action.error.message || 'エラーが発生しました'
+			})
+			.addCase(createWorkspace.pending, (state) => {
+				state.loading = true
+				state.error = null
+			})
+			.addCase(createWorkspace.fulfilled, (state, action) => {
+				state.workspaces.push(action.payload)
+				state.loading = false
+			})
+			.addCase(createWorkspace.rejected, (state, action) => {
 				state.loading = false
 				state.error = action.error.message || 'エラーが発生しました'
 			})
