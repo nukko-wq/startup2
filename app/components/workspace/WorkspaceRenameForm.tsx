@@ -1,6 +1,6 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { Button, Form, Input, Label, TextField } from 'react-aria-components'
 import { useDispatch } from 'react-redux'
 import { renameWorkspace } from '@/app/features/workspace/workspaceSlice'
@@ -24,8 +24,9 @@ const WorkspaceRenameForm = ({
 }: WorkspaceRenameFormProps) => {
 	const dispatch = useDispatch<AppDispatch>()
 	const [isSubmitting, setIsSubmitting] = useState(false)
+
 	const {
-		register,
+		control,
 		handleSubmit,
 		formState: { errors },
 	} = useForm<FormData>({
@@ -53,16 +54,35 @@ const WorkspaceRenameForm = ({
 
 	return (
 		<Form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-			<TextField autoFocus className="space-y-[2px]">
-				<Label className="text-sm">Workspace Name</Label>
-				<Input
-					{...register('name', { required: 'Name is required' })}
-					className="w-full px-3 py-2 border rounded focus:outline-blue-500"
-				/>
-				{errors.name && (
-					<span className="text-red-500 text-sm">{errors.name.message}</span>
+			<Controller
+				name="name"
+				control={control}
+				rules={{
+					required: 'ワークスペース名は必須です',
+					minLength: {
+						value: 1,
+						message: 'ワークスペース名を入力してください',
+					},
+				}}
+				render={({ field, fieldState }) => (
+					<TextField
+						isInvalid={!!fieldState.error}
+						autoFocus
+						className="space-y-[2px]"
+					>
+						<Label className="text-sm">ワークスペース名</Label>
+						<Input
+							{...field}
+							className="w-full px-3 py-2 border rounded focus:outline-blue-500"
+						/>
+						{fieldState.error && (
+							<div className="text-red-500 text-sm">
+								{fieldState.error.message}
+							</div>
+						)}
+					</TextField>
 				)}
-			</TextField>
+			/>
 
 			<div className="flex justify-end gap-2">
 				<Button
