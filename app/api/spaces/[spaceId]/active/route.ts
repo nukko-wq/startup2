@@ -12,7 +12,8 @@ export async function PUT(
 			return new NextResponse('Unauthorized', { status: 401 })
 		}
 
-		const { spaceId } = context.params
+		const params = await context.params
+		const { spaceId } = params
 
 		// 現在のアクティブスペースをリセット
 		await prisma.space.updateMany({
