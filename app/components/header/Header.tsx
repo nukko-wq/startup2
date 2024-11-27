@@ -24,6 +24,7 @@ const Header = () => {
 						}}
 					/>
 				</Form>
+				{/*
 				<Button
 					className="group flex items-center gap-2 hover:bg-zinc-100 rounded-lg px-2 py-1 outline-none"
 					// onPress={() => setIsEditing(true)}
@@ -31,6 +32,7 @@ const Header = () => {
 					<Text className="text-xl font-bold pl-4 text-zinc-800">Untitled</Text>
 					<Pencil className="w-4 h-4 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity" />
 				</Button>
+        */}
 			</div>
 			<HeaderMenu />
 		</div>

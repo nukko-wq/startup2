@@ -4,6 +4,8 @@ import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from '@/app/store/store'
 import { fetchSections } from '@/app/features/section/sectionSlice'
+import { GridList, GridListItem } from 'react-aria-components'
+import SectionItem from './SectionItem'
 
 interface SectionListProps {
 	spaceId: string | null
@@ -31,22 +33,13 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 	if (error) return <div>エラー: {error}</div>
 
 	return (
-		<div className="p-4 space-y-4">
-			{sections.length === 0 ? (
-				<div className="text-gray-500">セクションがありません</div>
-			) : (
-				sections.map((section) => (
-					<div
-						key={section.id}
-						className="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
-					>
-						<h3 className="text-lg font-medium text-gray-900">
-							{section.name}
-						</h3>
-					</div>
-				))
+		<GridList className="flex flex-col w-full gap-2">
+			{(sections) => (
+				<GridListItem className="outline-none group">
+					<SectionItem />
+				</GridListItem>
 			)}
-		</div>
+		</GridList>
 	)
 }
 
