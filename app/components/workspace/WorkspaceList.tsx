@@ -55,14 +55,14 @@ const WorkspaceList = () => {
 				<div className="mb-4">
 					<div className="flex items-center">
 						<div className="flex flex-col flex-grow justify-between">
-							<div className="flex items-center justify-between">
+							<div className="flex items-center justify-between mb-1">
 								<div className="flex items-center">
 									<div className="rounded-full py-1 pl-1 pr-2 ml-2">
 										<Layers className="w-6 h-6 text-gray-500" />
 									</div>
 									<span className="font-medium text-gray-500">Spaces</span>
 								</div>
-								<div className="mt-2 space-y-1">
+								<div className="">
 									<DefaultWorkSpaceRightMenu />
 								</div>
 							</div>
