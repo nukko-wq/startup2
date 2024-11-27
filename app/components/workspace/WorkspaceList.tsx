@@ -13,7 +13,12 @@ import WorkspaceLeftMenu from '@/app/components/workspace/WorkspaceLeftMenu'
 import WorkspaceRightMenu from '@/app/components/workspace/WorkspaceRightMenu'
 import { ChevronRight, Layers } from 'lucide-react'
 import DefaultWorkSpaceRightMenu from '@/app/components/workspace/DefaultWorkspaceRightMenu'
-import { Button, GridList, GridListItem } from 'react-aria-components'
+import {
+	Button,
+	GridList,
+	GridListItem,
+	useDragAndDrop,
+} from 'react-aria-components'
 import SpaceList from '@/app/components/space/SpaceList'
 
 const WorkspaceList = () => {
@@ -40,10 +45,66 @@ const WorkspaceList = () => {
 		}
 	}, [workspaces, activeWorkspaceId, dispatch])
 
-	/*
-	if (status === 'loading' || loading)
-		return <div className="text-zinc-50">読み込み中...</div>
-	*/
+	const { dragAndDropHooks } = useDragAndDrop({
+		getItems: (keys) => {
+			const workspace = workspaces.find((w) => keys.has(w.id))
+			if (workspace?.isDefault) return []
+
+			return [
+				{
+					'workspace-id': String(workspace?.id),
+					'text/plain': workspace?.name || '',
+				},
+			]
+		},
+		acceptedDragTypes: ['workspace-id'],
+		getDropOperation: (target) => {
+			if (target?.type === 'item') {
+				const workspace = workspaces.find((w) => w.id === target.key)
+				return workspace?.isDefault ? 'cancel' : 'move'
+			}
+			return 'move'
+		},
+		renderDropIndicator(target) {
+			return (
+				<div
+					className={`drop-indicator ${
+						target?.type === 'item' ? 'active' : ''
+					}`}
+				/>
+			)
+		},
+		async onReorder(e) {
+			try {
+				const draggedId = Array.from(e.keys)[0] as string
+				const targetId = e.target.key as string
+
+				const draggedWorkspace = workspaces.find((w) => w.id === draggedId)
+				const targetWorkspace = workspaces.find((w) => w.id === targetId)
+
+				if (draggedWorkspace?.isDefault || targetWorkspace?.isDefault) return
+
+				const reorderableWorkspaces = workspaces.filter((w) => !w.isDefault)
+				const draggedIndex = reorderableWorkspaces.findIndex(
+					(w) => w.id === draggedId,
+				)
+				const targetIndex = reorderableWorkspaces.findIndex(
+					(w) => w.id === targetId,
+				)
+
+				if (draggedIndex !== -1 && targetIndex !== -1) return
+
+				const newWorkspaces = [...reorderableWorkspaces]
+				const [draggedItem] = newWorkspaces.splice(draggedIndex, 1)
+				const insertAt =
+					e.target.dropPosition === 'before' ? targetIndex : targetIndex + 1
+				newWorkspaces.splice(insertAt, 0, draggedItem)
+			} catch (error) {
+				console.error('Error reordering workspaces:', error)
+			}
+		},
+	})
+
 	if (status === 'unauthenticated')
 		return <div className="text-zinc-50">ログインしてください</div>
 	if (error) return <div className="text-zinc-50">エラーが発生しました</div>
@@ -72,7 +133,11 @@ const WorkspaceList = () => {
 				</div>
 			)}
 			{/* 通常のワークスペース */}
-			<GridList items={workspaces} className="space-y-1">
+			<GridList
+				items={workspaces.filter((w) => !w.isDefault)}
+				dragAndDropHooks={dragAndDropHooks}
+				className="flex flex-col outline-none"
+			>
 				{(workspace) => (
 					<GridListItem key={workspace.id} className="outline-none">
 						<div className="flex items-center">
@@ -84,7 +149,10 @@ const WorkspaceList = () => {
 										}`}
 									>
 										<div className="flex items-center cursor-grab">
-											<Button className="rounded-full py-1 pl-1 pr-2 ml-2">
+											<Button
+												slot="drag"
+												className="rounded-full py-1 pl-1 pr-2 ml-2"
+											>
 												<ChevronRight className="w-6 h-6 text-gray-500" />
 											</Button>
 										</div>
