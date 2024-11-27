@@ -34,11 +34,11 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 
 	return (
 		<GridList className="flex flex-col w-full gap-2">
-			{(sections) => (
-				<GridListItem className="outline-none group">
-					<SectionItem />
+			{sections.map((section) => (
+				<GridListItem key={section.id} className="outline-none group">
+					<SectionItem section={section} />
 				</GridListItem>
-			)}
+			))}
 		</GridList>
 	)
 }

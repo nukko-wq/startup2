@@ -10,12 +10,17 @@ import {
 	TextField,
 } from 'react-aria-components'
 import { Controller } from 'react-hook-form'
+import type { Section } from '@/app/features/section/sectionSlice'
 
-const SectionNameEdit = () => {
+interface SectionNameEditProps {
+	section: Section
+}
+
+const SectionNameEdit = ({ section }: SectionNameEditProps) => {
 	return (
 		<DialogTrigger>
 			<Button aria-label="Edit" className="text-[17px] outline-none px-3 py-2">
-				<span>Section Name</span>
+				<span>{section.name}</span>
 			</Button>
 			<ModalOverlay
 				isDismissable
@@ -27,6 +32,7 @@ const SectionNameEdit = () => {
 							<TextField autoFocus>
 								<Controller
 									name="name"
+									defaultValue={section.name}
 									render={({ field: { value, onChange, onBlur } }) => (
 										<Input
 											value={value}

@@ -1,12 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
-interface Section {
+export interface Section {
 	id: string
 	name: string
 	order: number
 	spaceId: string
-	createdAt?: Date
-	updatedAt?: Date
 }
 
 interface SectionState {
@@ -30,6 +28,27 @@ export const fetchSections = createAsyncThunk(
 		if (!response.ok) {
 			throw new Error('セクションの取得に失敗しました')
 		}
+		return response.json()
+	},
+)
+
+export const createSection = createAsyncThunk(
+	'section/createSection',
+	async (spaceId: string) => {
+		const response = await fetch(`/api/spaces/${spaceId}/sections`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				name: 'Resources',
+			}),
+		})
+
+		if (!response.ok) {
+			throw new Error('セクションの作成に失敗しました')
+		}
+
 		return response.json()
 	},
 )
@@ -62,6 +81,17 @@ const sectionSlice = createSlice({
 					sections: [],
 					loading: false,
 					error: action.error.message || 'エラーが発生しました',
+				}
+			})
+			.addCase(createSection.fulfilled, (state, action) => {
+				const newSection = action.payload
+				const spaceId = newSection.spaceId
+				const currentSections = state.sectionsBySpace[spaceId]?.sections || []
+
+				state.sectionsBySpace[spaceId] = {
+					sections: [...currentSections, newSection],
+					loading: false,
+					error: null,
 				}
 			})
 	},
