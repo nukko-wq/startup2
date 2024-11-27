@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 
 interface Space {
 	id: string
@@ -32,7 +32,8 @@ export const fetchSpaces = createAsyncThunk(
 			throw new Error('スペースの取得に失敗しました')
 		}
 		const data = await response.json()
-		return data
+		const activeSpace = data.find((space: Space) => space.isLastActive)
+		return { spaces: data, activeSpaceId: activeSpace?.id || null, workspaceId }
 	},
 )
 
@@ -129,11 +130,14 @@ const spaceSlice = createSlice({
 				}
 			})
 			.addCase(fetchSpaces.fulfilled, (state, action) => {
-				const workspaceId = action.meta.arg
+				const { spaces, activeSpaceId, workspaceId } = action.payload
 				state.spacesByWorkspace[workspaceId] = {
-					spaces: action.payload,
+					spaces,
 					loading: false,
 					error: null,
+				}
+				if (activeSpaceId) {
+					state.activeSpaceId = activeSpaceId
 				}
 			})
 			.addCase(fetchSpaces.rejected, (state, action) => {

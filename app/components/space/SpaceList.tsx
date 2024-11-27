@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from '@/app/store/store'
 import { fetchSpaces, setActiveSpace } from '@/app/features/space/spaceSlice'
-import { ChevronRight, GripVertical } from 'lucide-react'
+import { GripVertical } from 'lucide-react'
 import { Button, GridList, GridListItem } from 'react-aria-components'
 import SpaceMenu from '@/app/components/space/SpaceMenu'
 
@@ -36,14 +36,8 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 		dispatch(setActiveSpace(spaceId))
 	}
 
-	/*
-	if (workspaceSpaces.loading)
-		return <div className="text-zinc-50">読み込み中...</div>
-	*/
 	if (workspaceSpaces.error)
 		return <div className="text-zinc-50">{workspaceSpaces.error}</div>
-
-	console.log('workspaceSpaces:', workspaceSpaces)
 
 	return (
 		<GridList
@@ -55,11 +49,14 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 				<GridListItem
 					key={space.id}
 					className={`
-						flex flex-grow justify-between text-gray-400 outline-none cursor-pointer hover:bg-gray-700 hover:bg-opacity-75 group transition duration-200 ${
+						flex flex-grow justify-between text-gray-400 outline-none cursor-pointer 
+						hover:bg-gray-700 hover:bg-opacity-75 group transition duration-200 
+						${
 							activeSpaceId === space.id
 								? 'bg-gray-700 border-l-4 border-blue-500 pl-3'
 								: 'pl-4'
-						}`}
+						}
+					`}
 					onAction={() => handleSpaceClick(space.id)}
 				>
 					<div className="flex flex-grow items-center justify-between py-1 group">
