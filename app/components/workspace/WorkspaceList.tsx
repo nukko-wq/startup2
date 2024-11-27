@@ -7,6 +7,7 @@ import {
 	fetchWorkspaces,
 	setActiveWorkspace,
 	createDefaultWorkspace,
+	reorderWorkspace,
 } from '@/app/features/workspace/workspaceSlice'
 import { useSession } from 'next-auth/react'
 import WorkspaceLeftMenu from '@/app/components/workspace/WorkspaceLeftMenu'
@@ -92,13 +93,17 @@ const WorkspaceList = () => {
 					(w) => w.id === targetId,
 				)
 
-				if (draggedIndex !== -1 && targetIndex !== -1) return
+				if (draggedIndex === -1 || targetIndex === -1) return
 
-				const newWorkspaces = [...reorderableWorkspaces]
-				const [draggedItem] = newWorkspaces.splice(draggedIndex, 1)
-				const insertAt =
+				const newOrder =
 					e.target.dropPosition === 'before' ? targetIndex : targetIndex + 1
-				newWorkspaces.splice(insertAt, 0, draggedItem)
+
+				await dispatch(
+					reorderWorkspace({
+						workspaceId: draggedId,
+						newOrder,
+					}),
+				).unwrap()
 			} catch (error) {
 				console.error('Error reordering workspaces:', error)
 			}
@@ -134,6 +139,7 @@ const WorkspaceList = () => {
 			)}
 			{/* 通常のワークスペース */}
 			<GridList
+				aria-label="Workspaces"
 				items={workspaces.filter((w) => !w.isDefault)}
 				dragAndDropHooks={dragAndDropHooks}
 				className="flex flex-col outline-none"
@@ -143,11 +149,7 @@ const WorkspaceList = () => {
 						<div className="flex items-center">
 							<div className="flex flex-col flex-grow justify-between">
 								<div className="flex items-center justify-between group">
-									<div
-										className={`flex items-center flex-grow ${
-											activeWorkspaceId === workspace.id ? 'bg-gray-100' : ''
-										}`}
-									>
+									<div className="flex items-center flex-grow">
 										<div className="flex items-center cursor-grab">
 											<Button
 												slot="drag"

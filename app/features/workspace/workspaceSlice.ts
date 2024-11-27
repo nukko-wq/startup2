@@ -1,4 +1,8 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import {
+	createSlice,
+	createAsyncThunk,
+	type PayloadAction,
+} from '@reduxjs/toolkit'
 
 interface WorkspaceState {
 	workspaces: Workspace[]
@@ -100,6 +104,28 @@ export const createDefaultWorkspace = createAsyncThunk(
 	},
 )
 
+export const reorderWorkspace = createAsyncThunk(
+	'workspace/reorderWorkspace',
+	async ({
+		workspaceId,
+		newOrder,
+	}: { workspaceId: string; newOrder: number }) => {
+		const adjustedOrder = newOrder + 1
+		const response = await fetch(`/api/workspaces/${workspaceId}/reorder`, {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ order: adjustedOrder }),
+		})
+		if (!response.ok) {
+			throw new Error('ワークスペースの並び替えに失敗しました')
+		}
+		const data = await response.json()
+		return data
+	},
+)
+
 // Workspaceインターフェースを追加
 interface Workspace {
 	id: string
@@ -115,7 +141,7 @@ const workspaceSlice = createSlice({
 	name: 'workspace',
 	initialState,
 	reducers: {
-		setActiveWorkspace: (state, action) => {
+		setActiveWorkspace: (state, action: PayloadAction<string>) => {
 			state.activeWorkspaceId = action.payload
 		},
 	},
@@ -187,6 +213,41 @@ const workspaceSlice = createSlice({
 			.addCase(createDefaultWorkspace.fulfilled, (state, action) => {
 				state.defaultWorkspace = action.payload
 				state.loading = false
+			})
+			.addCase(reorderWorkspace.fulfilled, (state, action) => {
+				const updatedWorkspace = action.payload
+				const nonDefaultWorkspaces = state.workspaces.filter(
+					(w) => !w.isDefault,
+				)
+				const index = nonDefaultWorkspaces.findIndex(
+					(w) => w.id === updatedWorkspace.id,
+				)
+
+				if (index !== -1) {
+					state.workspaces = state.workspaces.map((workspace) => {
+						if (workspace.isDefault) return workspace
+						if (
+							workspace.order >= updatedWorkspace.order &&
+							workspace.id !== updatedWorkspace.id
+						) {
+							return { ...workspace, order: workspace.order + 1 }
+						}
+						return workspace
+					})
+
+					const workspaceIndex = state.workspaces.findIndex(
+						(w) => w.id === updatedWorkspace.id,
+					)
+					if (workspaceIndex !== -1) {
+						state.workspaces[workspaceIndex] = updatedWorkspace
+					}
+
+					state.workspaces.sort((a, b) => {
+						if (a.isDefault) return -1
+						if (b.isDefault) return 1
+						return a.order - b.order
+					})
+				}
 			})
 	},
 })
