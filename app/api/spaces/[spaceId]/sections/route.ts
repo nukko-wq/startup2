@@ -8,14 +8,17 @@ type Props = {
 	}
 }
 
-export async function GET(req: NextRequest, { params }: Props) {
+export async function GET(
+	req: NextRequest,
+	context: { params: Promise<{ spaceId: string }> },
+) {
 	try {
 		const user = await getCurrentUser()
 		if (!user) {
 			return new NextResponse('Unauthorized', { status: 401 })
 		}
 
-		const spaceId = params.spaceId
+		const { spaceId } = await context.params
 
 		const sections = await prisma.section.findMany({
 			where: {
