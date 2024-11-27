@@ -1,0 +1,37 @@
+import { type NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { getCurrentUser } from '@/lib/session'
+
+type Props = {
+	params: {
+		spaceId: string
+	}
+}
+
+export async function GET(req: NextRequest, { params }: Props) {
+	try {
+		const user = await getCurrentUser()
+		if (!user) {
+			return new NextResponse('Unauthorized', { status: 401 })
+		}
+
+		const spaceId = params.spaceId
+
+		const sections = await prisma.section.findMany({
+			where: {
+				spaceId,
+				space: {
+					userId: user.id,
+				},
+			},
+			orderBy: {
+				order: 'asc',
+			},
+		})
+
+		return NextResponse.json(sections)
+	} catch (error) {
+		console.error('Error fetching sections:', error)
+		return new NextResponse('Internal Error', { status: 500 })
+	}
+}

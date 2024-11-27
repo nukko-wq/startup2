@@ -1,5 +1,5 @@
 import Sidebar from '@/app/components/sidebar/Sidebar'
-import SectionList from '@/app/components/section/SectionList'
+import SectionListWrapper from '@/app/components/section/SectionListWrapper'
 
 export default function Home() {
 	return (
@@ -7,7 +7,7 @@ export default function Home() {
 			<main className="flex flex-col w-full h-full">
 				<div className="grid grid-cols-[260px_1fr] min-[1921px]:grid-cols-[320px_1fr] bg-slate-50">
 					<Sidebar />
-					<SectionList />
+					<SectionListWrapper />
 				</div>
 			</main>
 		</div>
