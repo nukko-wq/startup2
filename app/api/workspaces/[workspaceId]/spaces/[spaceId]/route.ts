@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/session'
 
 export async function PATCH(
-	request: Request,
-	context: { params: { workspaceId: string; spaceId: string } },
+	request: NextRequest,
+	{ params }: { params: Promise<{ workspaceId: string; spaceId: string }> },
 ) {
 	try {
 		const user = await getCurrentUser()
@@ -12,8 +12,8 @@ export async function PATCH(
 			return new NextResponse('Unauthorized', { status: 401 })
 		}
 
-		const params = await context.params
-		const { workspaceId, spaceId } = params
+		const resolvedParams = await params
+		const { workspaceId, spaceId } = resolvedParams
 		const { name } = await request.json()
 
 		const space = await prisma.space.update({
@@ -32,8 +32,8 @@ export async function PATCH(
 }
 
 export async function DELETE(
-	request: Request,
-	context: { params: { workspaceId: string; spaceId: string } },
+	request: NextRequest,
+	{ params }: { params: Promise<{ workspaceId: string; spaceId: string }> },
 ) {
 	try {
 		const user = await getCurrentUser()
@@ -41,8 +41,8 @@ export async function DELETE(
 			return new NextResponse('Unauthorized', { status: 401 })
 		}
 
-		const params = await context.params
-		const { workspaceId, spaceId } = params
+		const resolvedParams = await params
+		const { workspaceId, spaceId } = resolvedParams
 
 		const deletedSpace = await prisma.space.delete({
 			where: {

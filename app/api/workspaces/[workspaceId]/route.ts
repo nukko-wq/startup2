@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/session'
 
 export async function DELETE(
-	request: Request,
-	context: { params: { workspaceId: string } },
+	request: NextRequest,
+	{ params }: { params: Promise<{ workspaceId: string }> },
 ) {
 	try {
 		const user = await getCurrentUser()
@@ -12,8 +12,8 @@ export async function DELETE(
 			return new NextResponse('Unauthorized', { status: 401 })
 		}
 
-		const params = await context.params
-		const { workspaceId } = params
+		const resolvedParams = await params
+		const { workspaceId } = resolvedParams
 
 		const workspace = await prisma.workspace.findUnique({
 			where: {
@@ -41,8 +41,8 @@ export async function DELETE(
 }
 
 export async function PATCH(
-	request: Request,
-	context: { params: { workspaceId: string } },
+	request: NextRequest,
+	{ params }: { params: Promise<{ workspaceId: string }> },
 ) {
 	try {
 		const user = await getCurrentUser()
@@ -50,8 +50,8 @@ export async function PATCH(
 			return new NextResponse('Unauthorized', { status: 401 })
 		}
 
-		const params = await context.params
-		const { workspaceId } = params
+		const resolvedParams = await params
+		const { workspaceId } = resolvedParams
 		const { name } = await request.json()
 
 		const workspace = await prisma.workspace.update({

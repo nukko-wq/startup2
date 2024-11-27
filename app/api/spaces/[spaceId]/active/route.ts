@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/session'
 
 export async function PUT(
-	request: Request,
-	context: { params: { spaceId: string } },
+	request: NextRequest,
+	{ params }: { params: Promise<{ spaceId: string }> },
 ) {
 	try {
 		const user = await getCurrentUser()
@@ -12,8 +12,8 @@ export async function PUT(
 			return new NextResponse('Unauthorized', { status: 401 })
 		}
 
-		const params = await context.params
-		const { spaceId } = params
+		const resolvedParams = await params
+		const spaceId = resolvedParams.spaceId
 
 		// 現在のアクティブスペースをリセット
 		await prisma.space.updateMany({
@@ -39,6 +39,7 @@ export async function PUT(
 
 		return NextResponse.json(updatedSpace)
 	} catch (error) {
+		console.error('Error updating active space:', error)
 		return new NextResponse('Internal Error', { status: 500 })
 	}
 }
