@@ -18,7 +18,7 @@ import type { RootState } from '@/app/store/store'
 import WorkspaceCreateForm from '@/app/components/workspace/WorkspaceCreateForm'
 import SpaceCreateForm from '../space/SpaceCreateForm'
 
-const DefaultWorkSpaceRightMenu = () => {
+const DefaultWorkspaceRightMenu = () => {
 	const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false)
 	const [isSpaceOpen, setIsSpaceOpen] = useState(false)
 	const defaultWorkspace = useSelector(
@@ -105,4 +105,4 @@ const DefaultWorkSpaceRightMenu = () => {
 	)
 }
 
-export default DefaultWorkSpaceRightMenu
+export default DefaultWorkspaceRightMenu

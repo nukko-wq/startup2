@@ -2,6 +2,35 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/session'
 
+export async function PATCH(
+	request: Request,
+	context: { params: { workspaceId: string; spaceId: string } },
+) {
+	try {
+		const user = await getCurrentUser()
+		if (!user) {
+			return new NextResponse('Unauthorized', { status: 401 })
+		}
+
+		const params = await context.params
+		const { workspaceId, spaceId } = params
+		const { name } = await request.json()
+
+		const space = await prisma.space.update({
+			where: {
+				id: spaceId,
+				workspaceId,
+				userId: user.id,
+			},
+			data: { name },
+		})
+
+		return NextResponse.json(space)
+	} catch (error) {
+		return new NextResponse('Internal Error', { status: 500 })
+	}
+}
+
 export async function DELETE(
 	request: Request,
 	context: { params: { workspaceId: string; spaceId: string } },
@@ -12,10 +41,10 @@ export async function DELETE(
 			return new NextResponse('Unauthorized', { status: 401 })
 		}
 
-		const { workspaceId, spaceId } = await context.params
+		const params = await context.params
+		const { workspaceId, spaceId } = params
 
-		// スペースの存在確認と所有権チェック
-		const space = await prisma.space.findFirst({
+		const deletedSpace = await prisma.space.delete({
 			where: {
 				id: spaceId,
 				workspaceId,
@@ -23,19 +52,7 @@ export async function DELETE(
 			},
 		})
 
-		if (!space) {
-			return new NextResponse('Space not found', { status: 404 })
-		}
-
-		// スペースの削除
-		await prisma.space.delete({
-			where: {
-				id: spaceId,
-			},
-		})
-
-		// 空のオブジェクトを返す
-		return new NextResponse(null, { status: 204 })
+		return NextResponse.json({ spaceId, workspaceId })
 	} catch (error) {
 		console.error('Error deleting space:', error)
 		return new NextResponse('Internal Error', { status: 500 })

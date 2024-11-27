@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from '@/app/store/store'
-import { fetchSpaces } from '@/app/features/space/spaceSlice'
+import { fetchSpaces, setActiveSpace } from '@/app/features/space/spaceSlice'
 import { ChevronRight, GripVertical } from 'lucide-react'
 import { Button, GridList, GridListItem } from 'react-aria-components'
 import SpaceMenu from '@/app/components/space/SpaceMenu'
@@ -22,12 +22,19 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 				error: null,
 			},
 	)
+	const activeSpaceId = useSelector(
+		(state: RootState) => state.space.activeSpaceId,
+	)
 
 	useEffect(() => {
 		if (workspaceId) {
 			dispatch(fetchSpaces(workspaceId))
 		}
 	}, [dispatch, workspaceId])
+
+	const handleSpaceClick = (spaceId: string) => {
+		dispatch(setActiveSpace(spaceId))
+	}
 
 	/*
 	if (workspaceSpaces.loading)
@@ -47,18 +54,21 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 			{(space) => (
 				<GridListItem
 					key={space.id}
-					className="flex flex-grow justify-between text-gray-400 outline-none cursor-pointer hover:bg-gray-700 hover:bg-opacity-75 group transition duration-200"
+					className={`
+						flex flex-grow justify-between text-gray-400 outline-none cursor-pointer hover:bg-gray-700 hover:bg-opacity-75 group transition duration-200 ${
+							activeSpaceId === space.id
+								? 'bg-gray-700 border-l-4 border-blue-500 pl-3'
+								: 'pl-4'
+						}`}
+					onAction={() => handleSpaceClick(space.id)}
 				>
 					<div className="flex flex-grow items-center justify-between py-1 group">
-						<div className="flex items-center cursor-grab">
-							<div className="flex items-center gap-2">
+						<div className="flex items-center flex-grow">
+							<div className="flex items-center cursor-grab">
 								<Button className="cursor-grab flex items-center pr-3">
 									<GripVertical className="w-4 h-4 text-zinc-500" />
 								</Button>
 							</div>
-							<Button className="rounded-full p-1">
-								<ChevronRight className="w-4 h-4 text-zinc-500" />
-							</Button>
 							<Button className="text-left outline-none text-sm">
 								{space.name}
 							</Button>

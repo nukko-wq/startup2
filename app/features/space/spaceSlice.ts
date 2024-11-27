@@ -73,14 +73,51 @@ export const deleteSpace = createAsyncThunk(
 	},
 )
 
+export const setActiveSpace = createAsyncThunk(
+	'space/setActiveSpace',
+	async (spaceId: string) => {
+		const response = await fetch(`/api/spaces/${spaceId}/active`, {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		})
+		if (!response.ok) {
+			throw new Error('アクティブスペースの設定に失敗しました')
+		}
+		return spaceId
+	},
+)
+
+export const renameSpace = createAsyncThunk(
+	'space/renameSpace',
+	async ({
+		spaceId,
+		name,
+		workspaceId,
+	}: { spaceId: string; name: string; workspaceId: string }) => {
+		const response = await fetch(
+			`/api/workspaces/${workspaceId}/spaces/${spaceId}`,
+			{
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ name }),
+			},
+		)
+		if (!response.ok) {
+			throw new Error('スペースの名前変更に失敗しました')
+		}
+		const data = await response.json()
+		return { space: data, workspaceId }
+	},
+)
+
 const spaceSlice = createSlice({
 	name: 'space',
 	initialState,
-	reducers: {
-		setActiveSpace: (state, action) => {
-			state.activeSpaceId = action.payload
-		},
-	},
+	reducers: {},
 	extraReducers: (builder) => {
 		builder
 			.addCase(fetchSpaces.pending, (state, action) => {
@@ -168,8 +205,34 @@ const spaceSlice = createSlice({
 						action.error.message || 'エラーが発生しました'
 				}
 			})
+			.addCase(setActiveSpace.pending, (state) => {
+				// オプション: ローディング状態の管理が必要な場合
+			})
+			.addCase(setActiveSpace.fulfilled, (state, action) => {
+				state.activeSpaceId = action.payload
+				// 全てのスペースのisLastActiveをfalseに設定
+				for (const workspace of Object.values(state.spacesByWorkspace)) {
+					for (const space of workspace.spaces) {
+						space.isLastActive = space.id === action.payload
+					}
+				}
+			})
+			.addCase(setActiveSpace.rejected, (state, action) => {
+				// エラー処理が必要な場合
+			})
+			.addCase(renameSpace.fulfilled, (state, action) => {
+				const { space, workspaceId } = action.payload
+				const workspaceState = state.spacesByWorkspace[workspaceId]
+				if (workspaceState) {
+					const index = workspaceState.spaces.findIndex(
+						(s) => s.id === space.id,
+					)
+					if (index !== -1) {
+						workspaceState.spaces[index] = space
+					}
+				}
+			})
 	},
 })
 
-export const { setActiveSpace } = spaceSlice.actions
 export default spaceSlice.reducer

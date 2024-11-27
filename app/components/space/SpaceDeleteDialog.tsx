@@ -1,5 +1,5 @@
 import { AlertTriangle } from 'lucide-react'
-import React from 'react'
+import { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { deleteSpace } from '@/app/features/space/spaceSlice'
 import type { AppDispatch } from '@/app/store/store'
@@ -26,13 +26,17 @@ const SpaceDeleteDialog = ({
 	workspaceId,
 }: SpaceDeleteDialogProps) => {
 	const dispatch = useDispatch<AppDispatch>()
+	const [isDeleting, setIsDeleting] = useState(false)
 
 	const handleDelete = async (close: () => void) => {
 		try {
+			setIsDeleting(true)
 			await dispatch(deleteSpace({ spaceId, workspaceId })).unwrap()
 			close()
 		} catch (error) {
 			console.error('Failed to delete space:', error)
+		} finally {
+			setIsDeleting(false)
 		}
 	}
 
@@ -65,9 +69,10 @@ const SpaceDeleteDialog = ({
 									</Button>
 									<Button
 										onPress={() => handleDelete(close)}
-										className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 outline-none"
+										className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 outline-none disabled:opacity-50"
+										isDisabled={isDeleting}
 									>
-										削除
+										{isDeleting ? '削除中...' : '削除'}
 									</Button>
 								</div>
 							</>

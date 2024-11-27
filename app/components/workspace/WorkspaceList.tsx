@@ -12,7 +12,7 @@ import { useSession } from 'next-auth/react'
 import WorkspaceLeftMenu from '@/app/components/workspace/WorkspaceLeftMenu'
 import WorkspaceRightMenu from '@/app/components/workspace/WorkspaceRightMenu'
 import { ChevronRight, Layers } from 'lucide-react'
-import DefaultWorkSpaceRightMenu from '@/app/components/workspace/DefaultWorkSpaceRightMenu'
+import DefaultWorkSpaceRightMenu from '@/app/components/workspace/DefaultWorkspaceRightMenu'
 import { Button, GridList, GridListItem } from 'react-aria-components'
 import SpaceList from '@/app/components/space/SpaceList'
 
@@ -75,29 +75,33 @@ const WorkspaceList = () => {
 			<GridList items={workspaces} className="space-y-1">
 				{(workspace) => (
 					<GridListItem key={workspace.id} className="outline-none">
-						<div className="flex items-center justify-between group">
-							<div
-								className={`flex items-center flex-grow ${
-									activeWorkspaceId === workspace.id ? 'bg-gray-100' : ''
-								}`}
-							>
-								<div className="flex items-center cursor-grab">
-									<Button className="rounded-full py-1 pl-1 pr-2 ml-2">
-										<ChevronRight className="w-6 h-6 text-gray-500" />
-									</Button>
-								</div>
-								<div className="flex items-center flex-grow justify-between hover:border-b-2 hover:border-blue-500 pb-1">
-									<span className="font-medium text-gray-500">
-										{workspace.name}
-									</span>
-									<div className="flex items-center">
-										<WorkspaceLeftMenu workspaceId={workspace.id} />
-										<WorkspaceRightMenu workspaceId={workspace.id} />
+						<div className="flex items-center">
+							<div className="flex flex-col flex-grow justify-between">
+								<div className="flex items-center justify-between group">
+									<div
+										className={`flex items-center flex-grow ${
+											activeWorkspaceId === workspace.id ? 'bg-gray-100' : ''
+										}`}
+									>
+										<div className="flex items-center cursor-grab">
+											<Button className="rounded-full py-1 pl-1 pr-2 ml-2">
+												<ChevronRight className="w-6 h-6 text-gray-500" />
+											</Button>
+										</div>
+										<div className="flex items-center flex-grow justify-between hover:border-b-2 hover:border-blue-500 pb-1">
+											<span className="font-medium text-gray-500">
+												{workspace.name}
+											</span>
+											<div className="flex items-center">
+												<WorkspaceLeftMenu workspaceId={workspace.id} />
+												<WorkspaceRightMenu workspaceId={workspace.id} />
+											</div>
+										</div>
 									</div>
 								</div>
+								<SpaceList workspaceId={workspace.id} />
 							</div>
 						</div>
-						<SpaceList workspaceId={workspace.id} />
 					</GridListItem>
 				)}
 			</GridList>

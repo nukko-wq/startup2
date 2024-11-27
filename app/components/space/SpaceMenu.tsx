@@ -9,6 +9,8 @@ import {
 } from 'react-aria-components'
 import SpaceRenameDialog from './SpaceRenameDialog'
 import SpaceDeleteDialog from './SpaceDeleteDialog'
+import { useSelector } from 'react-redux'
+import type { RootState } from '@/app/store/store'
 
 interface SpaceMenuProps {
 	spaceId: string
@@ -17,6 +19,14 @@ interface SpaceMenuProps {
 
 const SpaceMenu = ({ spaceId, workspaceId }: SpaceMenuProps) => {
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+	const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false)
+
+	// 現在のスペース名を取得
+	const currentSpace = useSelector((state: RootState) =>
+		state.space.spacesByWorkspace[workspaceId]?.spaces.find(
+			(space) => space.id === spaceId,
+		),
+	)
 
 	return (
 		<>
@@ -30,7 +40,7 @@ const SpaceMenu = ({ spaceId, workspaceId }: SpaceMenuProps) => {
 				<Popover>
 					<Menu className="bg-zinc-50 outline-none border rounded-sm shadow-md min-w-[160px]">
 						<MenuItem
-							onAction={() => {}}
+							onAction={() => setIsRenameDialogOpen(true)}
 							className="pl-3 pr-4 py-2 outline-none hover:bg-zinc-100 hover:cursor-pointer"
 						>
 							<div className="flex items-center gap-3">
@@ -51,7 +61,16 @@ const SpaceMenu = ({ spaceId, workspaceId }: SpaceMenuProps) => {
 				</Popover>
 			</MenuTrigger>
 
-			<SpaceRenameDialog />
+			{currentSpace && (
+				<SpaceRenameDialog
+					isOpen={isRenameDialogOpen}
+					onOpenChange={setIsRenameDialogOpen}
+					spaceId={spaceId}
+					workspaceId={workspaceId}
+					currentSpaceName={currentSpace.name}
+				/>
+			)}
+
 			<SpaceDeleteDialog
 				isOpen={isDeleteDialogOpen}
 				onOpenChange={setIsDeleteDialogOpen}
