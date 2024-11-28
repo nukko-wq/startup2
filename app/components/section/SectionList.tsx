@@ -30,16 +30,6 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 			},
 	)
 
-	useEffect(() => {
-		if (spaceId) {
-			dispatch(fetchSections(spaceId))
-		}
-	}, [dispatch, spaceId])
-
-	if (!spaceId) return <div>スペースが選択されていません</div>
-	if (loading) return <div>読み込み中...</div>
-	if (error) return <div>エラー: {error}</div>
-
 	const { dragAndDropHooks } = useDragAndDrop({
 		getItems: (keys) => {
 			return [...keys].map((key) => ({
@@ -49,6 +39,8 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 		},
 		acceptedDragTypes: ['section-id'],
 		async onReorder(e) {
+			if (!spaceId) return
+
 			try {
 				const draggedId = Array.from(e.keys)[0] as string
 				const targetId = e.target.key as string
@@ -85,6 +77,24 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 			)
 		},
 	})
+
+	useEffect(() => {
+		if (spaceId) {
+			dispatch(fetchSections(spaceId))
+		}
+	}, [dispatch, spaceId])
+
+	if (!spaceId) {
+		return <div>スペースが選択されていません</div>
+	}
+
+	if (loading) {
+		return <div>読み込み中...</div>
+	}
+
+	if (error) {
+		return <div>エラー: {error}</div>
+	}
 
 	return (
 		<GridList
