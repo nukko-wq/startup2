@@ -27,12 +27,14 @@ const ResourceCreateForm = ({ sectionId, onClose }: Props) => {
 	const {
 		control,
 		handleSubmit,
+		reset,
 		formState: { isSubmitting, isValid },
 	} = useForm<ResourceFormData>({
 		defaultValues: {
 			url: '',
 			title: '',
 		},
+		mode: 'onChange',
 	})
 
 	// 入力フィールドの参照
@@ -56,12 +58,14 @@ const ResourceCreateForm = ({ sectionId, onClose }: Props) => {
 
 			await dispatch(
 				createResource({
-					title: data.title,
+					title: data.title || new URL(data.url).hostname,
 					url: data.url,
 					sectionId,
-					faviconUrl: faviconData.faviconUrl, // faviconURLを追加
+					faviconUrl: faviconData.faviconUrl,
 				}),
 			).unwrap()
+
+			reset()
 			onClose()
 		} catch (error) {
 			console.error('リソースの作成に失敗しました:', error)
@@ -108,6 +112,7 @@ const ResourceCreateForm = ({ sectionId, onClose }: Props) => {
 								<Controller
 									name="url"
 									control={control}
+									rules={{ required: true }}
 									render={({ field: { value, onChange, onBlur } }) => (
 										<Input
 											value={value}

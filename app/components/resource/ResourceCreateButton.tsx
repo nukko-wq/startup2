@@ -16,12 +16,11 @@ const ResourceCreateButton = ({ sectionId }: { sectionId: string }) => {
 
 	return (
 		<div>
-			<DialogTrigger>
+			<DialogTrigger isOpen={isOpen} onOpenChange={setIsOpen}>
 				<TooltipTrigger delay={700} closeDelay={0}>
 					<Button
 						aria-label="Menu"
 						className="outline-none hover:bg-zinc-200 transition-colors duration-200 rounded-full p-2"
-						onPress={() => setIsOpen(true)}
 					>
 						<FilePlus className="w-6 h-6 text-zinc-700" />
 					</Button>
