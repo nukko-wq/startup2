@@ -88,9 +88,11 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 		return <div>スペースが選択されていません</div>
 	}
 
+	/*
 	if (loading) {
 		return <div>読み込み中...</div>
 	}
+		*/
 
 	if (error) {
 		return <div>エラー: {error}</div>
