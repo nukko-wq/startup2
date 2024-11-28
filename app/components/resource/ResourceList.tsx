@@ -77,7 +77,7 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 							</div>
 						</div>
 						<div className="flex items-center opacity-0 group-hover/item:opacity-100">
-							<ResourceMenu />
+							<ResourceMenu resource={resource} />
 							<ResourceDeleteButton resourceId={resource.id} />
 						</div>
 					</div>

@@ -11,8 +11,13 @@ import {
 	TooltipTrigger,
 } from 'react-aria-components'
 import ResourceEditForm from '@/app/components/resource/ResourceEditForm'
+import type { Resource } from '@prisma/client'
 
-const ResourceMenu = () => {
+interface ResourceMenuProps {
+	resource: Resource
+}
+
+const ResourceMenu = ({ resource }: ResourceMenuProps) => {
 	return (
 		<DialogTrigger>
 			<TooltipTrigger delay={700} closeDelay={0}>
@@ -45,7 +50,7 @@ const ResourceMenu = () => {
 					<Dialog className="outline-none">
 						{({ close }) => (
 							<div className="bg-white flex items-center justify-center rounded-lg shadow-md w-[700px]">
-								<ResourceEditForm />
+								<ResourceEditForm resource={resource} onClose={close} />
 							</div>
 						)}
 					</Dialog>

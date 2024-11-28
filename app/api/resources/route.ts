@@ -10,7 +10,16 @@ export async function POST(request: Request) {
 		}
 
 		const json = await request.json()
-		const { title, url, sectionId, faviconUrl, mimeType, isGoogleDrive } = json
+
+		const {
+			title,
+			url,
+			sectionId,
+			faviconUrl,
+			mimeType,
+			description,
+			isGoogleDrive,
+		} = json
 
 		const section = await prisma.section.findUnique({
 			where: { id: sectionId },
@@ -34,6 +43,7 @@ export async function POST(request: Request) {
 				url,
 				faviconUrl,
 				mimeType,
+				description,
 				isGoogleDrive,
 				order: newOrder,
 				userId: user.id,
@@ -43,7 +53,7 @@ export async function POST(request: Request) {
 
 		return NextResponse.json(resource)
 	} catch (error) {
-		console.error(error)
+		console.error('Error creating resource:', error)
 		return new NextResponse('Internal Error', { status: 500 })
 	}
 }

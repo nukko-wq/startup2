@@ -12,8 +12,16 @@ interface GoogleDriveListProps {
 		title: string
 		url: string
 		mimeType: string
+		description: string
 		isGoogleDrive: boolean
 	}) => void
+}
+
+interface GoogleDriveFile {
+	id: string
+	name: string
+	webViewLink: string
+	mimeType: string
 }
 
 const GoogleDriveList = ({ onSelect }: GoogleDriveListProps) => {
@@ -24,6 +32,21 @@ const GoogleDriveList = ({ onSelect }: GoogleDriveListProps) => {
 	const [searchQuery, setSearchQuery] = useState('')
 	const debouncedQuery = useDebounce(searchQuery, 500)
 
+	const getGoogleDriveDescription = (mimeType: string): string => {
+		switch (mimeType) {
+			case 'application/vnd.google-apps.document':
+				return 'Google Doc'
+			case 'application/vnd.google-apps.spreadsheet':
+				return 'Google Sheet'
+			case 'application/vnd.google-apps.presentation':
+				return 'Google Slide'
+			case 'application/vnd.google-apps.form':
+				return 'Google Form'
+			default:
+				return 'Google Drive'
+		}
+	}
+
 	useEffect(() => {
 		dispatch(fetchGoogleDriveFiles(debouncedQuery))
 	}, [dispatch, debouncedQuery])
@@ -33,10 +56,13 @@ const GoogleDriveList = ({ onSelect }: GoogleDriveListProps) => {
 		webViewLink: string
 		mimeType: string
 	}) => {
+		const description = getGoogleDriveDescription(file.mimeType)
+
 		onSelect?.({
 			title: file.name,
 			url: file.webViewLink,
 			mimeType: file.mimeType,
+			description: description,
 			isGoogleDrive: true,
 		})
 	}
