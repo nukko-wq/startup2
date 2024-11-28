@@ -3,7 +3,10 @@
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from '@/app/store/store'
-import { fetchSections } from '@/app/features/section/sectionSlice'
+import {
+	fetchSections,
+	reorderSection,
+} from '@/app/features/section/sectionSlice'
 import {
 	DropIndicator,
 	GridList,
@@ -38,22 +41,45 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 	if (error) return <div>エラー: {error}</div>
 
 	const { dragAndDropHooks } = useDragAndDrop({
-		getItems: (key) =>
-			[...key].map((key) => ({
-				'text/plain': key.toString(),
-				'application/json': JSON.stringify(
-					sections.find((section) => section.id === key),
-				),
-			})),
-		onReorder(e) {
-			// 並び替え処理
+		getItems: (keys) => {
+			return [...keys].map((key) => ({
+				'section-id': String(key),
+				'text/plain': sections.find((s) => s.id === key)?.name || '',
+			}))
+		},
+		acceptedDragTypes: ['section-id'],
+		async onReorder(e) {
+			try {
+				const draggedId = Array.from(e.keys)[0] as string
+				const targetId = e.target.key as string
+
+				const draggedSection = sections.find((s) => s.id === draggedId)
+				const targetSection = sections.find((s) => s.id === targetId)
+
+				if (!draggedSection || !targetSection) return
+
+				const newOrder =
+					e.target.dropPosition === 'before'
+						? targetSection.order
+						: targetSection.order + 1
+
+				await dispatch(
+					reorderSection({
+						sectionId: draggedId,
+						newOrder,
+						spaceId,
+					}),
+				).unwrap()
+			} catch (error) {
+				console.error('Error reordering sections:', error)
+			}
 		},
 		renderDropIndicator(target) {
 			return (
 				<DropIndicator
 					target={target}
 					className={({ isDropTarget }) =>
-						`h-1 bg-blue-500/50 rouded transition-all ${isDropTarget ? 'bg-blue-500' : ''}`
+						`h-1 bg-blue-500/50 rounded transition-all ${isDropTarget ? 'bg-blue-500' : ''}`
 					}
 				/>
 			)
@@ -61,12 +87,17 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 	})
 
 	return (
-		<GridList className="flex flex-col w-full gap-2">
-			{sections.map((section) => (
+		<GridList
+			aria-label="Sections"
+			items={sections}
+			dragAndDropHooks={dragAndDropHooks}
+			className="flex flex-col w-full gap-2"
+		>
+			{(section) => (
 				<GridListItem key={section.id} className="outline-none group">
 					<SectionItem section={section} />
 				</GridListItem>
-			))}
+			)}
 		</GridList>
 	)
 }
