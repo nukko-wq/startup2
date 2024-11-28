@@ -11,6 +11,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 		Google({
 			clientId: process.env.AUTH_GOOGLE_ID ?? '',
 			clientSecret: process.env.AUTH_GOOGLE_SECRET ?? '',
+			authorization: {
+				params: {
+					scope: [
+						'https://www.googleapis.com/auth/userinfo.profile',
+						'https://www.googleapis.com/auth/userinfo.email',
+						'https://www.googleapis.com/auth/drive.readonly',
+						'https://www.googleapis.com/auth/drive.metadata.readonly',
+					].join(' '),
+				},
+			},
 		}),
 	],
 	session: {
@@ -83,6 +93,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 				token.expires_at = account.expires_at
 			}
 			return token
+		},
+		async authorized({ auth, request: { nextUrl } }) {
+			const isLoggedIn = !!auth?.user
+			const isOnLoginPage = nextUrl.pathname === '/login'
+
+			if (isLoggedIn && isOnLoginPage) {
+				return Response.redirect(new URL('/', nextUrl))
+			}
+
+			if (!isLoggedIn && !isOnLoginPage) {
+				return false
+			}
+
+			return true
 		},
 	},
 })

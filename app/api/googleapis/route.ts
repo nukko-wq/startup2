@@ -8,6 +8,7 @@ interface GoogleApiError extends Error {
 	code?: number
 	status?: number
 	message: string
+	errors?: Array<{ message: string }>
 }
 
 export async function GET(request: Request) {
@@ -43,12 +44,23 @@ export async function GET(request: Request) {
 				orderBy: 'viewedByMeTime desc',
 				fields: 'files(id, name, webViewLink, mimeType)',
 				q: searchQuery,
+				spaces: 'drive',
 			})
 
 			return NextResponse.json({ files: response.data.files || [] })
 		} catch (error) {
 			console.error('Google Drive API error:', error)
 			const apiError = error as GoogleApiError
+
+			if (apiError.code === 403 || apiError.status === 403) {
+				return NextResponse.json(
+					{
+						error:
+							'Google Driveへのアクセス権限が不足しています。再度認証を行ってください。',
+					},
+					{ status: 403 },
+				)
+			}
 
 			if (apiError.message === 'アクセストークンが見つかりません') {
 				return NextResponse.json(
