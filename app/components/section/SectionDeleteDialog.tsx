@@ -1,7 +1,7 @@
 'use client'
 
 import { AlertTriangle } from 'lucide-react'
-import React from 'react'
+import React, { useState } from 'react'
 import {
 	Button,
 	Dialog,
@@ -11,8 +11,8 @@ import {
 	ModalOverlay,
 } from 'react-aria-components'
 import { deleteSection } from '@/app/features/section/sectionSlice'
-import { useDispatch } from 'react-redux'
-import type { AppDispatch } from '@/app/store/store'
+import { useDispatch, useSelector } from 'react-redux'
+import type { AppDispatch, RootState } from '@/app/store/store'
 
 interface SectionDeleteDialogProps {
 	isOpen: boolean
@@ -26,15 +26,27 @@ const SectionDeleteDialog = ({
 	sectionId,
 }: SectionDeleteDialogProps) => {
 	const dispatch = useDispatch<AppDispatch>()
+	const [isDeleting, setIsDeleting] = useState(false)
+	const activeSpaceId = useSelector(
+		(state: RootState) => state.space.activeSpaceId,
+	)
 
 	const handleDelete = async () => {
+		if (!activeSpaceId) return
+
 		try {
-			// Note: spaceIdはURLから取得するか、propsで渡す必要があります
-			const spaceId = '現在のspaceId'
-			await dispatch(deleteSection({ sectionId, spaceId })).unwrap()
+			setIsDeleting(true)
+			await dispatch(
+				deleteSection({
+					sectionId,
+					spaceId: activeSpaceId,
+				}),
+			).unwrap()
 			onClose()
 		} catch (error) {
 			console.error('セクションの削除に失敗しました:', error)
+		} finally {
+			setIsDeleting(false)
 		}
 	}
 
@@ -65,14 +77,16 @@ const SectionDeleteDialog = ({
 											onClose()
 										}}
 										className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300 outline-none"
+										isDisabled={isDeleting}
 									>
 										キャンセル
 									</Button>
 									<Button
 										onPress={handleDelete}
 										className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 outline-none"
+										isDisabled={isDeleting}
 									>
-										削除
+										{isDeleting ? '削除中...' : '削除'}
 									</Button>
 								</div>
 							</>
