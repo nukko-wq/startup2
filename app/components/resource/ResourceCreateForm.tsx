@@ -48,11 +48,18 @@ const ResourceCreateForm = ({ sectionId, onClose }: Props) => {
 	// フォームの送信処理
 	const onSubmit = async (data: ResourceFormData) => {
 		try {
+			// faviconURLを取得
+			const faviconResponse = await fetch(
+				`/api/favicon?url=${encodeURIComponent(data.url)}`,
+			)
+			const faviconData = await faviconResponse.json()
+
 			await dispatch(
 				createResource({
 					title: data.title,
 					url: data.url,
 					sectionId,
+					faviconUrl: faviconData.faviconUrl, // faviconURLを追加
 				}),
 			).unwrap()
 			onClose()

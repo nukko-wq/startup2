@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
 	request: Request,
-	{ params }: { params: { sectionId: string } },
+	{ params }: { params: Promise<{ sectionId: string }> },
 ) {
 	try {
 		const user = await getCurrentUser()
@@ -12,7 +12,8 @@ export async function GET(
 			return new NextResponse('Unauthorized', { status: 401 })
 		}
 
-		const { sectionId } = params
+		const resolvedParams = await params
+		const { sectionId } = resolvedParams
 
 		const resources = await prisma.resource.findMany({
 			where: {

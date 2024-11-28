@@ -22,10 +22,12 @@ export const createResource = createAsyncThunk(
 		title,
 		url,
 		sectionId,
+		faviconUrl,
 	}: {
 		title: string
 		url: string
 		sectionId: string
+		faviconUrl?: string
 	}) => {
 		const response = await fetch('/api/resources', {
 			method: 'POST',
@@ -36,6 +38,7 @@ export const createResource = createAsyncThunk(
 				title,
 				url,
 				sectionId,
+				faviconUrl,
 			}),
 		})
 

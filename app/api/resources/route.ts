@@ -10,7 +10,7 @@ export async function POST(request: Request) {
 		}
 
 		const json = await request.json()
-		const { title, url, sectionId } = json
+		const { title, url, sectionId, faviconUrl } = json
 
 		const section = await prisma.section.findUnique({
 			where: { id: sectionId },
@@ -32,6 +32,7 @@ export async function POST(request: Request) {
 			data: {
 				title,
 				url,
+				faviconUrl,
 				order: newOrder,
 				userId: user.id,
 				sectionId,
