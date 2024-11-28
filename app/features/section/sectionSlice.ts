@@ -68,6 +68,58 @@ export const deleteSection = createAsyncThunk(
 	},
 )
 
+export const renameSection = createAsyncThunk(
+	'section/renameSection',
+	async ({
+		sectionId,
+		name,
+		spaceId,
+	}: {
+		sectionId: string
+		name: string
+		spaceId: string
+	}) => {
+		const response = await fetch(`/api/sections/${sectionId}`, {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ name }),
+		})
+
+		if (!response.ok) {
+			throw new Error('セクション名の変更に失敗しました')
+		}
+
+		const data = await response.json()
+		return { section: data, spaceId }
+	},
+)
+
+export const reorderSection = createAsyncThunk(
+	'section/reorderSection',
+	async ({
+		sectionId,
+		newOrder,
+		spaceId,
+	}: { sectionId: string; newOrder: number; spaceId: string }) => {
+		const response = await fetch(`/api/sections/${sectionId}/reorder`, {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ order: newOrder }),
+		})
+
+		if (!response.ok) {
+			throw new Error('セクションの並び替えに失敗しました')
+		}
+
+		const data = await response.json()
+		return { section: data, spaceId }
+	},
+)
+
 const sectionSlice = createSlice({
 	name: 'section',
 	initialState,
@@ -119,6 +171,34 @@ const sectionSlice = createSlice({
 					),
 					loading: false,
 					error: null,
+				}
+			})
+			.addCase(renameSection.fulfilled, (state, action) => {
+				const { section, spaceId } = action.payload
+				const spaceState = state.sectionsBySpace[spaceId]
+				if (spaceState) {
+					const index = spaceState.sections.findIndex(
+						(s) => s.id === section.id,
+					)
+					if (index !== -1) {
+						spaceState.sections[index] = section
+					}
+				}
+			})
+			.addCase(reorderSection.fulfilled, (state, action) => {
+				const { section, spaceId } = action.payload
+				const spaceState = state.sectionsBySpace[spaceId]
+
+				if (spaceState) {
+					spaceState.sections = spaceState.sections
+						.map((s) => {
+							if (s.id === section.id) return section
+							if (s.order >= section.order && s.id !== section.id) {
+								return { ...s, order: s.order + 1 }
+							}
+							return s
+						})
+						.sort((a, b) => a.order - b.order)
 				}
 			})
 	},
