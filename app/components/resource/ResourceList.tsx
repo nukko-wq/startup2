@@ -50,18 +50,14 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 				<GridListItem
 					key={resource.id}
 					data-resource={JSON.stringify(resource)}
-					className="outline-none cursor-pointer"
+					className="outline-none cursor-pointer group/item"
 				>
-					<div className="grid grid-cols-[32px_1fr_74px] items-center p-1 border-b border-zinc-200 last:border-b-0 hover:bg-zinc-100 group">
+					<div className="grid grid-cols-[32px_1fr_74px] items-center p-1 border-b border-zinc-200 last:border-b-0 hover:bg-zinc-100">
 						<div
-							className="cursor-grab flex items-center opacity-0 group-hover:opacity-100 p-2"
+							className="cursor-grab flex items-center p-2 opacity-0 group-hover/item:opacity-100"
 							aria-label="Drag Wrapper"
 						>
-							<Button
-								className="cursor-grab"
-								slot="drag"
-								aria-label="ドラッグハンドル"
-							>
+							<Button className="cursor-grab" aria-label="ドラッグハンドル">
 								<GripVertical className="w-4 h-4 text-zinc-500" />
 							</Button>
 						</div>
@@ -78,7 +74,7 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 								</span>
 							</div>
 						</div>
-						<div className="flex items-center opacity-0 group-hover:opacity-100">
+						<div className="flex items-center opacity-0 group-hover/item:opacity-100">
 							<ResourceMenu />
 							<ResourceDeleteButton resourceId={resource.id} />
 						</div>
