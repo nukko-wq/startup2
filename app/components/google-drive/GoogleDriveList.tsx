@@ -4,8 +4,8 @@ import { Button, Input } from 'react-aria-components'
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from '@/app/store/store'
 import { fetchGoogleDriveFiles } from '@/app/features/googleDrive/googleDriveSlice'
-import ResourceIcon from '@/app/components/elements/ResourceIcon'
 import { useDebounce } from '@/app/hooks/useDebounce'
+import GoogleDriveListIcon from '@/app/components/google-drive/GoogleDriveListIcon'
 
 interface GoogleDriveListProps {
 	onSelect?: (file: {
@@ -62,31 +62,34 @@ const GoogleDriveList = ({ onSelect }: GoogleDriveListProps) => {
 					<h2 className="text-sm text-zinc-500 px-4">Recent</h2>
 					<div className="border-t border-zinc-200 flex-grow" />
 				</div>
-				<div className="overflow-y-auto overflow-x-hidden">
-					{loading && <div className="p-4 text-center">読み込み中...</div>}
-					{error && <div className="p-4 text-center text-red-500">{error}</div>}
-					<ul className="flex flex-col">
-						{files.map((file) => (
-							<li
-								key={file.id}
-								className="hover:bg-zinc-100 cursor-pointer group/item"
-							>
-								<Button
-									onPress={() => handleFileSelect(file)}
-									className="w-full p-2 outline-none"
+				{loading ? (
+					<div className="flex flex-grow items-center justify-center">
+						<div className="text-zinc-700">読み込み中...</div>
+					</div>
+				) : error ? (
+					<div className="p-4 text-center text-red-500">{error}</div>
+				) : (
+					<div className="overflow-y-auto overflow-x-hidden">
+						<ul className="flex flex-col">
+							{files.map((file) => (
+								<li
+									key={file.id}
+									className="h-[40px] flex items-center hover:bg-zinc-100 cursor-pointer group/item"
 								>
-									<div className="flex items-center gap-3">
-										<ResourceIcon
-											mimeType={file.mimeType}
-											isGoogleDrive={true}
-										/>
-										<span className="truncate text-sm">{file.name}</span>
-									</div>
-								</Button>
-							</li>
-						))}
-					</ul>
-				</div>
+									<Button
+										onPress={() => handleFileSelect(file)}
+										className="w-full p-2 outline-none"
+									>
+										<div className="flex items-center gap-2">
+											<GoogleDriveListIcon mimeType={file.mimeType} />
+											<span className="truncate text-sm">{file.name}</span>
+										</div>
+									</Button>
+								</li>
+							))}
+						</ul>
+					</div>
+				)}
 			</div>
 		</div>
 	)
