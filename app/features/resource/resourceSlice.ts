@@ -24,6 +24,7 @@ export const createResource = createAsyncThunk(
 		sectionId,
 		faviconUrl,
 		mimeType,
+		description,
 		isGoogleDrive,
 	}: {
 		title: string
@@ -31,6 +32,7 @@ export const createResource = createAsyncThunk(
 		sectionId: string
 		faviconUrl?: string
 		mimeType?: string
+		description?: string
 		isGoogleDrive?: boolean
 	}) => {
 		const response = await fetch('/api/resources', {
@@ -44,6 +46,7 @@ export const createResource = createAsyncThunk(
 				sectionId,
 				faviconUrl,
 				mimeType,
+				description,
 				isGoogleDrive,
 			}),
 		})
@@ -78,6 +81,40 @@ export const deleteResource = createAsyncThunk(
 
 		if (!response.ok) {
 			throw new Error('リソースの削除に失敗しました')
+		}
+
+		return response.json()
+	},
+)
+
+// リソース更新のThunk
+export const updateResource = createAsyncThunk(
+	'resource/updateResource',
+	async ({
+		id,
+		title,
+		url,
+		description,
+	}: {
+		id: string
+		title: string
+		url: string
+		description?: string
+	}) => {
+		const response = await fetch(`/api/resources/${id}`, {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				title,
+				url,
+				description,
+			}),
+		})
+
+		if (!response.ok) {
+			throw new Error('リソースの更新に失敗しました')
 		}
 
 		return response.json()
@@ -126,6 +163,16 @@ const resourceSlice = createSlice({
 					state.resourcesBySection[sectionId].resources =
 						state.resourcesBySection[sectionId].resources.filter(
 							(resource) => resource.id !== action.payload.id,
+						)
+				}
+			})
+			// updateResource
+			.addCase(updateResource.fulfilled, (state, action) => {
+				const sectionId = action.payload.sectionId
+				if (state.resourcesBySection[sectionId]) {
+					state.resourcesBySection[sectionId].resources =
+						state.resourcesBySection[sectionId].resources.map((resource) =>
+							resource.id === action.payload.id ? action.payload : resource,
 						)
 				}
 			})

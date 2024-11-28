@@ -77,6 +77,7 @@ const ResourceCreateForm = ({ sectionId, onClose }: Props) => {
 		title: string
 		url: string
 		mimeType: string
+		description: string
 		isGoogleDrive: boolean
 	}) => {
 		try {
@@ -86,6 +87,7 @@ const ResourceCreateForm = ({ sectionId, onClose }: Props) => {
 					url: file.url,
 					sectionId,
 					mimeType: file.mimeType,
+					description: file.description,
 					isGoogleDrive: true,
 				}),
 			).unwrap()
