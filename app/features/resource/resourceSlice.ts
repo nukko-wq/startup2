@@ -23,11 +23,15 @@ export const createResource = createAsyncThunk(
 		url,
 		sectionId,
 		faviconUrl,
+		mimeType,
+		isGoogleDrive,
 	}: {
 		title: string
 		url: string
 		sectionId: string
 		faviconUrl?: string
+		mimeType?: string
+		isGoogleDrive?: boolean
 	}) => {
 		const response = await fetch('/api/resources', {
 			method: 'POST',
@@ -39,6 +43,8 @@ export const createResource = createAsyncThunk(
 				url,
 				sectionId,
 				faviconUrl,
+				mimeType,
+				isGoogleDrive,
 			}),
 		})
 

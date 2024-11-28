@@ -6,6 +6,7 @@ import { Link } from 'lucide-react'
 import { useDispatch } from 'react-redux'
 import type { AppDispatch } from '@/app/store/store'
 import { createResource } from '@/app/features/resource/resourceSlice'
+import GoogleDriveList from '@/app/components/google-drive/GoogleDriveList'
 
 interface ResourceFormData {
 	url: string
@@ -72,6 +73,28 @@ const ResourceCreateForm = ({ sectionId, onClose }: Props) => {
 		}
 	}
 
+	const handleGoogleDriveFileSelect = async (file: {
+		title: string
+		url: string
+		mimeType: string
+		isGoogleDrive: boolean
+	}) => {
+		try {
+			await dispatch(
+				createResource({
+					title: file.title,
+					url: file.url,
+					sectionId,
+					mimeType: file.mimeType,
+					isGoogleDrive: true,
+				}),
+			).unwrap()
+			onClose()
+		} catch (error) {
+			console.error('リソースの作成に失敗しました:', error)
+		}
+	}
+
 	return (
 		<div className="flex w-full md:w-[600px] h-[468px]">
 			<div
@@ -83,6 +106,8 @@ const ResourceCreateForm = ({ sectionId, onClose }: Props) => {
 					className={`w-full text-muted-foreground p-2 flex items-center gap-2 outline-none ${
 						activeTab === 'url' ? 'bg-foreground/10' : ''
 					}`}
+					onPress={() => setActiveTab('url')}
+					aria-label="URL"
 				>
 					<Link className="w-[20px] h-[20px]" />
 					<div>URL</div>
@@ -91,6 +116,7 @@ const ResourceCreateForm = ({ sectionId, onClose }: Props) => {
 					className={`w-full text-muted-foreground p-2 flex items-center gap-1 outline-none ${
 						activeTab === 'drive' ? 'bg-foreground/10' : ''
 					}`}
+					onPress={() => setActiveTab('drive')}
 					aria-label="Google Drive"
 				>
 					<div className="flex items-center gap-2">
@@ -166,6 +192,9 @@ const ResourceCreateForm = ({ sectionId, onClose }: Props) => {
 						</div>
 					</div>
 				</Form>
+			)}
+			{activeTab === 'drive' && (
+				<GoogleDriveList onSelect={handleGoogleDriveFileSelect} />
 			)}
 		</div>
 	)
