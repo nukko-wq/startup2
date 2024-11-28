@@ -1,7 +1,7 @@
 'use client'
 
 import { AlertTriangle } from 'lucide-react'
-import React from 'react'
+import React, { useState } from 'react'
 import {
 	Button,
 	Dialog,
@@ -10,10 +10,48 @@ import {
 	Modal,
 	ModalOverlay,
 } from 'react-aria-components'
+import { deleteSection } from '@/app/features/section/sectionSlice'
+import { useDispatch, useSelector } from 'react-redux'
+import type { AppDispatch, RootState } from '@/app/store/store'
 
-const SectionDeleteDialog = () => {
+interface SectionDeleteDialogProps {
+	isOpen: boolean
+	onClose: () => void
+	sectionId: string
+}
+
+const SectionDeleteDialog = ({
+	isOpen,
+	onClose,
+	sectionId,
+}: SectionDeleteDialogProps) => {
+	const dispatch = useDispatch<AppDispatch>()
+	const [isDeleting, setIsDeleting] = useState(false)
+	const activeSpaceId = useSelector(
+		(state: RootState) => state.space.activeSpaceId,
+	)
+
+	const handleDelete = async () => {
+		if (!activeSpaceId) return
+
+		try {
+			setIsDeleting(true)
+			await dispatch(
+				deleteSection({
+					sectionId,
+					spaceId: activeSpaceId,
+				}),
+			).unwrap()
+			onClose()
+		} catch (error) {
+			console.error('セクションの削除に失敗しました:', error)
+		} finally {
+			setIsDeleting(false)
+		}
+	}
+
 	return (
-		<DialogTrigger>
+		<DialogTrigger isOpen={isOpen}>
 			<Button className="hidden">Open Dialog</Button>
 			<ModalOverlay className="fixed inset-0 z-10 overflow-y-auto bg-black/25 flex min-h-full items-center justify-center p-4 text-center backdrop-blur">
 				<Modal className="w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl">
@@ -34,16 +72,21 @@ const SectionDeleteDialog = () => {
 								</p>
 								<div className="mt-6 flex justify-end gap-2">
 									<Button
-										onPress={close}
+										onPress={() => {
+											close()
+											onClose()
+										}}
 										className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300 outline-none"
+										isDisabled={isDeleting}
 									>
 										キャンセル
 									</Button>
 									<Button
-										onPress={() => {}}
+										onPress={handleDelete}
 										className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 outline-none"
+										isDisabled={isDeleting}
 									>
-										削除
+										{isDeleting ? '削除中...' : '削除'}
 									</Button>
 								</div>
 							</>

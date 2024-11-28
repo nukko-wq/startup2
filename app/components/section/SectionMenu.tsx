@@ -9,12 +9,15 @@ import {
 	Popover,
 } from 'react-aria-components'
 import SectionDeleteDialog from '@/app/components/section/SectionDeleteDialog'
+import { useState } from 'react'
 
 interface SectionMenuProps {
 	sectionId: string
 }
 
 const SectionMenu = ({ sectionId }: SectionMenuProps) => {
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+
 	return (
 		<>
 			<MenuTrigger>
@@ -38,6 +41,7 @@ const SectionMenu = ({ sectionId }: SectionMenuProps) => {
 						<MenuItem
 							id="delete-section"
 							className="p-2 outline-none hover:bg-zinc-200 text-red-600 cursor-pointer"
+							onAction={() => setIsDeleteDialogOpen(true)}
 						>
 							<div className="flex items-center gap-2">
 								<Trash2 className="w-4 h-4" />
@@ -48,7 +52,11 @@ const SectionMenu = ({ sectionId }: SectionMenuProps) => {
 				</Popover>
 			</MenuTrigger>
 
-			<SectionDeleteDialog />
+			<SectionDeleteDialog
+				isOpen={isDeleteDialogOpen}
+				onClose={() => setIsDeleteDialogOpen(false)}
+				sectionId={sectionId}
+			/>
 		</>
 	)
 }
