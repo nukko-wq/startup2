@@ -3,6 +3,7 @@
 import React from 'react'
 import WorkspaceList from '@/app/components/workspace/WorkspaceList'
 import { Link } from 'react-aria-components'
+import SidebarMenu from '@/app/components/sidebar/SidebarMenu'
 
 const Sidebar = () => {
 	return (
@@ -14,6 +15,7 @@ const Sidebar = () => {
 				>
 					Startup
 				</Link>
+				<SidebarMenu />
 			</div>
 			<WorkspaceList />
 		</div>

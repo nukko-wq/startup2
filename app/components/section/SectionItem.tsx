@@ -18,11 +18,11 @@ const SectionItem = ({ section }: SectionItemProps) => {
 					<SectionNameEdit section={section} />
 				</div>
 				<div className="hidden md:flex">
-					<ResourceCreateButton />
+					<ResourceCreateButton sectionId={section.id} />
 					<SectionMenu sectionId={section.id} />
 				</div>
 			</div>
-			<ResourceList />
+			<ResourceList sectionId={section.id} />
 		</div>
 	)
 }
