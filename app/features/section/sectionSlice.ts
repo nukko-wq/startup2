@@ -53,6 +53,21 @@ export const createSection = createAsyncThunk(
 	},
 )
 
+export const deleteSection = createAsyncThunk(
+	'section/deleteSection',
+	async ({ sectionId, spaceId }: { sectionId: string; spaceId: string }) => {
+		const response = await fetch(`/api/sections/${sectionId}`, {
+			method: 'DELETE',
+		})
+
+		if (!response.ok) {
+			throw new Error('セクションの削除に失敗しました')
+		}
+
+		return { sectionId, spaceId }
+	},
+)
+
 const sectionSlice = createSlice({
 	name: 'section',
 	initialState,
@@ -90,6 +105,18 @@ const sectionSlice = createSlice({
 
 				state.sectionsBySpace[spaceId] = {
 					sections: [...currentSections, newSection],
+					loading: false,
+					error: null,
+				}
+			})
+			.addCase(deleteSection.fulfilled, (state, action) => {
+				const { sectionId, spaceId } = action.payload
+				const currentSections = state.sectionsBySpace[spaceId]?.sections || []
+
+				state.sectionsBySpace[spaceId] = {
+					sections: currentSections.filter(
+						(section) => section.id !== sectionId,
+					),
 					loading: false,
 					error: null,
 				}
