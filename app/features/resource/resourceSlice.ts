@@ -62,6 +62,22 @@ export const fetchResources = createAsyncThunk(
 	},
 )
 
+// リソース削除のThunk
+export const deleteResource = createAsyncThunk(
+	'resource/deleteResource',
+	async (resourceId: string) => {
+		const response = await fetch(`/api/resources/${resourceId}`, {
+			method: 'DELETE',
+		})
+
+		if (!response.ok) {
+			throw new Error('リソースの削除に失敗しました')
+		}
+
+		return response.json()
+	},
+)
+
 const resourceSlice = createSlice({
 	name: 'resource',
 	initialState,
@@ -95,6 +111,16 @@ const resourceSlice = createSlice({
 				const sectionId = action.payload.sectionId
 				if (state.resourcesBySection[sectionId]) {
 					state.resourcesBySection[sectionId].resources.push(action.payload)
+				}
+			})
+			// deleteResource
+			.addCase(deleteResource.fulfilled, (state, action) => {
+				const sectionId = action.payload.sectionId
+				if (state.resourcesBySection[sectionId]) {
+					state.resourcesBySection[sectionId].resources =
+						state.resourcesBySection[sectionId].resources.filter(
+							(resource) => resource.id !== action.payload.id,
+						)
 				}
 			})
 	},

@@ -6,9 +6,25 @@ import {
 	Tooltip,
 	TooltipTrigger,
 } from 'react-aria-components'
+import { useDispatch } from 'react-redux'
+import { deleteResource } from '@/app/features/resource/resourceSlice'
+import type { AppDispatch } from '@/app/store/store'
 
-const ResourceDeleteButton = () => {
+interface ResourceDeleteButtonProps {
+	resourceId: string
+}
+
+const ResourceDeleteButton = ({ resourceId }: ResourceDeleteButtonProps) => {
 	const [isTooltipVisible, setIsTooltipVisible] = useState(false)
+	const dispatch = useDispatch<AppDispatch>()
+
+	const handleDelete = async () => {
+		try {
+			await dispatch(deleteResource(resourceId)).unwrap()
+		} catch (error) {
+			console.error('リソースの削除に失敗しました:', error)
+		}
+	}
 
 	return (
 		<TooltipTrigger
@@ -17,7 +33,10 @@ const ResourceDeleteButton = () => {
 			delay={700}
 			closeDelay={0}
 		>
-			<Button className="p-2 mr-1 hover:bg-gray-200 transition-colors duration-200 rounded-full outline-none">
+			<Button
+				className="p-2 mr-1 hover:bg-gray-200 transition-colors duration-200 rounded-full outline-none"
+				onPress={handleDelete}
+			>
 				<Trash2 className="w-5 h-5 text-zinc-700" />
 			</Button>
 			{isTooltipVisible && (

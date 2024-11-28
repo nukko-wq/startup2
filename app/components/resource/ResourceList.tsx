@@ -80,7 +80,7 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 						</div>
 						<div className="flex items-center opacity-0 group-hover:opacity-100">
 							<ResourceMenu />
-							<ResourceDeleteButton />
+							<ResourceDeleteButton resourceId={resource.id} />
 						</div>
 					</div>
 				</GridListItem>
