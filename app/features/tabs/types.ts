@@ -13,3 +13,10 @@ export interface ExtensionMessage {
 export interface TabAction {
 	tabId?: number
 }
+
+export interface SaveTabAction extends TabAction {
+	title: string
+	url: string
+	faviconUrl?: string
+	sectionId: string
+}

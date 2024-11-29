@@ -88,7 +88,12 @@ const TabList = () => {
 							</div>
 							<div className="flex items-center">
 								<div className="opacity-0 group-hover:opacity-100">
-									<TabSaveButton />
+									<TabSaveButton
+										tabId={tab.id}
+										title={tab.title}
+										url={tab.url}
+										faviconUrl={tab.faviconUrl}
+									/>
 								</div>
 								<div className="opacity-0 group-hover:opacity-100">
 									<TabDeleteButton tabId={tab.id} />
