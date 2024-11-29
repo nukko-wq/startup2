@@ -6,6 +6,10 @@ export interface Tab {
 }
 
 export interface ExtensionMessage {
-	type: 'SWITCH_TO_TAB'
+	type: 'SWITCH_TO_TAB' | 'CLOSE_TAB'
 	tabId: number
+}
+
+export interface TabAction {
+	tabId?: number
 }

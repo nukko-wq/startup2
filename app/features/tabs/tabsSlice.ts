@@ -27,6 +27,18 @@ export const sendMessageToExtension = async (message: ExtensionMessage) => {
 	}
 }
 
+// タブを閉じる関数
+export const closeTab = async (tabId: number) => {
+	try {
+		await sendMessageToExtension({
+			type: 'CLOSE_TAB',
+			tabId: tabId,
+		})
+	} catch (error) {
+		console.error('Error closing tab:', error)
+	}
+}
+
 const tabsSlice = createSlice({
 	name: 'tabs',
 	initialState,

@@ -91,7 +91,7 @@ const TabList = () => {
 									<TabSaveButton />
 								</div>
 								<div className="opacity-0 group-hover:opacity-100">
-									<TabDeleteButton />
+									<TabDeleteButton tabId={tab.id} />
 								</div>
 							</div>
 						</div>
