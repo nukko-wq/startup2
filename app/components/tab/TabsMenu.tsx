@@ -6,7 +6,7 @@ import {
 	Popover,
 	Menu,
 } from 'react-aria-components'
-import { closeAllTabs } from '@/app/features/tabs/tabsSlice'
+import { closeAllTabs, sortTabsByDomain } from '@/app/features/tabs/tabsSlice'
 
 const TabsMenu = () => {
 	const handleCloseAllTabs = async () => {
@@ -14,6 +14,14 @@ const TabsMenu = () => {
 			await closeAllTabs()
 		} catch (error) {
 			console.error('Failed to close all tabs:', error)
+		}
+	}
+
+	const handleSortByDomain = async () => {
+		try {
+			await sortTabsByDomain()
+		} catch (error) {
+			console.error('Failed to sort tabs:', error)
 		}
 	}
 
@@ -29,7 +37,7 @@ const TabsMenu = () => {
 				<Popover>
 					<Menu className="bg-zinc-50 outline-none border rounded-lg shadow-md min-w-[200px]">
 						<MenuItem
-							onAction={() => {}}
+							onAction={handleSortByDomain}
 							className="p-2 outline-none hover:bg-zinc-200 cursor-pointer"
 						>
 							<div className="flex items-center gap-2">

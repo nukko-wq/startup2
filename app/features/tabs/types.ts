@@ -6,8 +6,9 @@ export interface Tab {
 }
 
 export interface ExtensionMessage {
-	type: 'SWITCH_TO_TAB' | 'CLOSE_TAB' | 'CLOSE_ALL_TABS'
+	type: 'SWITCH_TO_TAB' | 'CLOSE_TAB' | 'CLOSE_ALL_TABS' | 'SORT_TABS_BY_DOMAIN'
 	tabId?: number
+	tabs?: Tab[]
 }
 
 export interface TabAction {

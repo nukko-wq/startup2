@@ -50,6 +50,31 @@ export const closeAllTabs = async () => {
 	}
 }
 
+// URLからドメインを取得するヘルパー関数
+const getDomain = (url: string) => {
+	try {
+		const urlObj = new URL(url)
+		return urlObj.hostname
+	} catch (error) {
+		return url
+	}
+}
+
+// タブをドメインでソートする関数
+export const sortTabsByDomain = async () => {
+	try {
+		// 現在のタブを取得してソート
+		const response = await fetch('http://localhost:3000/api/extension/id')
+		const { extensionId } = await response.json()
+
+		await sendMessageToExtension({
+			type: 'SORT_TABS_BY_DOMAIN',
+		})
+	} catch (error) {
+		console.error('Error sorting tabs by domain:', error)
+	}
+}
+
 const tabsSlice = createSlice({
 	name: 'tabs',
 	initialState,
