@@ -39,6 +39,17 @@ export const closeTab = async (tabId: number) => {
 	}
 }
 
+// すべてのタブを閉じる関数
+export const closeAllTabs = async () => {
+	try {
+		await sendMessageToExtension({
+			type: 'CLOSE_ALL_TABS',
+		})
+	} catch (error) {
+		console.error('Error closing all tabs:', error)
+	}
+}
+
 const tabsSlice = createSlice({
 	name: 'tabs',
 	initialState,
