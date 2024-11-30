@@ -6,7 +6,12 @@ export interface Tab {
 }
 
 export interface ExtensionMessage {
-	type: 'SWITCH_TO_TAB' | 'CLOSE_TAB' | 'CLOSE_ALL_TABS' | 'SORT_TABS_BY_DOMAIN'
+	type:
+		| 'SWITCH_TO_TAB'
+		| 'CLOSE_TAB'
+		| 'CLOSE_ALL_TABS'
+		| 'SORT_TABS_BY_DOMAIN'
+		| 'REQUEST_TABS_UPDATE'
 	tabId?: number
 	tabs?: Tab[]
 }

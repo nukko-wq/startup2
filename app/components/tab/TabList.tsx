@@ -16,17 +16,29 @@ const TabList = () => {
 	const tabs = useSelector((state: RootState) => state.tabs.tabs)
 
 	useEffect(() => {
-		// 拡張機能からのメッセージを受け取る
 		const handleMessage = (event: MessageEvent) => {
 			if (
 				event.data.source === 'startup-extension' &&
 				event.data.type === 'TABS_UPDATED'
 			) {
+				console.log('Received tabs update:', event.data.tabs)
 				dispatch(setTabs(event.data.tabs))
 			}
 		}
 
 		window.addEventListener('message', handleMessage)
+
+		const requestInitialTabs = async () => {
+			try {
+				await sendMessageToExtension({
+					type: 'REQUEST_TABS_UPDATE',
+				})
+			} catch (error) {
+				console.error('Error requesting initial tabs:', error)
+			}
+		}
+		requestInitialTabs()
+
 		return () => window.removeEventListener('message', handleMessage)
 	}, [dispatch])
 
