@@ -115,6 +115,83 @@ export const renameSpace = createAsyncThunk(
 	},
 )
 
+interface ReorderSpaceResponse {
+	updatedSpaces: Space[]
+	workspaceId: string
+}
+
+export const reorderSpace = createAsyncThunk<
+	ReorderSpaceResponse,
+	{
+		spaceId: string
+		workspaceId: string
+		newOrder: number
+		allOrders: { spaceId: string; newOrder: number }[]
+	}
+>(
+	'space/reorderSpace',
+	async ({ spaceId, workspaceId, newOrder, allOrders }) => {
+		const response = await fetch(
+			`/api/workspaces/${workspaceId}/spaces/${spaceId}/reorder`,
+			{
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					order: newOrder,
+					allOrders,
+				}),
+			},
+		)
+
+		if (!response.ok) {
+			throw new Error('スペースの並び替えに失敗しました')
+		}
+
+		const data = await response.json()
+		return {
+			updatedSpaces: data.updatedSpaces,
+			workspaceId,
+		}
+	},
+)
+
+export const moveSpace = createAsyncThunk(
+	'space/moveSpace',
+	async ({
+		spaceId,
+		sourceWorkspaceId,
+		targetWorkspaceId,
+		newOrder,
+	}: {
+		spaceId: string
+		sourceWorkspaceId: string
+		targetWorkspaceId: string
+		newOrder: number
+	}) => {
+		const response = await fetch(
+			`/api/workspaces/${sourceWorkspaceId}/spaces/${spaceId}/move`,
+			{
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					targetWorkspaceId,
+					order: newOrder,
+				}),
+			},
+		)
+
+		if (!response.ok) {
+			throw new Error('スペースの移動に失敗しました')
+		}
+
+		return response.json()
+	},
+)
+
 const spaceSlice = createSlice({
 	name: 'space',
 	initialState,
@@ -234,6 +311,32 @@ const spaceSlice = createSlice({
 					if (index !== -1) {
 						workspaceState.spaces[index] = space
 					}
+				}
+			})
+			.addCase(reorderSpace.fulfilled, (state, action) => {
+				const { updatedSpaces, workspaceId } = action.payload
+				if (state.spacesByWorkspace[workspaceId]) {
+					state.spacesByWorkspace[workspaceId].spaces = updatedSpaces
+				}
+			})
+			.addCase(moveSpace.fulfilled, (state, action) => {
+				const { movedSpace, sourceWorkspaceId, targetWorkspaceId } =
+					action.payload
+
+				// 元のワークスペースからスペースを削除
+				if (state.spacesByWorkspace[sourceWorkspaceId]) {
+					state.spacesByWorkspace[sourceWorkspaceId].spaces =
+						state.spacesByWorkspace[sourceWorkspaceId].spaces.filter(
+							(space) => space.id !== movedSpace.id,
+						)
+				}
+
+				// 新しいワークスペースにスペースを追加
+				if (state.spacesByWorkspace[targetWorkspaceId]) {
+					state.spacesByWorkspace[targetWorkspaceId].spaces = [
+						...state.spacesByWorkspace[targetWorkspaceId].spaces,
+						movedSpace,
+					].sort((a, b) => a.order - b.order)
 				}
 			})
 	},
