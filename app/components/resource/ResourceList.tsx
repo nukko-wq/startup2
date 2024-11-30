@@ -49,7 +49,10 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 			if (!resource) return []
 			return [
 				{
-					'resource-item': JSON.stringify(resource),
+					'resource-item': JSON.stringify({
+						...resource,
+						sectionId,
+					}),
 					'text/plain': resource.title,
 				},
 			]
@@ -115,21 +118,29 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 			const item = e.items[0] as TextDropItem
 			if (!item.types.has('resource-item')) return
 
-			const resourceData = JSON.parse(await item.getText('resource-item'))
-			const targetIndex = e.target.key
-				? resources.findIndex((r) => r.id === e.target.key)
-				: resources.length
-
-			const newOrder = calculateNewOrder(resources, targetIndex)
-
 			try {
+				const resourceData = JSON.parse(await item.getText('resource-item'))
+				const targetIndex = e.target.key
+					? resources.findIndex((r) => r.id === e.target.key)
+					: resources.length
+
+				// 同じセクション内での移動は無視
+				if (resourceData.sectionId === sectionId) return
+
+				// リソースの移動を実行
 				await dispatch(
 					moveResource({
 						resourceId: resourceData.id,
 						targetSectionId: sectionId,
-						newOrder,
+						newOrder: targetIndex,
 					}),
 				).unwrap()
+
+				// 両方のセクションのリソースを再取得
+				await Promise.all([
+					dispatch(fetchResources(sectionId)),
+					dispatch(fetchResources(resourceData.sectionId)),
+				])
 			} catch (error) {
 				console.error('Failed to move resource:', error)
 			}
@@ -171,8 +182,10 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 			{(resource) => (
 				<GridListItem
 					key={resource.id}
-					data-resource={JSON.stringify(resource)}
+					id={resource.id}
+					textValue={resource.title}
 					className="flex flex-grow flex-col outline-none cursor-pointer group/item"
+					data-resource={JSON.stringify(resource)}
 				>
 					<div className="grid grid-cols-[32px_1fr_74px] items-center px-1 pt-1 pb-2 border-b border-zinc-200 last:border-b-0 hover:bg-zinc-100">
 						<div
