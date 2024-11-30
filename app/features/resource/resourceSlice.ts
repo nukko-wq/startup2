@@ -228,27 +228,38 @@ const resourceSlice = createSlice({
 			.addCase(reorderResource.fulfilled, (state, action) => {
 				const { sectionId } = action.payload
 				if (state.resourcesBySection[sectionId]) {
-					state.resourcesBySection[sectionId].resources =
-						state.resourcesBySection[sectionId].resources.map((resource) =>
-							resource.id === action.payload.id ? action.payload : resource,
-						)
+					const resources = state.resourcesBySection[sectionId].resources
+					const updatedResource = action.payload
+					const newResources = resources
+						.filter((r) => r.id !== updatedResource.id)
+						.concat(updatedResource)
+						.sort((a, b) => a.order - b.order)
+
+					state.resourcesBySection[sectionId].resources = newResources
 				}
 			})
 			// moveResource
 			.addCase(moveResource.fulfilled, (state, action) => {
 				const { sectionId: oldSectionId, targetSectionId } = action.payload
+				const updatedResource = action.payload
+
 				// 古いセクションから削除
 				if (state.resourcesBySection[oldSectionId]) {
 					state.resourcesBySection[oldSectionId].resources =
 						state.resourcesBySection[oldSectionId].resources.filter(
-							(resource) => resource.id !== action.payload.id,
+							(resource) => resource.id !== updatedResource.id,
 						)
 				}
-				// 新しいセクションに追加
+
+				// 新しいセクションに追加して並び替え
 				if (state.resourcesBySection[targetSectionId]) {
-					state.resourcesBySection[targetSectionId].resources.push(
-						action.payload,
-					)
+					const resources = state.resourcesBySection[targetSectionId].resources
+					const newResources = resources
+						.filter((r) => r.id !== updatedResource.id)
+						.concat(updatedResource)
+						.sort((a, b) => a.order - b.order)
+
+					state.resourcesBySection[targetSectionId].resources = newResources
 				}
 			})
 	},
