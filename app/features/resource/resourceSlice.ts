@@ -162,13 +162,20 @@ export const moveResource = createAsyncThunk(
 		resourceId,
 		targetSectionId,
 		newOrder,
-	}: { resourceId: string; targetSectionId: string; newOrder: number }) => {
+	}: {
+		resourceId: string
+		targetSectionId: string
+		newOrder: number
+	}) => {
 		const response = await fetch(`/api/resources/${resourceId}/move`, {
 			method: 'PATCH',
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify({ sectionId: targetSectionId, order: newOrder }),
+			body: JSON.stringify({
+				sectionId: targetSectionId,
+				order: newOrder,
+			}),
 		})
 
 		if (!response.ok) {
@@ -244,26 +251,23 @@ const resourceSlice = createSlice({
 			})
 			// moveResource
 			.addCase(moveResource.fulfilled, (state, action) => {
-				const { sectionId: oldSectionId, targetSectionId } = action.payload
-				const updatedResource = action.payload
+				const { movedResource, sourceSectionId, targetSectionId } =
+					action.payload
 
-				// 古いセクションから削除
-				if (state.resourcesBySection[oldSectionId]) {
-					state.resourcesBySection[oldSectionId].resources =
-						state.resourcesBySection[oldSectionId].resources.filter(
-							(resource) => resource.id !== updatedResource.id,
+				// 古いセクションからリソースを削除
+				if (state.resourcesBySection[sourceSectionId]) {
+					state.resourcesBySection[sourceSectionId].resources =
+						state.resourcesBySection[sourceSectionId].resources.filter(
+							(resource) => resource.id !== movedResource.id,
 						)
 				}
 
-				// 新しいセクションに追加して並び替え
+				// 新しいセクションにリソースを追加
 				if (state.resourcesBySection[targetSectionId]) {
-					const resources = state.resourcesBySection[targetSectionId].resources
-					const newResources = resources
-						.filter((r) => r.id !== updatedResource.id)
-						.concat(updatedResource)
-						.sort((a, b) => a.order - b.order)
-
-					state.resourcesBySection[targetSectionId].resources = newResources
+					state.resourcesBySection[targetSectionId].resources = [
+						...state.resourcesBySection[targetSectionId].resources,
+						movedResource,
+					].sort((a, b) => a.order - b.order)
 				}
 			})
 	},
