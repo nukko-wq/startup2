@@ -3,7 +3,8 @@ import { Button, Form, Input, Label, TextField } from 'react-aria-components'
 import { Controller, useForm } from 'react-hook-form'
 import { useDispatch } from 'react-redux'
 import type { AppDispatch } from '@/app/store/store'
-import { createSpace } from '@/app/features/space/spaceSlice'
+import { createSpace, setActiveSpace } from '@/app/features/space/spaceSlice'
+import { createSection } from '@/app/features/section/sectionSlice'
 
 interface SpaceCreateFormProps {
 	onClose: () => void
@@ -32,15 +33,28 @@ const SpaceCreateForm = ({ onClose, workspaceId }: SpaceCreateFormProps) => {
 	const onSubmit = async (data: FormData) => {
 		setIsSubmitting(true)
 		try {
-			await dispatch(
+			const result = await dispatch(
 				createSpace({
 					name: data.name,
 					workspaceId,
 				}),
 			).unwrap()
-			onClose()
-		} catch (error) {
-			console.error('Failed to create space:', error)
+
+			try {
+				await dispatch(createSection(result.space.id)).unwrap()
+
+				try {
+					await dispatch(setActiveSpace(result.space.id)).unwrap()
+					onClose()
+				} catch (activeError) {
+					console.error('Failed to set active space:', activeError)
+					onClose()
+				}
+			} catch (sectionError) {
+				console.error('Failed to create section:', sectionError)
+			}
+		} catch (spaceError) {
+			console.error('Failed to create space:', spaceError)
 		} finally {
 			setIsSubmitting(false)
 		}

@@ -6,6 +6,23 @@ export interface Tab {
 }
 
 export interface ExtensionMessage {
-	type: 'SWITCH_TO_TAB'
-	tabId: number
+	type:
+		| 'SWITCH_TO_TAB'
+		| 'CLOSE_TAB'
+		| 'CLOSE_ALL_TABS'
+		| 'SORT_TABS_BY_DOMAIN'
+		| 'REQUEST_TABS_UPDATE'
+	tabId?: number
+	tabs?: Tab[]
+}
+
+export interface TabAction {
+	tabId?: number
+}
+
+export interface SaveTabAction extends TabAction {
+	title: string
+	url: string
+	faviconUrl?: string
+	sectionId: string
 }

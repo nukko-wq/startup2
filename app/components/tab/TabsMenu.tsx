@@ -1,8 +1,30 @@
-import { EllipsisVertical, FilePlus, Menu, Trash2 } from 'lucide-react'
-import React from 'react'
-import { Button, MenuItem, MenuTrigger, Popover } from 'react-aria-components'
+import { EllipsisVertical, FilePlus, Trash2 } from 'lucide-react'
+import {
+	Button,
+	MenuItem,
+	MenuTrigger,
+	Popover,
+	Menu,
+} from 'react-aria-components'
+import { closeAllTabs, sortTabsByDomain } from '@/app/features/tabs/tabsSlice'
 
 const TabsMenu = () => {
+	const handleCloseAllTabs = async () => {
+		try {
+			await closeAllTabs()
+		} catch (error) {
+			console.error('Failed to close all tabs:', error)
+		}
+	}
+
+	const handleSortByDomain = async () => {
+		try {
+			await sortTabsByDomain()
+		} catch (error) {
+			console.error('Failed to sort tabs:', error)
+		}
+	}
+
 	return (
 		<>
 			<MenuTrigger>
@@ -15,7 +37,7 @@ const TabsMenu = () => {
 				<Popover>
 					<Menu className="bg-zinc-50 outline-none border rounded-lg shadow-md min-w-[200px]">
 						<MenuItem
-							onAction={() => {}}
+							onAction={handleSortByDomain}
 							className="p-2 outline-none hover:bg-zinc-200 cursor-pointer"
 						>
 							<div className="flex items-center gap-2">
@@ -24,8 +46,8 @@ const TabsMenu = () => {
 							</div>
 						</MenuItem>
 						<MenuItem
-							onAction={() => {}}
 							className="p-2 outline-none hover:bg-zinc-200 text-red-600 cursor-pointer"
+							onAction={handleCloseAllTabs}
 						>
 							<div className="flex items-center gap-2">
 								<Trash2 className="w-4 h-4" />

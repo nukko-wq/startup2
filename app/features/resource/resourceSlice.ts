@@ -121,6 +121,71 @@ export const updateResource = createAsyncThunk(
 	},
 )
 
+// リソースの並び替えのThunk
+export const reorderResource = createAsyncThunk(
+	'resource/reorderResource',
+	async ({
+		resourceId,
+		sectionId,
+		newOrder,
+		allOrders,
+	}: {
+		resourceId: string
+		sectionId: string
+		newOrder: number
+		allOrders: { resourceId: string; newOrder: number }[]
+	}) => {
+		const response = await fetch(`/api/resources/${resourceId}/reorder`, {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				sectionId,
+				order: newOrder,
+				allOrders, // 全てのリソースの新しい順序情報を送信
+			}),
+		})
+
+		if (!response.ok) {
+			throw new Error('リソースの並び替えに失敗しました')
+		}
+
+		return response.json()
+	},
+)
+
+// リソースの移動のThunk
+export const moveResource = createAsyncThunk(
+	'resource/moveResource',
+	async ({
+		resourceId,
+		targetSectionId,
+		newOrder,
+	}: {
+		resourceId: string
+		targetSectionId: string
+		newOrder: number
+	}) => {
+		const response = await fetch(`/api/resources/${resourceId}/move`, {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				sectionId: targetSectionId,
+				order: newOrder,
+			}),
+		})
+
+		if (!response.ok) {
+			throw new Error('リソースの移動に失敗しました')
+		}
+
+		return response.json()
+	},
+)
+
 const resourceSlice = createSlice({
 	name: 'resource',
 	initialState,
@@ -174,6 +239,35 @@ const resourceSlice = createSlice({
 						state.resourcesBySection[sectionId].resources.map((resource) =>
 							resource.id === action.payload.id ? action.payload : resource,
 						)
+				}
+			})
+			// reorderResource
+			.addCase(reorderResource.fulfilled, (state, action) => {
+				const { sectionId, updatedResources } = action.payload
+				if (state.resourcesBySection[sectionId]) {
+					// サーバーから返された更新済みのリソース配列で置き換え
+					state.resourcesBySection[sectionId].resources = updatedResources
+				}
+			})
+			// moveResource
+			.addCase(moveResource.fulfilled, (state, action) => {
+				const { movedResource, sourceSectionId, targetSectionId } =
+					action.payload
+
+				// 古いセクションからリソースを削除
+				if (state.resourcesBySection[sourceSectionId]) {
+					state.resourcesBySection[sourceSectionId].resources =
+						state.resourcesBySection[sourceSectionId].resources.filter(
+							(resource) => resource.id !== movedResource.id,
+						)
+				}
+
+				// 新しいセクションにリソースを追加
+				if (state.resourcesBySection[targetSectionId]) {
+					state.resourcesBySection[targetSectionId].resources = [
+						...state.resourcesBySection[targetSectionId].resources,
+						movedResource,
+					].sort((a, b) => a.order - b.order)
 				}
 			})
 	},
