@@ -1,7 +1,7 @@
 'use client'
 
 import { Diamond, GripVertical } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Button, GridList, GridListItem } from 'react-aria-components'
 import { useDispatch, useSelector } from 'react-redux'
 import type { RootState } from '@/app/store/store'
@@ -14,6 +14,11 @@ import TabsMenu from './TabsMenu'
 const TabList = () => {
 	const dispatch = useDispatch()
 	const tabs = useSelector((state: RootState) => state.tabs.tabs)
+	const [isExtensionInstalled, setIsExtensionInstalled] = useState(true)
+
+	useEffect(() => {
+		setIsExtensionInstalled(!!window.chrome?.runtime)
+	}, [])
 
 	useEffect(() => {
 		const handleMessage = (event: MessageEvent) => {
@@ -49,6 +54,24 @@ const TabList = () => {
 				tabId: tab.id,
 			})
 		}
+	}
+
+	if (!isExtensionInstalled) {
+		return (
+			<div className="flex-grow py-5 pr-[16px] pl-[32px] max-w-[920px]">
+				<div className="flex items-center justify-between gap-2 ml-4 mb-2">
+					<div className="flex items-center gap-2">
+						<Diamond className="w-6 h-6" />
+						<div className="text-[17px] text-zinc-700">Tabs</div>
+					</div>
+				</div>
+				<div className="flex items-center pl-4">
+					<p>
+						Chrome拡張機能がインストールされていると、開いているタブを表示できます。
+					</p>
+				</div>
+			</div>
+		)
 	}
 
 	return (

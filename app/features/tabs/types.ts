@@ -11,9 +11,11 @@ export interface ExtensionMessage {
 		| 'CLOSE_TAB'
 		| 'CLOSE_ALL_TABS'
 		| 'SORT_TABS_BY_DOMAIN'
+		| 'FIND_TAB'
+		| 'CREATE_TAB'
 		| 'REQUEST_TABS_UPDATE'
 	tabId?: number
-	tabs?: Tab[]
+	url?: string
 }
 
 export interface TabAction {
@@ -25,4 +27,10 @@ export interface SaveTabAction extends TabAction {
 	url: string
 	faviconUrl?: string
 	sectionId: string
+}
+
+export interface ExtensionResponse {
+	tabId?: number
+	success?: boolean
+	error?: string
 }

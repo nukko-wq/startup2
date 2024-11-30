@@ -23,6 +23,7 @@ import {
 	moveResource,
 } from '@/app/features/resource/resourceSlice'
 import type { Resource } from '@prisma/client'
+import { sendMessageToExtension } from '@/app/features/tabs/tabsSlice'
 
 interface ResourceListProps {
 	sectionId: string
@@ -158,6 +159,38 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 		return prevOrder + (nextOrder - prevOrder) / 2
 	}
 
+	const handleResourceClick = async (resource: Resource) => {
+		try {
+			// まず現在のウィンドウの既存のタブを探す
+			const response = await sendMessageToExtension({
+				type: 'FIND_TAB',
+				url: resource.url,
+			})
+
+			if (response?.tabId) {
+				// タブが見つかった場合は、そのタブに切り替え
+				const switchResponse = await sendMessageToExtension({
+					type: 'SWITCH_TO_TAB',
+					tabId: response.tabId,
+				})
+
+				if (switchResponse?.success) {
+					return
+				}
+			}
+
+			// タブが見つからないか、切り替えに失敗した場合は新しいタブを作成
+			await sendMessageToExtension({
+				type: 'CREATE_TAB',
+				url: resource.url,
+			})
+		} catch (error) {
+			console.error('Failed to handle resource click:', error)
+			// エラーの場合はフォールバックとして直接開く
+			window.open(resource.url, '_blank')
+		}
+	}
+
 	/*
 	if (loading) {
 		return <div>読み込み中...</div>
@@ -187,6 +220,7 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 					textValue={resource.title}
 					className="flex flex-grow flex-col outline-none cursor-pointer group/item"
 					data-resource={JSON.stringify(resource)}
+					onAction={() => handleResourceClick(resource)}
 				>
 					<div className="grid grid-cols-[32px_1fr_74px] items-center px-1 pt-1 pb-2 border-b border-zinc-200 last:border-b-0 hover:bg-zinc-100">
 						<div
