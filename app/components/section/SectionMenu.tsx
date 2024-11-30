@@ -28,10 +28,10 @@ const SectionMenu = ({ sectionId }: SectionMenuProps) => {
 					<EllipsisVertical className="w-6 h-6 text-zinc-700" />
 				</Button>
 				<Popover>
-					<Menu className="bg-zinc-50 outline-none border rounded-lg shadow-md min-w-[200px]">
+					<Menu className="bg-zinc-50 outline-none border rounded-lg shadow-md min-w-[200px] text-sm">
 						<MenuItem
 							id="add-resource"
-							className="p-2 outline-none hover:bg-zinc-200 cursor-pointer"
+							className="pl-3 pr-2 py-2 outline-none hover:bg-zinc-100 cursor-pointer rounded-t-lg"
 						>
 							<div className="flex items-center gap-2">
 								<FilePlus className="w-4 h-4" />
@@ -40,7 +40,7 @@ const SectionMenu = ({ sectionId }: SectionMenuProps) => {
 						</MenuItem>
 						<MenuItem
 							id="delete-section"
-							className="p-2 outline-none hover:bg-zinc-200 text-red-600 cursor-pointer"
+							className="pl-3 pr-2 py-2 outline-none hover:bg-zinc-100 text-red-600 cursor-pointer rounded-b-lg"
 							onAction={() => setIsDeleteDialogOpen(true)}
 						>
 							<div className="flex items-center gap-2">

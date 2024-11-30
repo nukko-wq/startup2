@@ -44,7 +44,7 @@ const HeaderMenu = () => {
 					<Menu className="bg-zinc-50 outline-none border rounded-lg shadow-md min-w-[200px] text-sm">
 						<MenuItem
 							onAction={() => setIsRenameDialogOpen(true)}
-							className="pl-4 pr-2 py-2 outline-none hover:bg-zinc-200 cursor-pointer"
+							className="pl-3 pr-2 py-2 outline-none hover:bg-zinc-100 cursor-pointer"
 						>
 							<div className="flex items-center gap-2">
 								<Pencil className="w-4 h-4" />
@@ -53,7 +53,7 @@ const HeaderMenu = () => {
 						</MenuItem>
 						<MenuItem
 							onAction={() => setIsDeleteDialogOpen(true)}
-							className="pl-4 pr-2 py-2 outline-none hover:bg-zinc-200 cursor-pointer text-red-600"
+							className="pl-3 pr-2 py-2 outline-none hover:bg-zinc-100 cursor-pointer text-red-600"
 						>
 							<div className="flex items-center gap-2">
 								<Trash2 className="w-4 h-4" />
