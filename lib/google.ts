@@ -1,8 +1,13 @@
 import { google } from 'googleapis'
 import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 
 export async function getGoogleAuth() {
 	const session = await auth()
+	if (!session?.user?.id) {
+		throw new Error('ユーザーが見つかりません')
+	}
+
 	if (!session?.accessToken) {
 		throw new Error('アクセストークンが見つかりません')
 	}
@@ -20,9 +25,30 @@ export async function getGoogleAuth() {
 
 	oauth2Client.on('tokens', async (tokens) => {
 		if (tokens.access_token) {
-			console.log('Token refreshed')
+			await prisma.account.update({
+				where: {
+					provider_providerAccountId: {
+						provider: 'google',
+						providerAccountId: session.user.id,
+					},
+				},
+				data: {
+					access_token: tokens.access_token,
+					expires_at: Math.floor(Date.now() / 1000 + 3600),
+				},
+			})
 		}
 	})
+
+	if (session.expiresAt && session.expiresAt * 1000 < Date.now()) {
+		try {
+			const { credentials } = await oauth2Client.refreshAccessToken()
+			oauth2Client.setCredentials(credentials)
+		} catch (error) {
+			console.error('Failed to refresh token:', error)
+			throw new Error('トークンの更新に失敗しました')
+		}
+	}
 
 	return oauth2Client
 }

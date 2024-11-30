@@ -19,6 +19,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 						'https://www.googleapis.com/auth/drive.readonly',
 						'https://www.googleapis.com/auth/drive.metadata.readonly',
 					].join(' '),
+					access_type: 'offline',
 				},
 			},
 		}),

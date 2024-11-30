@@ -21,13 +21,6 @@ export async function GET(request: Request) {
 			return NextResponse.json({ error: 'ログインが必要です' }, { status: 401 })
 		}
 
-		if (!session.accessToken) {
-			return NextResponse.json(
-				{ error: 'Google認証が必要です' },
-				{ status: 401 },
-			)
-		}
-
 		try {
 			const auth = await getGoogleAuth()
 			const drive = google.drive({ version: 'v3', auth })
@@ -51,6 +44,18 @@ export async function GET(request: Request) {
 		} catch (error) {
 			console.error('Google Drive API error:', error)
 			const apiError = error as GoogleApiError
+
+			if (
+				(error as GoogleApiError).message === 'トークンの更新に失敗しました'
+			) {
+				return NextResponse.json(
+					{
+						error:
+							'セッションの有効期限が切れました。再度ログインしてください。',
+					},
+					{ status: 401 },
+				)
+			}
 
 			if (apiError.code === 403 || apiError.status === 403) {
 				return NextResponse.json(
