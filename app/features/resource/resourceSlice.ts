@@ -128,13 +128,23 @@ export const reorderResource = createAsyncThunk(
 		resourceId,
 		sectionId,
 		newOrder,
-	}: { resourceId: string; sectionId: string; newOrder: number }) => {
+		allOrders,
+	}: {
+		resourceId: string
+		sectionId: string
+		newOrder: number
+		allOrders: { resourceId: string; newOrder: number }[]
+	}) => {
 		const response = await fetch(`/api/resources/${resourceId}/reorder`, {
 			method: 'PATCH',
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify({ sectionId, order: newOrder }),
+			body: JSON.stringify({
+				sectionId,
+				order: newOrder,
+				allOrders, // 全てのリソースの新しい順序情報を送信
+			}),
 		})
 
 		if (!response.ok) {
@@ -226,16 +236,10 @@ const resourceSlice = createSlice({
 			})
 			// reorderResource
 			.addCase(reorderResource.fulfilled, (state, action) => {
-				const { sectionId } = action.payload
+				const { sectionId, updatedResources } = action.payload
 				if (state.resourcesBySection[sectionId]) {
-					const resources = state.resourcesBySection[sectionId].resources
-					const updatedResource = action.payload
-					const newResources = resources
-						.filter((r) => r.id !== updatedResource.id)
-						.concat(updatedResource)
-						.sort((a, b) => a.order - b.order)
-
-					state.resourcesBySection[sectionId].resources = newResources
+					// サーバーから返された更新済みのリソース配列で置き換え
+					state.resourcesBySection[sectionId].resources = updatedResources
 				}
 			})
 			// moveResource

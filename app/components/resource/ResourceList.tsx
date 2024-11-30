@@ -71,18 +71,40 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 			const draggedResource = resources.find((r) => r.id === draggedResourceId)
 			if (!draggedResource) return
 
-			const targetIndex = e.target.key
-				? resources.findIndex((r) => r.id === e.target.key)
-				: resources.length
+			// ドロップ位置の計算
+			const dropIndex =
+				e.target.dropPosition === 'before'
+					? resources.findIndex((r) => r.id === e.target.key)
+					: resources.findIndex((r) => r.id === e.target.key) + 1
 
-			const newOrder = calculateNewOrder(resources, targetIndex)
+			// ドラッグ中のリソースを除いた配列を作成
+			const resourcesWithoutDragged = resources.filter(
+				(r) => r.id !== draggedResourceId,
+			)
+
+			// 新しい配列を作成（ドロップ位置にドラッグしたリソースを挿入）
+			const reorderedResources = [
+				...resourcesWithoutDragged.slice(0, dropIndex),
+				draggedResource,
+				...resourcesWithoutDragged.slice(dropIndex),
+			]
+
+			// 各リソースの新しいorder値を計算（インデックスベース）
+			const updatedOrders = reorderedResources.map((resource, index) => ({
+				resourceId: resource.id,
+				newOrder: index,
+			}))
 
 			try {
+				// ドラッグしたリソースの順序を更新
 				await dispatch(
 					reorderResource({
 						resourceId: draggedResource.id,
 						sectionId,
-						newOrder,
+						newOrder:
+							updatedOrders.find((r) => r.resourceId === draggedResource.id)
+								?.newOrder ?? 0,
+						allOrders: updatedOrders, // 全てのリソースの新しい順序情報
 					}),
 				).unwrap()
 			} catch (error) {
@@ -119,7 +141,9 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 		if (items.length === 0) return 0
 		if (targetIndex === 0) return items[0].order / 2
 		if (targetIndex >= items.length) return items[items.length - 1].order + 1
-		return (items[targetIndex - 1].order + items[targetIndex].order) / 2
+		const prevOrder = items[targetIndex - 1].order
+		const nextOrder = items[targetIndex].order
+		return prevOrder + (nextOrder - prevOrder) / 2
 	}
 
 	/*
