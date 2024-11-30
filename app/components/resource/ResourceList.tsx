@@ -121,7 +121,8 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 			try {
 				const resourceData = JSON.parse(await item.getText('resource-item'))
 				const targetIndex = e.target.key
-					? resources.findIndex((r) => r.id === e.target.key)
+					? resources.findIndex((r) => r.id === e.target.key) +
+						(e.target.dropPosition === 'after' ? 1 : 0)
 					: resources.length
 
 				// 同じセクション内での移動は無視
