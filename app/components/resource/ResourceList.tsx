@@ -6,13 +6,23 @@ import {
 	GridList,
 	GridListItem,
 	useDragAndDrop,
+	type TextDropItem,
 } from 'react-aria-components'
+import type {
+	DroppableCollectionInsertDropEvent,
+	DroppableCollectionReorderEvent,
+} from '@react-types/shared'
 import ResourceIcon from '@/app/components/elements/ResourceIcon'
 import ResourceDeleteButton from './ResourceDeleteButton'
 import ResourceMenu from './ResourceMenu'
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from '@/app/store/store'
-import { fetchResources } from '@/app/features/resource/resourceSlice'
+import {
+	fetchResources,
+	reorderResource,
+	moveResource,
+} from '@/app/features/resource/resourceSlice'
+import type { Resource } from '@prisma/client'
 
 interface ResourceListProps {
 	sectionId: string
@@ -33,7 +43,7 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 		dispatch(fetchResources(sectionId))
 	}, [dispatch, sectionId])
 
-	const dragAndDropHooks = useDragAndDrop({
+	const { dragAndDropHooks } = useDragAndDrop({
 		getItems(keys) {
 			const resource = resources.find((r) => r.id === Array.from(keys)[0])
 			if (!resource) return []
@@ -56,13 +66,61 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 				/>
 			)
 		},
-		onReorder(e) {
-			console.log(e)
+		onReorder: async (e: DroppableCollectionReorderEvent) => {
+			const draggedResourceId = Array.from(e.keys)[0]
+			const draggedResource = resources.find((r) => r.id === draggedResourceId)
+			if (!draggedResource) return
+
+			const targetIndex = e.target.key
+				? resources.findIndex((r) => r.id === e.target.key)
+				: resources.length
+
+			const newOrder = calculateNewOrder(resources, targetIndex)
+
+			try {
+				await dispatch(
+					reorderResource({
+						resourceId: draggedResource.id,
+						sectionId,
+						newOrder,
+					}),
+				).unwrap()
+			} catch (error) {
+				console.error('Failed to reorder resource:', error)
+			}
 		},
-		async onInsert(e) {
-			console.log(e)
+		onInsert: async (e: DroppableCollectionInsertDropEvent) => {
+			const item = e.items[0] as TextDropItem
+			if (!item.types.has('resource-item')) return
+
+			const resourceData = JSON.parse(await item.getText('resource-item'))
+			const targetIndex = e.target.key
+				? resources.findIndex((r) => r.id === e.target.key)
+				: resources.length
+
+			const newOrder = calculateNewOrder(resources, targetIndex)
+
+			try {
+				await dispatch(
+					moveResource({
+						resourceId: resourceData.id,
+						targetSectionId: sectionId,
+						newOrder,
+					}),
+				).unwrap()
+			} catch (error) {
+				console.error('Failed to move resource:', error)
+			}
 		},
 	})
+
+	// 新しい順序を計算するヘルパー関数
+	const calculateNewOrder = (items: Resource[], targetIndex: number) => {
+		if (items.length === 0) return 0
+		if (targetIndex === 0) return items[0].order / 2
+		if (targetIndex >= items.length) return items[items.length - 1].order + 1
+		return (items[targetIndex - 1].order + items[targetIndex].order) / 2
+	}
 
 	/*
 	if (loading) {
@@ -97,7 +155,11 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 							className="cursor-grab flex items-center p-2 opacity-0 group-hover/item:opacity-100"
 							aria-label="Drag Wrapper"
 						>
-							<Button className="cursor-grab" aria-label="ドラッグハンドル">
+							<Button
+								className="cursor-grab"
+								slot="drag"
+								aria-label="ドラッグハンドル"
+							>
 								<GripVertical className="w-4 h-4 text-zinc-500" />
 							</Button>
 						</div>
