@@ -1,6 +1,12 @@
 import { GripVertical } from 'lucide-react'
 import React, { useEffect } from 'react'
-import { Button, GridList, GridListItem } from 'react-aria-components'
+import {
+	Button,
+	DropIndicator,
+	GridList,
+	GridListItem,
+	useDragAndDrop,
+} from 'react-aria-components'
 import ResourceIcon from '@/app/components/elements/ResourceIcon'
 import ResourceDeleteButton from './ResourceDeleteButton'
 import ResourceMenu from './ResourceMenu'
@@ -27,6 +33,37 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 		dispatch(fetchResources(sectionId))
 	}, [dispatch, sectionId])
 
+	const dragAndDropHooks = useDragAndDrop({
+		getItems(keys) {
+			const resource = resources.find((r) => r.id === Array.from(keys)[0])
+			if (!resource) return []
+			return [
+				{
+					'resource-item': JSON.stringify(resource),
+					'text/plain': resource.title,
+				},
+			]
+		},
+		acceptedDragTypes: ['resource-item'],
+		getDropOperation: () => 'move',
+		renderDropIndicator(target) {
+			return (
+				<DropIndicator
+					target={target}
+					className={({ isDropTarget }) =>
+						`drop-indicator ${isDropTarget ? 'active' : ''}`
+					}
+				/>
+			)
+		},
+		onReorder(e) {
+			console.log(e)
+		},
+		async onInsert(e) {
+			console.log(e)
+		},
+	})
+
 	/*
 	if (loading) {
 		return <div>読み込み中...</div>
@@ -42,6 +79,7 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 			aria-label="Resources in section"
 			items={resources}
 			className="flex flex-col justify-center border-slate-400 rounded-md outline-none bg-white shadow-sm"
+			dragAndDropHooks={dragAndDropHooks}
 			renderEmptyState={() => (
 				<div className="flex flex-col justify-center items-center flex-grow h-[52px]">
 					<div className="text-gray-500">Add resources here</div>
