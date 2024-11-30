@@ -21,6 +21,8 @@ const TabList = () => {
 	}, [])
 
 	useEffect(() => {
+		if (!isExtensionInstalled) return
+
 		const handleMessage = (event: MessageEvent) => {
 			if (
 				event.data.source === 'startup-extension' &&
@@ -35,17 +37,26 @@ const TabList = () => {
 
 		const requestInitialTabs = async () => {
 			try {
-				await sendMessageToExtension({
+				if (!isExtensionInstalled) return
+				const result = await sendMessageToExtension({
 					type: 'REQUEST_TABS_UPDATE',
 				})
-			} catch (error) {
-				console.error('Error requesting initial tabs:', error)
+				if (!result.success && result.error !== 'Extension not installed') {
+					console.debug('Failed to request tabs:', result.error)
+				}
+			} catch (error: unknown) {
+				if (
+					error instanceof Error &&
+					error.message !== 'Extension not installed'
+				) {
+					console.debug('Error requesting initial tabs:', error)
+				}
 			}
 		}
 		requestInitialTabs()
 
 		return () => window.removeEventListener('message', handleMessage)
-	}, [dispatch])
+	}, [dispatch, isExtensionInstalled])
 
 	const handleTabAction = async (tab: Tab) => {
 		if (tab.id) {

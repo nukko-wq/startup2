@@ -17,6 +17,11 @@ const initialState: TabsState = {
 export const sendMessageToExtension = async (
 	message: ExtensionMessage,
 ): Promise<ExtensionResponse> => {
+	// 拡張機能が存在しない場合は静かに失敗
+	if (!window.chrome?.runtime) {
+		return { success: false, error: 'Extension not installed' }
+	}
+
 	try {
 		// ローカルストレージから拡張機能のIDを取得
 		const response = await fetch('http://localhost:3000/api/extension/id')
@@ -26,20 +31,26 @@ export const sendMessageToExtension = async (
 		const result = await chrome.runtime.sendMessage(extensionId, message)
 		return result
 	} catch (error) {
-		console.error('Error sending message to extension:', error)
-		throw error
+		// エラーをスローせずに結果を返す
+		return {
+			success: false,
+			error: error instanceof Error ? error.message : 'Unknown error',
+		}
 	}
 }
 
 // タブを閉じる関数
 export const closeTab = async (tabId: number) => {
 	try {
-		await sendMessageToExtension({
+		const result = await sendMessageToExtension({
 			type: 'CLOSE_TAB',
 			tabId: tabId,
 		})
+		if (!result.success) {
+			console.debug('Failed to close tab:', result.error)
+		}
 	} catch (error) {
-		console.error('Error closing tab:', error)
+		console.debug('Error closing tab:', error)
 	}
 }
 
