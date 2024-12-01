@@ -26,3 +26,11 @@
 	background: #3b82f6;
 	height: 2px;
 }
+
+body.dragging .space-create-button {
+	border: 2px solid #3b82f6;
+}
+
+body.dragging .space-create-button:hover {
+	border: 4px dashed #3b82f6;
+}

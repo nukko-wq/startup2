@@ -181,6 +181,12 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 				console.error('Failed to move space:', error)
 			}
 		},
+		onDragStart: () => {
+			document.body.classList.add('dragging')
+		},
+		onDragEnd: () => {
+			document.body.classList.remove('dragging')
+		},
 	})
 
 	if (workspaceSpaces.error)
