@@ -22,6 +22,7 @@ import {
 	type TextDropItem,
 } from 'react-aria-components'
 import SpaceMenu from '@/app/components/space/SpaceMenu'
+import CreateSpaceInWorkspace from './CreateSpaceInWorkspace'
 
 interface SpaceListProps {
 	workspaceId: string
@@ -194,7 +195,7 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 			className="flex flex-col outline-none min-h-[40px]"
 			renderEmptyState={() => (
 				<div className="h-full flex items-center justify-center text-gray-400 py-2">
-					Add Space to {/* Workspace Name */}
+					<CreateSpaceInWorkspace workspaceId={workspaceId} />
 				</div>
 			)}
 		>
