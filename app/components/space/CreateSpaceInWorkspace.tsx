@@ -7,6 +7,8 @@ import {
 	Modal,
 	ModalOverlay,
 } from 'react-aria-components'
+import { useSelector } from 'react-redux'
+import type { RootState } from '@/app/store/store'
 import SpaceCreateForm from './SpaceCreateForm'
 
 interface CreateSpaceInWorkspaceProps {
@@ -16,11 +18,20 @@ interface CreateSpaceInWorkspaceProps {
 const CreateSpaceInWorkspace = ({
 	workspaceId,
 }: CreateSpaceInWorkspaceProps) => {
+	// ワークスペース情報を取得
+	const workspace = useSelector(
+		(state: RootState) =>
+			state.workspace.workspaces.find((w) => w.id === workspaceId) ||
+			(state.workspace.defaultWorkspace?.id === workspaceId
+				? state.workspace.defaultWorkspace
+				: null),
+	)
+
 	return (
 		<DialogTrigger>
-			<Button className="w-full text-left px-5 py-4 text-sm text-gray-400 hover:bg-gray-700 flex items-center gap-1 border border-gray-700">
+			<Button className="w-full text-left pl-11 py-4 text-sm text-gray-400 hover:bg-gray-700 flex justify-start items-center gap-1 border border-gray-700 rounded-sm mt-2">
 				<Plus className="w-4 h-4" />
-				Add Space to Workspace
+				<span>Add Space to {workspace?.name || 'Workspace'}</span>
 			</Button>
 
 			<ModalOverlay className="fixed inset-0 z-10 overflow-y-auto bg-black/25 flex min-h-full items-center justify-center p-4 text-center backdrop-blur">

@@ -194,7 +194,7 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 			selectionMode="single"
 			className="flex flex-col outline-none min-h-[40px]"
 			renderEmptyState={() => (
-				<div className="h-full flex items-center justify-center text-gray-400 py-2">
+				<div className="ml-11 mr-4">
 					<CreateSpaceInWorkspace workspaceId={workspaceId} />
 				</div>
 			)}
