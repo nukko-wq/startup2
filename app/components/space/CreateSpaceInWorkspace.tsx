@@ -9,9 +9,15 @@ import {
 } from 'react-aria-components'
 import SpaceCreateForm from './SpaceCreateForm'
 
-const CreateSpaceInWorkspace = ({ workspaceId }: { workspaceId: string }) => {
+interface CreateSpaceInWorkspaceProps {
+	workspaceId: string
+}
+
+const CreateSpaceInWorkspace = ({
+	workspaceId,
+}: CreateSpaceInWorkspaceProps) => {
 	return (
-		<DialogTrigger isOpen={false} onOpenChange={() => {}}>
+		<DialogTrigger>
 			<Button className="w-full text-left px-5 py-4 text-sm text-gray-400 hover:bg-gray-700 flex items-center gap-1 border border-gray-700">
 				<Plus className="w-4 h-4" />
 				Add Space to Workspace
