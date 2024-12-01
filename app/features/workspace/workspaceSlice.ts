@@ -110,13 +110,12 @@ export const reorderWorkspace = createAsyncThunk(
 		workspaceId,
 		newOrder,
 	}: { workspaceId: string; newOrder: number }) => {
-		const adjustedOrder = newOrder + 1
 		const response = await fetch(`/api/workspaces/${workspaceId}/reorder`, {
 			method: 'PATCH',
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify({ order: adjustedOrder }),
+			body: JSON.stringify({ order: newOrder + 1 }),
 		})
 		if (!response.ok) {
 			throw new Error('ワークスペースの並び替えに失敗しました')
@@ -219,35 +218,33 @@ const workspaceSlice = createSlice({
 				const nonDefaultWorkspaces = state.workspaces.filter(
 					(w) => !w.isDefault,
 				)
-				const index = nonDefaultWorkspaces.findIndex(
-					(w) => w.id === updatedWorkspace.id,
-				)
 
-				if (index !== -1) {
-					state.workspaces = state.workspaces.map((workspace) => {
-						if (workspace.isDefault) return workspace
-						if (
-							workspace.order >= updatedWorkspace.order &&
-							workspace.id !== updatedWorkspace.id
-						) {
+				const oldOrder =
+					nonDefaultWorkspaces.find((w) => w.id === updatedWorkspace.id)
+						?.order || 0
+				const newOrder = updatedWorkspace.order
+
+				state.workspaces = state.workspaces.map((workspace) => {
+					if (workspace.isDefault) return workspace
+					if (workspace.id === updatedWorkspace.id) return updatedWorkspace
+
+					if (oldOrder < newOrder) {
+						if (workspace.order > oldOrder && workspace.order <= newOrder) {
+							return { ...workspace, order: workspace.order - 1 }
+						}
+					} else if (oldOrder > newOrder) {
+						if (workspace.order >= newOrder && workspace.order < oldOrder) {
 							return { ...workspace, order: workspace.order + 1 }
 						}
-						return workspace
-					})
-
-					const workspaceIndex = state.workspaces.findIndex(
-						(w) => w.id === updatedWorkspace.id,
-					)
-					if (workspaceIndex !== -1) {
-						state.workspaces[workspaceIndex] = updatedWorkspace
 					}
+					return workspace
+				})
 
-					state.workspaces.sort((a, b) => {
-						if (a.isDefault) return -1
-						if (b.isDefault) return 1
-						return a.order - b.order
-					})
-				}
+				state.workspaces.sort((a, b) => {
+					if (a.isDefault) return -1
+					if (b.isDefault) return 1
+					return a.order - b.order
+				})
 			})
 	},
 })

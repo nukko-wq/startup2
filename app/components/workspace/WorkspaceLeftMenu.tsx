@@ -42,11 +42,16 @@ const WorkspaceLeftMenu = ({ workspaceId }: WorkspaceLeftMenuProps) => {
 			</MenuTrigger>
 
 			<DialogTrigger isOpen={isOpen} onOpenChange={setIsOpen}>
-				<ModalOverlay className="fixed inset-0 bg-black/30 flex items-center justify-center">
-					<Modal className="bg-white p-6 rounded-lg">
+				<ModalOverlay className="fixed inset-0 bg-black/25 flex items-center justify-center p-4 text-center backdrop-blur">
+					<Modal className="w-full max-w-md bg-white p-6 rounded-lg align-middle shadow-xl text-left">
 						<Dialog className="outline-none">
 							{({ close }) => (
-								<SpaceCreateForm onClose={close} workspaceId={workspaceId} />
+								<div>
+									<h2 className="text-lg font-semibold mb-4">
+										新しいスペースを作成
+									</h2>
+									<SpaceCreateForm onClose={close} workspaceId={workspaceId} />
+								</div>
 							)}
 						</Dialog>
 					</Modal>

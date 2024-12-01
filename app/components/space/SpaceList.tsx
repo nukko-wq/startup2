@@ -22,6 +22,7 @@ import {
 	type TextDropItem,
 } from 'react-aria-components'
 import SpaceMenu from '@/app/components/space/SpaceMenu'
+import CreateSpaceInWorkspace from './CreateSpaceInWorkspace'
 
 interface SpaceListProps {
 	workspaceId: string
@@ -31,7 +32,7 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 	const dispatch = useDispatch<AppDispatch>()
 	const workspaceSpaces = useSelector(
 		(state: RootState) =>
-			state.space.spacesByWorkspace[workspaceId] || {
+			state.space.spacesByWorkspace[workspaceId] ?? {
 				spaces: [],
 				loading: false,
 				error: null,
@@ -152,6 +153,40 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 				console.error('Failed to move space:', error)
 			}
 		},
+		async onRootDrop(e) {
+			const item = e.items[0]
+			if (item.kind !== 'text') return
+
+			try {
+				const spaceItemText = await item.getText('space-item')
+				if (!spaceItemText) return
+
+				const spaceData = JSON.parse(spaceItemText)
+				if (spaceData.workspaceId === workspaceId) return
+
+				await dispatch(
+					moveSpace({
+						spaceId: spaceData.id,
+						sourceWorkspaceId: spaceData.workspaceId,
+						targetWorkspaceId: workspaceId,
+						newOrder: 0,
+					}),
+				).unwrap()
+
+				await Promise.all([
+					dispatch(fetchSpaces(workspaceId)),
+					dispatch(fetchSpaces(spaceData.workspaceId)),
+				])
+			} catch (error) {
+				console.error('Failed to move space:', error)
+			}
+		},
+		onDragStart: () => {
+			document.body.classList.add('dragging')
+		},
+		onDragEnd: () => {
+			document.body.classList.remove('dragging')
+		},
 	})
 
 	if (workspaceSpaces.error)
@@ -163,7 +198,12 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 			items={workspaceSpaces.spaces}
 			dragAndDropHooks={dragAndDropHooks}
 			selectionMode="single"
-			className="flex flex-col outline-none"
+			className="flex flex-col outline-none min-h-[40px]"
+			renderEmptyState={() => (
+				<div className="ml-11 mr-4">
+					<CreateSpaceInWorkspace workspaceId={workspaceId} />
+				</div>
+			)}
 		>
 			{(space) => (
 				<GridListItem
