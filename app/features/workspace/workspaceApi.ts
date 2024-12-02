@@ -1,5 +1,14 @@
+import type {
+	WorkspaceApiResponse,
+	CreateWorkspaceResponse,
+	DeleteWorkspaceResponse,
+	RenameWorkspaceResponse,
+	CreateDefaultWorkspaceResponse,
+	ReorderWorkspaceResponse,
+} from '@/app/features/workspace/types/workspace'
+
 export const workspaceApi = {
-	fetchWorkspaces: async () => {
+	fetchWorkspaces: async (): Promise<WorkspaceApiResponse[]> => {
 		const response = await fetch('/api/workspaces')
 		if (!response.ok) {
 			throw new Error('ワークスペースの取得に失敗しました')
@@ -7,7 +16,7 @@ export const workspaceApi = {
 		return response.json()
 	},
 
-	createWorkspace: async (name: string) => {
+	createWorkspace: async (name: string): Promise<CreateWorkspaceResponse> => {
 		const response = await fetch('/api/workspaces', {
 			method: 'POST',
 			headers: {
@@ -21,17 +30,22 @@ export const workspaceApi = {
 		return response.json()
 	},
 
-	deleteWorkspace: async (workspaceId: string) => {
+	deleteWorkspace: async (
+		workspaceId: string,
+	): Promise<DeleteWorkspaceResponse> => {
 		const response = await fetch(`/api/workspaces/${workspaceId}`, {
 			method: 'DELETE',
 		})
 		if (!response.ok) {
 			throw new Error('ワークスペースの削除に失敗しました')
 		}
-		return workspaceId
+		return { workspaceId }
 	},
 
-	renameWorkspace: async (workspaceId: string, name: string) => {
+	renameWorkspace: async (
+		workspaceId: string,
+		name: string,
+	): Promise<RenameWorkspaceResponse> => {
 		const response = await fetch(`/api/workspaces/${workspaceId}`, {
 			method: 'PATCH',
 			headers: {
@@ -45,7 +59,7 @@ export const workspaceApi = {
 		return response.json()
 	},
 
-	createDefaultWorkspace: async () => {
+	createDefaultWorkspace: async (): Promise<CreateDefaultWorkspaceResponse> => {
 		const response = await fetch('/api/workspaces/default', {
 			method: 'POST',
 			headers: {
@@ -59,7 +73,10 @@ export const workspaceApi = {
 		return response.json()
 	},
 
-	reorderWorkspace: async (workspaceId: string, newOrder: number) => {
+	reorderWorkspace: async (
+		workspaceId: string,
+		newOrder: number,
+	): Promise<ReorderWorkspaceResponse> => {
 		const response = await fetch(`/api/workspaces/${workspaceId}/reorder`, {
 			method: 'PATCH',
 			headers: {

@@ -4,14 +4,12 @@ import {
 	type PayloadAction,
 } from '@reduxjs/toolkit'
 import { workspaceApi } from './workspaceApi'
-
-interface WorkspaceState {
-	workspaces: Workspace[]
-	activeWorkspaceId: string | null
-	defaultWorkspace: Workspace | null
-	loading: boolean
-	error: string | null
-}
+import type {
+	Workspace,
+	WorkspaceState,
+	RenameWorkspacePayload,
+	ReorderWorkspacePayload,
+} from './types/workspace'
 
 const initialState: WorkspaceState = {
 	workspaces: [],
@@ -42,11 +40,6 @@ export const deleteWorkspace = createAsyncThunk(
 	},
 )
 
-interface RenameWorkspacePayload {
-	workspaceId: string
-	name: string
-}
-
 export const renameWorkspace = createAsyncThunk(
 	'workspace/renameWorkspace',
 	async ({ workspaceId, name }: RenameWorkspacePayload) => {
@@ -63,24 +56,10 @@ export const createDefaultWorkspace = createAsyncThunk(
 
 export const reorderWorkspace = createAsyncThunk(
 	'workspace/reorderWorkspace',
-	async ({
-		workspaceId,
-		newOrder,
-	}: { workspaceId: string; newOrder: number }) => {
+	async ({ workspaceId, newOrder }: ReorderWorkspacePayload) => {
 		return await workspaceApi.reorderWorkspace(workspaceId, newOrder)
 	},
 )
-
-// Workspaceインターフェースを追加
-interface Workspace {
-	id: string
-	name: string
-	order: number
-	isDefault: boolean
-	userId: string
-	createdAt: string
-	updatedAt: string
-}
 
 const workspaceSlice = createSlice({
 	name: 'workspace',
@@ -130,7 +109,7 @@ const workspaceSlice = createSlice({
 			})
 			.addCase(deleteWorkspace.fulfilled, (state, action) => {
 				state.workspaces = state.workspaces.filter(
-					(workspace) => workspace.id !== action.payload,
+					(workspace) => workspace.id !== action.payload.workspaceId,
 				)
 				state.loading = false
 			})
