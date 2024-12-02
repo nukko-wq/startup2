@@ -82,7 +82,7 @@ export const workspaceApi = {
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify({ order: newOrder + 1 }),
+			body: JSON.stringify({ order: newOrder }),
 		})
 		if (!response.ok) {
 			throw new Error('ワークスペースの並び替えに失敗しました')

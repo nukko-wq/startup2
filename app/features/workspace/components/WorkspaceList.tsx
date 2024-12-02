@@ -85,9 +85,18 @@ const WorkspaceList = () => {
 				const draggedWorkspace = workspaces.find((w) => w.id === draggedId)
 				const targetWorkspace = workspaces.find((w) => w.id === targetId)
 
-				if (draggedWorkspace?.isDefault || targetWorkspace?.isDefault) return
+				if (
+					!draggedWorkspace ||
+					!targetWorkspace ||
+					draggedWorkspace.isDefault ||
+					targetWorkspace.isDefault
+				)
+					return
 
-				const reorderableWorkspaces = workspaces.filter((w) => !w.isDefault)
+				const reorderableWorkspaces = workspaces
+					.filter((w) => !w.isDefault)
+					.sort((a, b) => a.order - b.order)
+
 				const draggedIndex = reorderableWorkspaces.findIndex(
 					(w) => w.id === draggedId,
 				)
@@ -98,7 +107,9 @@ const WorkspaceList = () => {
 				if (draggedIndex === -1 || targetIndex === -1) return
 
 				const newOrder =
-					e.target.dropPosition === 'before' ? targetIndex : targetIndex + 1
+					e.target.dropPosition === 'before'
+						? targetWorkspace.order
+						: targetWorkspace.order + 1
 
 				await dispatch(
 					reorderWorkspace({
@@ -147,10 +158,14 @@ const WorkspaceList = () => {
 				className="flex flex-col outline-none"
 			>
 				{(workspace) => (
-					<GridListItem key={workspace.id} className="outline-none">
+					<GridListItem
+						key={workspace.id}
+						className="outline-none"
+						aria-label={workspace.name}
+					>
 						<div className="flex items-center">
 							<div className="flex flex-col flex-grow justify-between">
-								<div className="flex items-center justify-between group">
+								<div className="flex items-center justify-between group min-h-[40px]">
 									<div className="flex items-center flex-grow">
 										<div className="flex items-center cursor-grab">
 											<Button
@@ -171,7 +186,7 @@ const WorkspaceList = () => {
 										</div>
 									</div>
 								</div>
-								<SpaceList workspaceId={workspace.id} />
+								{/* <SpaceList workspaceId={workspace.id} /> */}
 							</div>
 						</div>
 					</GridListItem>
