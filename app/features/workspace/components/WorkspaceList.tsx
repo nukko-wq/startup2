@@ -16,6 +16,7 @@ import { ChevronRight, Layers } from 'lucide-react'
 import DefaultWorkSpaceRightMenu from '@/app/features/workspace/components/DefaultWorkspaceRightMenu'
 import {
 	Button,
+	DropIndicator,
 	GridList,
 	GridListItem,
 	useDragAndDrop,
@@ -68,10 +69,11 @@ const WorkspaceList = () => {
 		},
 		renderDropIndicator(target) {
 			return (
-				<div
-					className={`drop-indicator ${
-						target?.type === 'item' ? 'active' : ''
-					}`}
+				<DropIndicator
+					target={target}
+					className={({ isDropTarget }) =>
+						`h-[2px] bg-blue-500/50 transition-all ${isDropTarget ? 'bg-blue-500' : ''}`
+					}
 				/>
 			)
 		},

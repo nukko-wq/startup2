@@ -71,7 +71,7 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 				<DropIndicator
 					target={target}
 					className={({ isDropTarget }) =>
-						`h-1 bg-blue-500/50 rounded transition-all ${isDropTarget ? 'bg-blue-500' : ''}`
+						`h-[2px] bg-blue-500/50 rounded transition-all ${isDropTarget ? 'bg-blue-500' : ''}`
 					}
 				/>
 			)
