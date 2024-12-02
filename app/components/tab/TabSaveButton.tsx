@@ -8,7 +8,7 @@ import {
 	TooltipTrigger,
 } from 'react-aria-components'
 import { createResource } from '@/app/features/resource/resourceSlice'
-import type { TabAction } from '@/app/features/tabs/types'
+import type { TabAction } from '@/app/features/tabs/types/tabs'
 import type { AppDispatch, RootState } from '@/app/store/store'
 
 interface TabSaveButtonProps extends TabAction {
