@@ -88,7 +88,7 @@ export const sectionApi = {
 			throw new Error('セクションの並び替えに失敗しました')
 		}
 
-		const section = await response.json()
-		return { section, spaceId }
+		const { section, allSections } = await response.json()
+		return { section, spaceId, allSections }
 	},
 }

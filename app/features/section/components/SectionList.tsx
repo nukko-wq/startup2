@@ -53,7 +53,7 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 				const newOrder =
 					e.target.dropPosition === 'before'
 						? targetSection.order
-						: targetSection.order + 1
+						: targetSection.order
 
 				await dispatch(
 					reorderSection({
