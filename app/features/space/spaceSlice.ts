@@ -1,23 +1,14 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
-
-interface Space {
-	id: string
-	name: string
-	order: number
-	workspaceId: string
-	isLastActive: boolean
-}
-
-interface SpaceState {
-	spacesByWorkspace: {
-		[workspaceId: string]: {
-			spaces: Space[]
-			loading: boolean
-			error: string | null
-		}
-	}
-	activeSpaceId: string | null
-}
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { spaceApi } from './spaceApi'
+import type {
+	Space,
+	SpaceState,
+	CreateSpacePayload,
+	DeleteSpacePayload,
+	RenameSpacePayload,
+	ReorderSpacePayload,
+	MoveSpacePayload,
+} from './types/space'
 
 const initialState: SpaceState = {
 	spacesByWorkspace: {},
@@ -27,133 +18,52 @@ const initialState: SpaceState = {
 export const fetchSpaces = createAsyncThunk(
 	'space/fetchSpaces',
 	async (workspaceId: string) => {
-		const response = await fetch(`/api/workspaces/${workspaceId}/spaces`)
-		if (!response.ok) {
-			throw new Error('スペースの取得に失敗しました')
-		}
-		const data = await response.json()
-		const activeSpace = data.find((space: Space) => space.isLastActive)
-		return { spaces: data, activeSpaceId: activeSpace?.id || null, workspaceId }
+		return await spaceApi.fetchSpaces(workspaceId)
 	},
 )
 
 export const createSpace = createAsyncThunk(
 	'space/createSpace',
-	async ({ name, workspaceId }: { name: string; workspaceId: string }) => {
-		const response = await fetch(`/api/workspaces/${workspaceId}/spaces`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({ name }),
-		})
-		if (!response.ok) {
-			throw new Error('スペースの作成に失敗しました')
-		}
-		const data = await response.json()
-		return { space: data, workspaceId }
+	async ({ name, workspaceId }: CreateSpacePayload) => {
+		return await spaceApi.createSpace(name, workspaceId)
 	},
 )
 
 export const deleteSpace = createAsyncThunk(
 	'space/deleteSpace',
-	async ({
-		spaceId,
-		workspaceId,
-	}: { spaceId: string; workspaceId: string }) => {
-		const response = await fetch(
-			`/api/workspaces/${workspaceId}/spaces/${spaceId}`,
-			{
-				method: 'DELETE',
-			},
-		)
-		if (!response.ok) {
-			throw new Error('スペースの削除に失敗しました')
-		}
-		return { spaceId, workspaceId }
+	async ({ spaceId, workspaceId }: DeleteSpacePayload) => {
+		return await spaceApi.deleteSpace(spaceId, workspaceId)
 	},
 )
 
 export const setActiveSpace = createAsyncThunk(
 	'space/setActiveSpace',
 	async (spaceId: string) => {
-		const response = await fetch(`/api/spaces/${spaceId}/active`, {
-			method: 'PUT',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		})
-		if (!response.ok) {
-			throw new Error('アクティブスペースの設定に失敗しました')
-		}
-		return spaceId
+		return await spaceApi.setActiveSpace(spaceId)
 	},
 )
 
 export const renameSpace = createAsyncThunk(
 	'space/renameSpace',
-	async ({
-		spaceId,
-		name,
-		workspaceId,
-	}: { spaceId: string; name: string; workspaceId: string }) => {
-		const response = await fetch(
-			`/api/workspaces/${workspaceId}/spaces/${spaceId}`,
-			{
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ name }),
-			},
-		)
-		if (!response.ok) {
-			throw new Error('スペースの名前変更に失敗しました')
-		}
-		const data = await response.json()
-		return { space: data, workspaceId }
+	async ({ spaceId, name, workspaceId }: RenameSpacePayload) => {
+		return await spaceApi.renameSpace(spaceId, name, workspaceId)
 	},
 )
 
-interface ReorderSpaceResponse {
-	updatedSpaces: Space[]
-	workspaceId: string
-}
-
-export const reorderSpace = createAsyncThunk<
-	ReorderSpaceResponse,
-	{
-		spaceId: string
-		workspaceId: string
-		newOrder: number
-		allOrders: { spaceId: string; newOrder: number }[]
-	}
->(
+export const reorderSpace = createAsyncThunk(
 	'space/reorderSpace',
-	async ({ spaceId, workspaceId, newOrder, allOrders }) => {
-		const response = await fetch(
-			`/api/workspaces/${workspaceId}/spaces/${spaceId}/reorder`,
-			{
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					order: newOrder,
-					allOrders,
-				}),
-			},
-		)
-
-		if (!response.ok) {
-			throw new Error('スペースの並び替えに失敗しました')
-		}
-
-		const data = await response.json()
-		return {
-			updatedSpaces: data.updatedSpaces,
+	async ({
+		spaceId,
+		workspaceId,
+		newOrder,
+		allOrders,
+	}: ReorderSpacePayload) => {
+		return await spaceApi.reorderSpace(
+			spaceId,
 			workspaceId,
-		}
+			newOrder,
+			allOrders,
+		)
 	},
 )
 
@@ -164,31 +74,13 @@ export const moveSpace = createAsyncThunk(
 		sourceWorkspaceId,
 		targetWorkspaceId,
 		newOrder,
-	}: {
-		spaceId: string
-		sourceWorkspaceId: string
-		targetWorkspaceId: string
-		newOrder: number
-	}) => {
-		const response = await fetch(
-			`/api/workspaces/${sourceWorkspaceId}/spaces/${spaceId}/move`,
-			{
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					targetWorkspaceId,
-					order: newOrder,
-				}),
-			},
+	}: MoveSpacePayload) => {
+		return await spaceApi.moveSpace(
+			spaceId,
+			sourceWorkspaceId,
+			targetWorkspaceId,
+			newOrder,
 		)
-
-		if (!response.ok) {
-			throw new Error('スペースの移動に失敗しました')
-		}
-
-		return response.json()
 	},
 )
 
