@@ -3,7 +3,7 @@ import {
 	createAsyncThunk,
 	type PayloadAction,
 } from '@reduxjs/toolkit'
-import { workspaceApi } from './workspaceApi'
+import { workspaceApi } from '@/app/features/workspace/api/workspaceApi'
 import type {
 	Workspace,
 	WorkspaceState,

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { spaceApi } from './spaceApi'
+import { spaceApi } from '@/app/features/space/api/spaceApi'
 import type {
 	Space,
 	SpaceState,

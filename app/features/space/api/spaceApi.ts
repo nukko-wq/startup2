@@ -5,7 +5,7 @@ import type {
 	DeleteSpaceResponse,
 	ReorderSpaceResponse,
 	MoveSpaceResponse,
-} from './types/space'
+} from '@/app/features/space/types/space'
 
 export const spaceApi = {
 	fetchSpaces: async (workspaceId: string): Promise<SpaceApiResponse> => {
