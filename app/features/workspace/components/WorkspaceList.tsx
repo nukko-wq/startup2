@@ -186,7 +186,7 @@ const WorkspaceList = () => {
 										</div>
 									</div>
 								</div>
-								{/* <SpaceList workspaceId={workspace.id} /> */}
+								<SpaceList workspaceId={workspace.id} />
 							</div>
 						</div>
 					</GridListItem>
