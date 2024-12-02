@@ -1,188 +1,56 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import type { Resource } from '@prisma/client'
-
-interface ResourceState {
-	resourcesBySection: {
-		[sectionId: string]: {
-			resources: Resource[]
-			loading: boolean
-			error: string | null
-		}
-	}
-}
+import { resourceApi } from '@/app/features/resource/api/resouceApi'
+import type {
+	ResourceState,
+	CreateResourcePayload,
+	UpdateResourcePayload,
+	ReorderResourcePayload,
+	MoveResourcePayload,
+} from '@/app/features/resource/types/resouce'
 
 const initialState: ResourceState = {
 	resourcesBySection: {},
 }
 
-// リソース追加のThunk
-export const createResource = createAsyncThunk(
-	'resource/createResource',
-	async ({
-		title,
-		url,
-		sectionId,
-		faviconUrl,
-		mimeType,
-		description,
-		isGoogleDrive,
-	}: {
-		title: string
-		url: string
-		sectionId: string
-		faviconUrl?: string
-		mimeType?: string
-		description?: string
-		isGoogleDrive?: boolean
-	}) => {
-		const response = await fetch('/api/resources', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				title,
-				url,
-				sectionId,
-				faviconUrl,
-				mimeType,
-				description,
-				isGoogleDrive,
-			}),
-		})
-
-		if (!response.ok) {
-			throw new Error('リソースの作成に失敗しました')
-		}
-
-		return response.json()
-	},
-)
-
-// セクション内のリソース取得のThunk
 export const fetchResources = createAsyncThunk(
 	'resource/fetchResources',
 	async (sectionId: string) => {
-		const response = await fetch(`/api/sections/${sectionId}/resources`)
-		if (!response.ok) {
-			throw new Error('リソースの取得に失敗しました')
-		}
-		return response.json()
+		return await resourceApi.fetchResources(sectionId)
 	},
 )
 
-// リソース削除のThunk
+export const createResource = createAsyncThunk(
+	'resource/createResource',
+	async (payload: CreateResourcePayload) => {
+		return await resourceApi.createResource(payload)
+	},
+)
+
 export const deleteResource = createAsyncThunk(
 	'resource/deleteResource',
 	async (resourceId: string) => {
-		const response = await fetch(`/api/resources/${resourceId}`, {
-			method: 'DELETE',
-		})
-
-		if (!response.ok) {
-			throw new Error('リソースの削除に失敗しました')
-		}
-
-		return response.json()
+		return await resourceApi.deleteResource(resourceId)
 	},
 )
 
-// リソース更新のThunk
 export const updateResource = createAsyncThunk(
 	'resource/updateResource',
-	async ({
-		id,
-		title,
-		url,
-		description,
-	}: {
-		id: string
-		title: string
-		url: string
-		description?: string
-	}) => {
-		const response = await fetch(`/api/resources/${id}`, {
-			method: 'PATCH',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				title,
-				url,
-				description,
-			}),
-		})
-
-		if (!response.ok) {
-			throw new Error('リソースの更新に失敗しました')
-		}
-
-		return response.json()
+	async (payload: UpdateResourcePayload) => {
+		return await resourceApi.updateResource(payload)
 	},
 )
 
-// リソースの並び替えのThunk
 export const reorderResource = createAsyncThunk(
 	'resource/reorderResource',
-	async ({
-		resourceId,
-		sectionId,
-		newOrder,
-		allOrders,
-	}: {
-		resourceId: string
-		sectionId: string
-		newOrder: number
-		allOrders: { resourceId: string; newOrder: number }[]
-	}) => {
-		const response = await fetch(`/api/resources/${resourceId}/reorder`, {
-			method: 'PATCH',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				sectionId,
-				order: newOrder,
-				allOrders, // 全てのリソースの新しい順序情報を送信
-			}),
-		})
-
-		if (!response.ok) {
-			throw new Error('リソースの並び替えに失敗しました')
-		}
-
-		return response.json()
+	async (payload: ReorderResourcePayload) => {
+		return await resourceApi.reorderResource(payload)
 	},
 )
 
-// リソースの移動のThunk
 export const moveResource = createAsyncThunk(
 	'resource/moveResource',
-	async ({
-		resourceId,
-		targetSectionId,
-		newOrder,
-	}: {
-		resourceId: string
-		targetSectionId: string
-		newOrder: number
-	}) => {
-		const response = await fetch(`/api/resources/${resourceId}/move`, {
-			method: 'PATCH',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				sectionId: targetSectionId,
-				order: newOrder,
-			}),
-		})
-
-		if (!response.ok) {
-			throw new Error('リソースの移動に失敗しました')
-		}
-
-		return response.json()
+	async (payload: MoveResourcePayload) => {
+		return await resourceApi.moveResource(payload)
 	},
 )
 

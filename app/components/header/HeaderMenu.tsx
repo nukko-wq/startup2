@@ -2,8 +2,8 @@ import { EllipsisVertical, Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/app/store/store'
-import SpaceDeleteDialog from '../space/SpaceDeleteDialog'
-import SpaceRenameDialog from '../space/SpaceRenameDialog'
+import SpaceDeleteDialog from '@/app/features/space/components/SpaceDeleteDialog'
+import SpaceRenameDialog from '@/app/features/space/components/SpaceRenameDialog'
 import {
 	Button,
 	Menu,
