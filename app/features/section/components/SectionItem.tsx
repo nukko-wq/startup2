@@ -3,7 +3,7 @@ import SectionNameEdit from '@/app/features/section/components/SectionNameEdit'
 import ResourceCreateButton from '@/app/features/resource/components/ResourceCreateButton'
 import SectionMenu from '@/app/features/section/components/SectionMenu'
 import ResourceList from '@/app/features/resource/components/ResourceList'
-import type { Section } from '@/app/features/section/sectionSlice'
+import type { Section } from '@/app/features/section/types/section'
 
 interface SectionItemProps {
 	section: Section
