@@ -7,8 +7,8 @@ import {
 	MenuTrigger,
 	Popover,
 } from 'react-aria-components'
-import WorkspaceRenameDialog from './WorkspaceRenameDialog'
-import WorkspaceDeleteDialog from './WorkspaceDeleteDialog'
+import WorkspaceRenameDialog from '@/app/features/workspace/components/WorkspaceRenameDialog'
+import WorkspaceDeleteDialog from '@/app/features/workspace/components/WorkspaceDeleteDialog'
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/app/store/store'
 

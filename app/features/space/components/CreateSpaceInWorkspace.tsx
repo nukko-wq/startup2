@@ -9,7 +9,7 @@ import {
 } from 'react-aria-components'
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/app/store/store'
-import SpaceCreateForm from './SpaceCreateForm'
+import SpaceCreateForm from '@/app/features/space/components/SpaceCreateForm'
 
 interface CreateSpaceInWorkspaceProps {
 	workspaceId: string

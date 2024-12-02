@@ -1,12 +1,12 @@
 import React, { useRef, useState } from 'react'
 import { Button, Form, Input, Label, TextField } from 'react-aria-components'
-import IconGoogle from '../elements/IconGoogle'
+import IconGoogle from '@/app/components/elements/IconGoogle'
 import { Controller, useForm } from 'react-hook-form'
 import { Link } from 'lucide-react'
 import { useDispatch } from 'react-redux'
 import type { AppDispatch } from '@/app/store/store'
 import { createResource } from '@/app/features/resource/resourceSlice'
-import GoogleDriveList from '@/app/components/google-drive/GoogleDriveList'
+import GoogleDriveList from '@/app/features/google-drive/components/GoogleDriveList'
 
 interface ResourceFormData {
 	url: string

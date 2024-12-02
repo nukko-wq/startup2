@@ -11,7 +11,7 @@ import {
 	ModalOverlay,
 	Popover,
 } from 'react-aria-components'
-import SpaceCreateForm from '@/app/components/space/SpaceCreateForm'
+import SpaceCreateForm from '@/app/features/space/components/SpaceCreateForm'
 
 interface WorkspaceLeftMenuProps {
 	workspaceId: string

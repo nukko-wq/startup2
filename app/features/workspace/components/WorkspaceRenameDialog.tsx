@@ -5,8 +5,7 @@ import {
 	Modal,
 	ModalOverlay,
 } from 'react-aria-components'
-import WorkspaceRenameForm from '@/app/components/workspace/WorkspaceRenameForm'
-
+import WorkspaceRenameForm from '@/app/features/workspace/components/WorkspaceRenameForm'
 interface WorkspaceRenameDialogProps {
 	isOpen: boolean
 	onOpenChange: (isOpen: boolean) => void

@@ -8,7 +8,7 @@ import {
 	MenuTrigger,
 	Popover,
 } from 'react-aria-components'
-import SectionDeleteDialog from '@/app/components/section/SectionDeleteDialog'
+import SectionDeleteDialog from '@/app/features/section/components/SectionDeleteDialog'
 import { useState } from 'react'
 
 interface SectionMenuProps {

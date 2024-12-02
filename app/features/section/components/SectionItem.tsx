@@ -1,8 +1,8 @@
 import { File } from 'lucide-react'
-import SectionNameEdit from './SectionNameEdit'
-import ResourceCreateButton from '../resource/ResourceCreateButton'
-import SectionMenu from './SectionMenu'
-import ResourceList from '../resource/ResourceList'
+import SectionNameEdit from '@/app/features/section/components/SectionNameEdit'
+import ResourceCreateButton from '@/app/features/resource/components/ResourceCreateButton'
+import SectionMenu from '@/app/features/section/components/SectionMenu'
+import ResourceList from '@/app/features/resource/components/ResourceList'
 import type { Section } from '@/app/features/section/sectionSlice'
 
 interface SectionItemProps {

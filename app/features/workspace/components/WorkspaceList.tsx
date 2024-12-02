@@ -10,17 +10,17 @@ import {
 	reorderWorkspace,
 } from '@/app/features/workspace/workspaceSlice'
 import { useSession } from 'next-auth/react'
-import WorkspaceLeftMenu from '@/app/components/workspace/WorkspaceLeftMenu'
-import WorkspaceRightMenu from '@/app/components/workspace/WorkspaceRightMenu'
+import WorkspaceLeftMenu from '@/app/features/workspace/components/WorkspaceLeftMenu'
+import WorkspaceRightMenu from '@/app/features/workspace/components/WorkspaceRightMenu'
 import { ChevronRight, Layers } from 'lucide-react'
-import DefaultWorkSpaceRightMenu from '@/app/components/workspace/DefaultWorkspaceRightMenu'
+import DefaultWorkSpaceRightMenu from '@/app/features/workspace/components/DefaultWorkspaceRightMenu'
 import {
 	Button,
 	GridList,
 	GridListItem,
 	useDragAndDrop,
 } from 'react-aria-components'
-import SpaceList from '@/app/components/space/SpaceList'
+import SpaceList from '@/app/features/space/components/SpaceList'
 
 const WorkspaceList = () => {
 	const dispatch = useDispatch<AppDispatch>()

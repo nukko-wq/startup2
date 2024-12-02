@@ -4,7 +4,7 @@ import {
 	Modal,
 	ModalOverlay,
 } from 'react-aria-components'
-import SpaceRenameForm from './SpaceRenameForm'
+import SpaceRenameForm from '@/app/features/space/components/SpaceRenameForm'
 
 interface SpaceRenameDialogProps {
 	isOpen: boolean

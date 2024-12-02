@@ -15,8 +15,8 @@ import {
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/app/store/store'
-import WorkspaceCreateForm from '@/app/components/workspace/WorkspaceCreateForm'
-import SpaceCreateForm from '../space/SpaceCreateForm'
+import WorkspaceCreateForm from '@/app/features/workspace/components/WorkspaceCreateForm'
+import SpaceCreateForm from '@/app/features/space/components/SpaceCreateForm'
 
 const DefaultWorkspaceRightMenu = () => {
 	const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false)

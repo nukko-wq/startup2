@@ -21,8 +21,8 @@ import {
 	type DroppableCollectionInsertDropEvent,
 	type TextDropItem,
 } from 'react-aria-components'
-import SpaceMenu from '@/app/components/space/SpaceMenu'
-import CreateSpaceInWorkspace from './CreateSpaceInWorkspace'
+import SpaceMenu from '@/app/features/space/components/SpaceMenu'
+import CreateSpaceInWorkspace from '@/app/features/space/components/CreateSpaceInWorkspace'
 
 interface SpaceListProps {
 	workspaceId: string

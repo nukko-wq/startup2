@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Button, Input } from 'react-aria-components'
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from '@/app/store/store'
-import { fetchGoogleDriveFiles } from '@/app/features/googleDrive/googleDriveSlice'
+import { fetchGoogleDriveFiles } from '@/app/features/google-drive/googleDriveSlice'
 import { useDebounce } from '@/app/hooks/useDebounce'
 import GoogleDriveListIcon from '@/app/components/google-drive/GoogleDriveListIcon'
 

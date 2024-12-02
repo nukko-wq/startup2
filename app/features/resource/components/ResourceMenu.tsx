@@ -10,7 +10,7 @@ import {
 	Tooltip,
 	TooltipTrigger,
 } from 'react-aria-components'
-import ResourceEditForm from '@/app/components/resource/ResourceEditForm'
+import ResourceEditForm from '@/app/features/resource/components/ResourceEditForm'
 import type { Resource } from '@prisma/client'
 
 interface ResourceMenuProps {

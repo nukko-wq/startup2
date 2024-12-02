@@ -7,8 +7,8 @@ import {
 	MenuTrigger,
 	Popover,
 } from 'react-aria-components'
-import SpaceRenameDialog from './SpaceRenameDialog'
-import SpaceDeleteDialog from './SpaceDeleteDialog'
+import SpaceRenameDialog from '@/app/features/space/components/SpaceRenameDialog'
+import SpaceDeleteDialog from '@/app/features/space/components/SpaceDeleteDialog'
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/app/store/store'
 
