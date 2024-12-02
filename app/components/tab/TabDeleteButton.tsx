@@ -7,7 +7,7 @@ import {
 	TooltipTrigger,
 } from 'react-aria-components'
 import { closeTab } from '@/app/features/tabs/tabsSlice'
-import type { TabAction } from '@/app/features/tabs/types'
+import type { TabAction } from '@/app/features/tabs/types/tabs'
 
 interface TabDeleteButtonProps extends TabAction {}
 
