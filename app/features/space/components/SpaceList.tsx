@@ -259,11 +259,11 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 					key={space.id}
 					className={`
 						flex flex-grow justify-between text-gray-400 outline-none cursor-pointer 
-						hover:bg-gray-700 hover:bg-opacity-75 group transition duration-200 
+						hover:bg-gray-700 hover:bg-opacity-75 group transition duration-200 pl-3
 						${
 							activeSpaceId === space.id
-								? 'bg-gray-700 border-l-4 border-blue-500 pl-3'
-								: 'pl-4'
+								? 'bg-gray-700 border-l-4 border-blue-500'
+								: 'border-l-4 border-transparent'
 						}
 					`}
 					onAction={() => handleSpaceClick(space.id)}
