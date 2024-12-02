@@ -5,6 +5,12 @@ export interface Tab {
 	faviconUrl: string
 }
 
+export interface TabsState {
+	tabs: Tab[]
+	loading: boolean
+	error: string | null
+}
+
 export interface ExtensionMessage {
 	type:
 		| 'SWITCH_TO_TAB'
