@@ -147,6 +147,35 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 				console.error('Failed to move resource:', error)
 			}
 		},
+		onRootDrop: async (e) => {
+			const item = e.items[0] as TextDropItem
+			if (!item.types.has('resource-item')) return
+
+			try {
+				const resourceData = JSON.parse(await item.getText('resource-item'))
+				const targetIndex = resources.length
+
+				// 同じセクション内での移動は無視
+				if (resourceData.sectionId === sectionId) return
+
+				// リソースの移動を実行
+				await dispatch(
+					moveResource({
+						resourceId: resourceData.id,
+						targetSectionId: sectionId,
+						newOrder: targetIndex,
+					}),
+				).unwrap()
+
+				// 両方のセクションのリソースを再取得
+				await Promise.all([
+					dispatch(fetchResources(sectionId)),
+					dispatch(fetchResources(resourceData.sectionId)),
+				])
+			} catch (error) {
+				console.error('Failed to move resource:', error)
+			}
+		},
 	})
 
 	// 新しい順序を計算するヘルパー関数
