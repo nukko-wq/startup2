@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { renameSection } from '@/app/features/section/sectionSlice'
 import type { AppDispatch, RootState } from '@/app/store/store'
-import type { Section } from '@/app/features/section/sectionSlice'
+import type { Section } from '@/app/features/section/types/section'
 import {
 	Button,
 	Dialog,
