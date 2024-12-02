@@ -58,4 +58,5 @@ export interface RenameSectionResponse {
 export interface ReorderSectionResponse {
 	section: Section
 	spaceId: string
+	allSections: Section[]
 }

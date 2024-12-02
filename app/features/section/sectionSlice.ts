@@ -113,15 +113,12 @@ const sectionSlice = createSlice({
 				}
 			})
 			.addCase(reorderSection.fulfilled, (state, action) => {
-				const { section, spaceId } = action.payload
+				const { section, spaceId, allSections } = action.payload
 				const spaceState = state.sectionsBySpace[spaceId]
+
 				if (spaceState) {
-					const index = spaceState.sections.findIndex(
-						(s) => s.id === section.id,
-					)
-					if (index !== -1) {
-						spaceState.sections[index] = section
-					}
+					// APIから返された正規化された順序で更新
+					spaceState.sections = allSections
 				}
 			})
 	},
