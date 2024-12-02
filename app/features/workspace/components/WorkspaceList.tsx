@@ -104,7 +104,7 @@ const WorkspaceList = () => {
 					(w) => w.id === targetId,
 				)
 
-				if (draggedIndex === -1 || targetIndex === -1) return
+				if (draggedIndex === targetIndex) return
 
 				const newOrder =
 					e.target.dropPosition === 'before'

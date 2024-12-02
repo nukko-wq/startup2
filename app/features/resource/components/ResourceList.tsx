@@ -71,36 +71,56 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 			)
 		},
 		onReorder: async (e: DroppableCollectionReorderEvent) => {
-			const draggedResourceId = Array.from(e.keys)[0]
-			const draggedResource = resources.find((r) => r.id === draggedResourceId)
-			if (!draggedResource) return
-
-			// ドロップ位置の計算
-			const dropIndex =
-				e.target.dropPosition === 'before'
-					? resources.findIndex((r) => r.id === e.target.key)
-					: resources.findIndex((r) => r.id === e.target.key) + 1
-
-			// ドラッグ中のリソースを除いた配列を作成
-			const resourcesWithoutDragged = resources.filter(
-				(r) => r.id !== draggedResourceId,
-			)
-
-			// 新しい配列を作成（ドロップ位置にドラッグしたリソースを挿入）
-			const reorderedResources = [
-				...resourcesWithoutDragged.slice(0, dropIndex),
-				draggedResource,
-				...resourcesWithoutDragged.slice(dropIndex),
-			]
-
-			// 各リソースの新しいorder値を計算（インデックスベース）
-			const updatedOrders = reorderedResources.map((resource, index) => ({
-				resourceId: resource.id,
-				newOrder: index,
-			}))
-
 			try {
-				// ドラッグしたリソースの順序を更新
+				const draggedResourceId = Array.from(e.keys)[0]
+				const targetResourceId = e.target.key
+
+				const draggedResource = resources.find(
+					(r) => r.id === draggedResourceId,
+				)
+				const targetResource = resources.find((r) => r.id === targetResourceId)
+
+				if (!draggedResource || !targetResource) {
+					console.error('Could not find dragged or target resource')
+					return
+				}
+
+				const orderedResources = [...resources].sort(
+					(a, b) => a.order - b.order,
+				)
+				const draggedIndex = orderedResources.findIndex(
+					(r) => r.id === draggedResourceId,
+				)
+				const targetIndex = orderedResources.findIndex(
+					(r) => r.id === targetResourceId,
+				)
+
+				// 同じ位置の場合は何もしない
+				if (draggedIndex === targetIndex) {
+					console.log('Same position, no reordering needed')
+					return
+				}
+
+				const dropIndex =
+					e.target.dropPosition === 'before'
+						? targetResource.order
+						: targetResource.order + 1
+
+				const resourcesWithoutDragged = resources.filter(
+					(r) => r.id !== draggedResourceId,
+				)
+
+				const reorderedResources = [
+					...resourcesWithoutDragged.slice(0, dropIndex),
+					draggedResource,
+					...resourcesWithoutDragged.slice(dropIndex),
+				]
+
+				const updatedOrders = reorderedResources.map((resource, index) => ({
+					resourceId: resource.id,
+					newOrder: index,
+				}))
+
 				await dispatch(
 					reorderResource({
 						resourceId: draggedResource.id,
@@ -108,7 +128,7 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 						newOrder:
 							updatedOrders.find((r) => r.resourceId === draggedResource.id)
 								?.newOrder ?? 0,
-						allOrders: updatedOrders, // 全てのリソースの新しい順序情報
+						allOrders: updatedOrders,
 					}),
 				).unwrap()
 			} catch (error) {
@@ -125,6 +145,35 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 					? resources.findIndex((r) => r.id === e.target.key) +
 						(e.target.dropPosition === 'after' ? 1 : 0)
 					: resources.length
+
+				// 同じセクション内での移動は無視
+				if (resourceData.sectionId === sectionId) return
+
+				// リソースの移動を実行
+				await dispatch(
+					moveResource({
+						resourceId: resourceData.id,
+						targetSectionId: sectionId,
+						newOrder: targetIndex,
+					}),
+				).unwrap()
+
+				// 両方のセクションのリソースを再取得
+				await Promise.all([
+					dispatch(fetchResources(sectionId)),
+					dispatch(fetchResources(resourceData.sectionId)),
+				])
+			} catch (error) {
+				console.error('Failed to move resource:', error)
+			}
+		},
+		onRootDrop: async (e) => {
+			const item = e.items[0] as TextDropItem
+			if (!item.types.has('resource-item')) return
+
+			try {
+				const resourceData = JSON.parse(await item.getText('resource-item'))
+				const targetIndex = resources.length
 
 				// 同じセクション内での移動は無視
 				if (resourceData.sectionId === sectionId) return
