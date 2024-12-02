@@ -3,6 +3,7 @@ import {
 	createAsyncThunk,
 	type PayloadAction,
 } from '@reduxjs/toolkit'
+import { workspaceApi } from './workspaceApi'
 
 interface WorkspaceState {
 	workspaces: Workspace[]
@@ -23,43 +24,21 @@ const initialState: WorkspaceState = {
 export const fetchWorkspaces = createAsyncThunk(
 	'workspace/fetchWorkspaces',
 	async () => {
-		const response = await fetch('/api/workspaces')
-		if (!response.ok) {
-			throw new Error('ワークスペースの取得に失敗しました')
-		}
-		const data = await response.json()
-		return data
+		return await workspaceApi.fetchWorkspaces()
 	},
 )
 
 export const createWorkspace = createAsyncThunk(
 	'workspace/createWorkspace',
 	async (name: string) => {
-		const response = await fetch('/api/workspaces', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({ name }),
-		})
-		if (!response.ok) {
-			throw new Error('ワークスペースの作成に失敗しました')
-		}
-		const data = await response.json()
-		return data
+		return await workspaceApi.createWorkspace(name)
 	},
 )
 
 export const deleteWorkspace = createAsyncThunk(
 	'workspace/deleteWorkspace',
 	async (workspaceId: string) => {
-		const response = await fetch(`/api/workspaces/${workspaceId}`, {
-			method: 'DELETE',
-		})
-		if (!response.ok) {
-			throw new Error('ワークスペースの削除に失敗しました')
-		}
-		return workspaceId
+		return await workspaceApi.deleteWorkspace(workspaceId)
 	},
 )
 
@@ -71,36 +50,14 @@ interface RenameWorkspacePayload {
 export const renameWorkspace = createAsyncThunk(
 	'workspace/renameWorkspace',
 	async ({ workspaceId, name }: RenameWorkspacePayload) => {
-		const response = await fetch(`/api/workspaces/${workspaceId}`, {
-			method: 'PATCH',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({ name }),
-		})
-		if (!response.ok) {
-			throw new Error('ワークスペースの更新に失敗しました')
-		}
-		const data = await response.json()
-		return data
+		return await workspaceApi.renameWorkspace(workspaceId, name)
 	},
 )
 
 export const createDefaultWorkspace = createAsyncThunk(
 	'workspace/createDefaultWorkspace',
 	async () => {
-		const response = await fetch('/api/workspaces/default', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({ name: 'Spaces' }),
-		})
-		if (!response.ok) {
-			throw new Error('デフォルトワークスペースの作成に失敗しました')
-		}
-		const data = await response.json()
-		return data
+		return await workspaceApi.createDefaultWorkspace()
 	},
 )
 
@@ -110,18 +67,7 @@ export const reorderWorkspace = createAsyncThunk(
 		workspaceId,
 		newOrder,
 	}: { workspaceId: string; newOrder: number }) => {
-		const response = await fetch(`/api/workspaces/${workspaceId}/reorder`, {
-			method: 'PATCH',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({ order: newOrder + 1 }),
-		})
-		if (!response.ok) {
-			throw new Error('ワークスペースの並び替えに失敗しました')
-		}
-		const data = await response.json()
-		return data
+		return await workspaceApi.reorderWorkspace(workspaceId, newOrder)
 	},
 )
 
