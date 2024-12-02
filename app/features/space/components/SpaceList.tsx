@@ -81,46 +81,95 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 				/>
 			)
 		},
-		onReorder: async (e: DroppableCollectionReorderEvent) => {
-			const draggedSpaceId = Array.from(e.keys)[0]
-			const draggedSpace = workspaceSpaces.spaces.find(
-				(s) => s.id === draggedSpaceId,
-			)
-			if (!draggedSpace) return
-
-			const dropIndex =
-				e.target.dropPosition === 'before'
-					? workspaceSpaces.spaces.findIndex((s) => s.id === e.target.key)
-					: workspaceSpaces.spaces.findIndex((s) => s.id === e.target.key) + 1
-
-			const spacesWithoutDragged = workspaceSpaces.spaces.filter(
-				(s) => s.id !== draggedSpaceId,
-			)
-
-			const reorderedSpaces = [
-				...spacesWithoutDragged.slice(0, dropIndex),
-				draggedSpace,
-				...spacesWithoutDragged.slice(dropIndex),
-			]
-
-			const updatedOrders = reorderedSpaces.map((space, index) => ({
-				spaceId: space.id,
-				newOrder: index,
-			}))
-
+		async onReorder(e) {
 			try {
+				const draggedSpaceId = Array.from(e.keys)[0]
+				const targetSpaceId = e.target.key
+
+				if (!workspaceSpaces?.spaces) {
+					console.error('Workspace spaces is undefined or empty')
+					return
+				}
+
+				const draggedSpace = workspaceSpaces.spaces.find(
+					(s) => s.id === draggedSpaceId,
+				)
+				const targetSpace = workspaceSpaces.spaces.find(
+					(s) => s.id === targetSpaceId,
+				)
+
+				if (!draggedSpace || !targetSpace) {
+					console.error('Could not find dragged or target space', {
+						draggedSpace,
+						targetSpace,
+						draggedSpaceId,
+						targetSpaceId,
+					})
+					return
+				}
+
+				const orderedSpaces = [...workspaceSpaces.spaces].sort(
+					(a, b) => a.order - b.order,
+				)
+				const draggedIndex = orderedSpaces.findIndex(
+					(s) => s.id === draggedSpaceId,
+				)
+				const targetIndex = orderedSpaces.findIndex(
+					(s) => s.id === targetSpaceId,
+				)
+
+				if (draggedIndex === -1 || targetIndex === -1) {
+					console.error('Invalid index found', { draggedIndex, targetIndex })
+					return
+				}
+
+				if (draggedIndex === targetIndex) {
+					console.log('Same position, no reordering needed')
+					return
+				}
+
+				const dropIndex =
+					e.target.dropPosition === 'before'
+						? targetSpace.order
+						: targetSpace.order + 1
+
+				const spacesWithoutDragged = workspaceSpaces.spaces.filter(
+					(s) => s.id !== draggedSpaceId,
+				)
+
+				const reorderedSpaces = [
+					...spacesWithoutDragged.slice(0, dropIndex),
+					draggedSpace,
+					...spacesWithoutDragged.slice(dropIndex),
+				]
+
+				const updatedOrders = reorderedSpaces.map((space, index) => ({
+					spaceId: space.id,
+					newOrder: index,
+				}))
+
+				const newOrder = updatedOrders.find(
+					(s) => s.spaceId === draggedSpace.id,
+				)?.newOrder
+
+				if (typeof newOrder !== 'number') {
+					console.error('Could not determine new order')
+					return
+				}
+
 				await dispatch(
 					reorderSpace({
 						spaceId: draggedSpace.id,
 						workspaceId,
-						newOrder:
-							updatedOrders.find((s) => s.spaceId === draggedSpace.id)
-								?.newOrder ?? 0,
+						newOrder,
 						allOrders: updatedOrders,
 					}),
 				).unwrap()
 			} catch (error) {
 				console.error('Failed to reorder space:', error)
+				if (error instanceof Error) {
+					console.error('Error details:', error.message, error.stack)
+				}
 			}
 		},
 		onInsert: async (e: DroppableCollectionInsertDropEvent) => {
