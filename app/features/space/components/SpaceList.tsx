@@ -230,9 +230,7 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 									<GripVertical className="w-4 h-4 text-zinc-500" />
 								</Button>
 							</div>
-							<Button className="text-left outline-none text-sm">
-								{space.name}
-							</Button>
+							<div className="text-left outline-none text-sm">{space.name}</div>
 						</div>
 						<div className="opacity-0 group-hover:opacity-100">
 							<SpaceMenu spaceId={space.id} workspaceId={workspaceId} />
