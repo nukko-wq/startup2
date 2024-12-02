@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import TabList from './TabList'
+import TabList from '@/app/features/tabs/components/TabList'
 
 const TabListWrapper = () => {
 	return <TabList />

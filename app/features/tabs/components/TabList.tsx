@@ -7,9 +7,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import type { RootState } from '@/app/store/store'
 import { setTabs, sendMessageToExtension } from '@/app/features/tabs/tabsSlice'
 import type { Tab } from '@/app/features/tabs/types/tabs'
-import TabDeleteButton from './TabDeleteButton'
-import TabSaveButton from './TabSaveButton'
-import TabsMenu from './TabsMenu'
+import TabDeleteButton from '@/app/features/tabs/components/TabDeleteButton'
+import TabSaveButton from '@/app/features/tabs/components/TabSaveButton'
+import TabsMenu from '@/app/features/tabs/components/TabsMenu'
 
 const TabList = () => {
 	const dispatch = useDispatch()
