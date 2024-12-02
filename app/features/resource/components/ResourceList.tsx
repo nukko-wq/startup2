@@ -21,6 +21,7 @@ import {
 	fetchResources,
 	reorderResource,
 	moveResource,
+	createResource,
 } from '@/app/features/resource/resourceSlice'
 import type { Resource } from '@prisma/client'
 import { sendMessageToExtension } from '@/app/features/tabs/tabsSlice'
@@ -58,7 +59,7 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 				},
 			]
 		},
-		acceptedDragTypes: ['resource-item'],
+		acceptedDragTypes: ['resource-item', 'tab-item'],
 		getDropOperation: () => 'move',
 		renderDropIndicator(target) {
 			return (
@@ -137,34 +138,82 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 		},
 		onInsert: async (e: DroppableCollectionInsertDropEvent) => {
 			const item = e.items[0] as TextDropItem
-			if (!item.types.has('resource-item')) return
 
 			try {
-				const resourceData = JSON.parse(await item.getText('resource-item'))
-				const targetIndex = e.target.key
-					? resources.findIndex((r) => r.id === e.target.key) +
-						(e.target.dropPosition === 'after' ? 1 : 0)
-					: resources.length
+				if (item.types.has('resource-item')) {
+					// 既存のリソース移動ロジック
+					const resourceData = JSON.parse(await item.getText('resource-item'))
+					const targetIndex = e.target.key
+						? resources.findIndex((r) => r.id === e.target.key) +
+							(e.target.dropPosition === 'after' ? 1 : 0)
+						: resources.length
 
-				// 同じセクション内での移動は無視
-				if (resourceData.sectionId === sectionId) return
+					// 同じセクション内での移動は無視
+					if (resourceData.sectionId === sectionId) return
 
-				// リソースの移動を実行
-				await dispatch(
-					moveResource({
-						resourceId: resourceData.id,
-						targetSectionId: sectionId,
-						newOrder: targetIndex,
-					}),
-				).unwrap()
+					// リソースの移動を実行
+					await dispatch(
+						moveResource({
+							resourceId: resourceData.id,
+							targetSectionId: sectionId,
+							newOrder: targetIndex,
+						}),
+					).unwrap()
 
-				// 両方のセクションのリソースを再取得
-				await Promise.all([
-					dispatch(fetchResources(sectionId)),
-					dispatch(fetchResources(resourceData.sectionId)),
-				])
+					// 両方のセクションのリソースを再取得
+					await Promise.all([
+						dispatch(fetchResources(sectionId)),
+						dispatch(fetchResources(resourceData.sectionId)),
+					])
+				} else if (item.types.has('tab-item')) {
+					const tabData = JSON.parse(await item.getText('tab-item'))
+
+					// 既存のリソースをorderでソート
+					const orderedResources = [...resources].sort(
+						(a, b) => a.order - b.order,
+					)
+
+					// ドロップ先のリソースを特定
+					const targetResource = e.target.key
+						? resources.find((r) => r.id === e.target.key)
+						: null
+
+					let newOrder: number
+
+					if (!targetResource) {
+						// セクションが空または最後に追加する場合
+						newOrder =
+							orderedResources.length > 0
+								? orderedResources[orderedResources.length - 1].order + 1
+								: 0
+					} else {
+						if (e.target.dropPosition === 'before') {
+							newOrder = targetResource.order
+						} else {
+							// 'after'
+							newOrder = targetResource.order + 1
+						}
+					}
+
+					// リソースを作成
+					await dispatch(
+						createResource({
+							title: tabData.title,
+							url: tabData.url,
+							faviconUrl: tabData.faviconUrl,
+							sectionId: sectionId,
+							order: newOrder,
+							mimeType: 'text/html',
+							description: '',
+							isGoogleDrive: false,
+						}),
+					).unwrap()
+
+					// リソースリストを再取得して更新
+					await dispatch(fetchResources(sectionId))
+				}
 			} catch (error) {
-				console.error('Failed to move resource:', error)
+				console.error('Failed to handle drop:', error)
 			}
 		},
 		onRootDrop: async (e) => {
