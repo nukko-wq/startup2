@@ -46,7 +46,8 @@ export interface CreateSectionResponse {
 }
 
 export interface DeleteSectionResponse {
-	sectionId: string
+	deletedSection: Section
+	updatedSections: Section[]
 	spaceId: string
 }
 

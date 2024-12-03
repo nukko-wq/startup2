@@ -89,15 +89,13 @@ const sectionSlice = createSlice({
 				}
 			})
 			.addCase(deleteSection.fulfilled, (state, action) => {
-				const { sectionId, spaceId } = action.payload
-				const currentSections = state.sectionsBySpace[spaceId]?.sections || []
-
-				state.sectionsBySpace[spaceId] = {
-					sections: currentSections.filter(
-						(section) => section.id !== sectionId,
-					),
-					loading: false,
-					error: null,
+				const { spaceId, updatedSections } = action.payload
+				if (state.sectionsBySpace[spaceId]) {
+					state.sectionsBySpace[spaceId] = {
+						sections: updatedSections,
+						loading: false,
+						error: null,
+					}
 				}
 			})
 			.addCase(renameSection.fulfilled, (state, action) => {

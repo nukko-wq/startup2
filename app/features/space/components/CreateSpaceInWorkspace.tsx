@@ -31,7 +31,7 @@ const CreateSpaceInWorkspace = ({
 		<DialogTrigger>
 			<Button
 				data-drop-target
-				className="space-create-button w-full text-left px-5 py-4 mt-2 text-sm text-gray-400 hover:bg-gray-700 flex items-center gap-1 border border-gray-700 transition-all duration-200"
+				className="space-create-button w-full text-left px-5 py-4 my-2 text-sm text-gray-400 hover:bg-gray-700 flex items-center gap-1 border border-gray-700 transition-all duration-200"
 			>
 				<Plus className="w-4 h-4" />
 				<span>Add Space to {workspace?.name || 'Workspace'}</span>

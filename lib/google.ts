@@ -1,9 +1,8 @@
 import { google } from 'googleapis'
-import { auth } from '@/lib/auth'
+import type { Session } from 'next-auth'
 import { prisma } from '@/lib/prisma'
 
-export async function getGoogleAuth() {
-	const session = await auth()
+export async function getGoogleAuth(session: Session | null) {
 	if (!session?.user?.id) {
 		throw new Error('ユーザーが見つかりません')
 	}

@@ -162,12 +162,13 @@ const spaceSlice = createSlice({
 				}
 			})
 			.addCase(deleteSpace.fulfilled, (state, action) => {
-				const { spaceId, workspaceId } = action.payload
+				const { workspaceId, updatedSpaces } = action.payload
 				if (state.spacesByWorkspace[workspaceId]) {
-					state.spacesByWorkspace[workspaceId].spaces = state.spacesByWorkspace[
-						workspaceId
-					].spaces.filter((space) => space.id !== spaceId)
-					state.spacesByWorkspace[workspaceId].loading = false
+					state.spacesByWorkspace[workspaceId] = {
+						...state.spacesByWorkspace[workspaceId],
+						spaces: updatedSpaces,
+						loading: false,
+					}
 				}
 			})
 			.addCase(deleteSpace.rejected, (state, action) => {

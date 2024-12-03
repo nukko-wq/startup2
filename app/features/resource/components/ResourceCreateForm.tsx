@@ -106,7 +106,7 @@ const ResourceCreateForm = ({ sectionId, onClose }: Props) => {
 				<div className="text-xl font-bold p-4 text-zinc-700">Add Resource</div>
 				<Button
 					className={`w-full text-muted-foreground p-2 flex items-center gap-2 outline-none ${
-						activeTab === 'url' ? 'bg-foreground/10' : ''
+						activeTab === 'url' ? 'bg-zinc-200' : ''
 					}`}
 					onPress={() => setActiveTab('url')}
 					aria-label="URL"
@@ -116,7 +116,7 @@ const ResourceCreateForm = ({ sectionId, onClose }: Props) => {
 				</Button>
 				<Button
 					className={`w-full text-muted-foreground p-2 flex items-center gap-1 outline-none ${
-						activeTab === 'drive' ? 'bg-foreground/10' : ''
+						activeTab === 'drive' ? 'bg-zinc-200' : ''
 					}`}
 					onPress={() => setActiveTab('drive')}
 					aria-label="Google Drive"

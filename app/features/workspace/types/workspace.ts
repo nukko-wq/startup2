@@ -31,7 +31,8 @@ export interface WorkspaceApiResponse extends Workspace {}
 export interface CreateWorkspaceResponse extends Workspace {}
 
 export interface DeleteWorkspaceResponse {
-	workspaceId: string
+	deletedWorkspace: Workspace
+	updatedWorkspaces: Workspace[]
 }
 
 export interface RenameWorkspaceResponse extends Workspace {}

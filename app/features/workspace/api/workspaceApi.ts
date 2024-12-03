@@ -39,7 +39,7 @@ export const workspaceApi = {
 		if (!response.ok) {
 			throw new Error('ワークスペースの削除に失敗しました')
 		}
-		return { workspaceId }
+		return response.json()
 	},
 
 	renameWorkspace: async (
