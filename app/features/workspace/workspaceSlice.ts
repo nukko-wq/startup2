@@ -103,9 +103,27 @@ const workspaceSlice = createSlice({
 				state.loading = false
 				state.error = action.error.message || 'エラーが発生しました'
 			})
-			.addCase(deleteWorkspace.pending, (state) => {
-				state.loading = true
-				state.error = null
+			.addCase(deleteWorkspace.pending, (state, action) => {
+				const workspaceId = action.meta.arg
+				const workspaceIndex = state.workspaces.findIndex(
+					(w) => w.id === workspaceId,
+				)
+
+				if (workspaceIndex !== -1) {
+					const deletedWorkspace = state.workspaces[workspaceIndex]
+					state.workspaces.splice(workspaceIndex, 1)
+
+					state.workspaces = state.workspaces.map((workspace) => {
+						if (workspace.order > deletedWorkspace.order) {
+							return { ...workspace, order: workspace.order - 1 }
+						}
+						return workspace
+					})
+
+					if (state.activeWorkspaceId === workspaceId) {
+						state.activeWorkspaceId = state.defaultWorkspace?.id || null
+					}
+				}
 			})
 			.addCase(deleteWorkspace.fulfilled, (state, action) => {
 				const { updatedWorkspaces } = action.payload
@@ -114,11 +132,11 @@ const workspaceSlice = createSlice({
 
 				state.defaultWorkspace = defaultWorkspace || null
 				state.workspaces = normalWorkspaces
-				state.loading = false
 			})
 			.addCase(deleteWorkspace.rejected, (state, action) => {
-				state.loading = false
-				state.error = action.error.message || 'エラーが発生しました'
+				state.error =
+					action.error.message || 'ワークスペースの削除に失敗しました'
+				state.loading = true
 			})
 			.addCase(renameWorkspace.pending, (state) => {
 				state.loading = true

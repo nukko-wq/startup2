@@ -32,7 +32,7 @@ const SectionDeleteDialog = ({
 	)
 
 	const handleDelete = async () => {
-		if (!activeSpaceId) return
+		if (!activeSpaceId || isDeleting) return
 
 		try {
 			setIsDeleting(true)

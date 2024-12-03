@@ -29,12 +29,14 @@ const SpaceDeleteDialog = ({
 	const [isDeleting, setIsDeleting] = useState(false)
 
 	const handleDelete = async (close: () => void) => {
+		if (isDeleting) return // 二重削除防止
+
 		try {
 			setIsDeleting(true)
 			await dispatch(deleteSpace({ spaceId, workspaceId })).unwrap()
 			close()
 		} catch (error) {
-			console.error('Failed to delete space:', error)
+			console.error('スペースの削除に失敗しました:', error)
 		} finally {
 			setIsDeleting(false)
 		}
@@ -64,6 +66,7 @@ const SpaceDeleteDialog = ({
 									<Button
 										onPress={close}
 										className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300 outline-none"
+										isDisabled={isDeleting}
 									>
 										キャンセル
 									</Button>

@@ -17,13 +17,6 @@ interface GoogleDriveListProps {
 	}) => void
 }
 
-interface GoogleDriveFile {
-	id: string
-	name: string
-	webViewLink: string
-	mimeType: string
-}
-
 const GoogleDriveList = ({ onSelect }: GoogleDriveListProps) => {
 	const dispatch = useDispatch<AppDispatch>()
 	const { files, loading, error } = useSelector(
@@ -31,21 +24,6 @@ const GoogleDriveList = ({ onSelect }: GoogleDriveListProps) => {
 	)
 	const [searchQuery, setSearchQuery] = useState('')
 	const debouncedQuery = useDebounce(searchQuery, 500)
-
-	const getGoogleDriveDescription = (mimeType: string): string => {
-		switch (mimeType) {
-			case 'application/vnd.google-apps.document':
-				return 'Google Doc'
-			case 'application/vnd.google-apps.spreadsheet':
-				return 'Google Sheet'
-			case 'application/vnd.google-apps.presentation':
-				return 'Google Slide'
-			case 'application/vnd.google-apps.form':
-				return 'Google Form'
-			default:
-				return 'Google Drive'
-		}
-	}
 
 	useEffect(() => {
 		dispatch(fetchGoogleDriveFiles(debouncedQuery))
@@ -56,13 +34,11 @@ const GoogleDriveList = ({ onSelect }: GoogleDriveListProps) => {
 		webViewLink: string
 		mimeType: string
 	}) => {
-		const description = getGoogleDriveDescription(file.mimeType)
-
 		onSelect?.({
 			title: file.name,
 			url: file.webViewLink,
 			mimeType: file.mimeType,
-			description: description,
+			description: '',
 			isGoogleDrive: true,
 		})
 	}
@@ -73,7 +49,7 @@ const GoogleDriveList = ({ onSelect }: GoogleDriveListProps) => {
 				<Search className="w-[20px] h-[20px] text-zinc-700 ml-4 mr-2" />
 				<Input
 					className="w-[400px] text-zinc-700 outline-none"
-					placeholder="Search Drive for resouces to add..."
+					placeholder="Search Drive for resources to add..."
 					aria-label="Search Drive"
 					value={searchQuery}
 					onChange={(e) => setSearchQuery(e.target.value)}
@@ -85,7 +61,9 @@ const GoogleDriveList = ({ onSelect }: GoogleDriveListProps) => {
 			>
 				<div className="flex items-center justify-center h-[17px]">
 					<div className="border-t border-zinc-200 flex-grow" />
-					<h2 className="text-sm text-zinc-500 px-4">Recent</h2>
+					{!searchQuery && (
+						<h2 className="text-sm text-zinc-500 px-4">Recent</h2>
+					)}
 					<div className="border-t border-zinc-200 flex-grow" />
 				</div>
 				{loading ? (

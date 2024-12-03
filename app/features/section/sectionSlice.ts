@@ -88,14 +88,38 @@ const sectionSlice = createSlice({
 					error: null,
 				}
 			})
+			.addCase(deleteSection.pending, (state, action) => {
+				const { sectionId, spaceId } = action.meta.arg
+				const spaceState = state.sectionsBySpace[spaceId]
+
+				if (spaceState) {
+					const sectionIndex = spaceState.sections.findIndex(
+						(s) => s.id === sectionId,
+					)
+					if (sectionIndex !== -1) {
+						const sections = [...spaceState.sections]
+						sections.splice(sectionIndex, 1)
+
+						const updatedSections = sections.map((section, index) => ({
+							...section,
+							order: index,
+						}))
+
+						spaceState.sections = updatedSections
+					}
+				}
+			})
 			.addCase(deleteSection.fulfilled, (state, action) => {
 				const { spaceId, updatedSections } = action.payload
 				if (state.sectionsBySpace[spaceId]) {
-					state.sectionsBySpace[spaceId] = {
-						sections: updatedSections,
-						loading: false,
-						error: null,
-					}
+					state.sectionsBySpace[spaceId].sections = updatedSections
+				}
+			})
+			.addCase(deleteSection.rejected, (state, action) => {
+				const { spaceId } = action.meta.arg
+				if (state.sectionsBySpace[spaceId]) {
+					state.sectionsBySpace[spaceId].error =
+						action.error.message || 'セクションの削除に失敗しました'
 				}
 			})
 			.addCase(renameSection.fulfilled, (state, action) => {

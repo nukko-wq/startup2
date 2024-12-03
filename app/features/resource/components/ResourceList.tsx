@@ -247,16 +247,6 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 		},
 	})
 
-	// 新しい順序を計算するヘルパー関数
-	const calculateNewOrder = (items: Resource[], targetIndex: number) => {
-		if (items.length === 0) return 0
-		if (targetIndex === 0) return items[0].order / 2
-		if (targetIndex >= items.length) return items[items.length - 1].order + 1
-		const prevOrder = items[targetIndex - 1].order
-		const nextOrder = items[targetIndex].order
-		return prevOrder + (nextOrder - prevOrder) / 2
-	}
-
 	const handleResourceClick = async (resource: Resource) => {
 		try {
 			// まず現在のウィンドウの既存のタブを探す
@@ -284,6 +274,40 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 			// エラーの場合も新しいタブで開く
 			window.open(resource.url, '_blank')
 		}
+	}
+
+	const getResourceDescription = (resource: Resource) => {
+		if (resource.description) {
+			return resource.description
+		}
+
+		const url = new URL(resource.url)
+		const hostname = url.hostname
+		const pathname = url.pathname
+
+		if (hostname === 'mail.google.com') {
+			return 'Gmail'
+		}
+		if (hostname === 'github.com') {
+			return 'GitHub'
+		}
+
+		if (hostname === 'docs.google.com') {
+			if (pathname.startsWith('/forms/')) {
+				return 'Google Form'
+			}
+			if (pathname.startsWith('/spreadsheets/')) {
+				return 'Google Sheet'
+			}
+			if (pathname.startsWith('/drive/')) {
+				return 'Google Drive'
+			}
+			if (pathname.startsWith('/document/')) {
+				return 'Google Document'
+			}
+		}
+
+		return 'Webpage'
 	}
 
 	/*
@@ -338,8 +362,8 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 							/>
 							<div className="flex flex-col truncate">
 								<span className="truncate">{resource.title}</span>
-								<span className="text-xs text-muted-foreground">
-									{resource.description || 'Webpage'}
+								<span className="text-xs text-gray-400">
+									{getResourceDescription(resource)}
 								</span>
 							</div>
 						</div>
