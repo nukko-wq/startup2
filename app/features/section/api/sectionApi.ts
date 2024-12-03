@@ -47,7 +47,7 @@ export const sectionApi = {
 			throw new Error('セクションの削除に失敗しました')
 		}
 
-		return { sectionId, spaceId }
+		return response.json()
 	},
 
 	renameSection: async (

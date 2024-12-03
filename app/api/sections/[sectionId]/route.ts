@@ -15,17 +15,53 @@ export async function DELETE(
 		const resolvedParams = await params
 		const { sectionId } = resolvedParams
 
-		const section = await prisma.section.delete({
-			where: {
-				id: sectionId,
-				userId: user.id,
-			},
+		const result = await prisma.$transaction(async (tx) => {
+			// 削除対象のセクションを取得
+			const targetSection = await tx.section.findUnique({
+				where: { id: sectionId },
+			})
+
+			if (!targetSection) {
+				throw new Error('Section not found')
+			}
+
+			// セクションを削除
+			const deletedSection = await tx.section.delete({
+				where: {
+					id: sectionId,
+					userId: user.id,
+				},
+			})
+
+			// 同じスペース内の、削除したセクションより大きいorderを持つセクションのorderを1つずつ減らす
+			await tx.section.updateMany({
+				where: {
+					spaceId: targetSection.spaceId,
+					order: {
+						gt: targetSection.order,
+					},
+				},
+				data: {
+					order: {
+						decrement: 1,
+					},
+				},
+			})
+
+			// 更新後のセクション一覧を取得
+			const updatedSections = await tx.section.findMany({
+				where: { spaceId: targetSection.spaceId },
+				orderBy: { order: 'asc' },
+			})
+
+			return {
+				deletedSection,
+				updatedSections,
+				spaceId: targetSection.spaceId,
+			}
 		})
 
-		return NextResponse.json({
-			sectionId,
-			spaceId: section.spaceId,
-		})
+		return NextResponse.json(result)
 	} catch (error) {
 		console.error('Error deleting section:', error)
 		return new NextResponse('Internal Error', { status: 500 })
