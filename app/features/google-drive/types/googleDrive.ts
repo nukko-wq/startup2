@@ -13,8 +13,12 @@ export interface GoogleDriveState {
 
 export interface FetchGoogleDriveFilesResponse {
 	files: GoogleDriveFile[]
+	error?: string
 }
 
 export interface GoogleDriveApiError {
+	code?: number
+	status?: number
 	message: string
+	errors?: Array<{ message: string }>
 }
