@@ -1,6 +1,6 @@
 import Sidebar from '@/app/components/sidebar/Sidebar'
 import SectionListWrapper from '@/app/features/section/components/SectionListWrapper'
-import TabListWrapper from '@/app/components/tab/TabListWrapper'
+import TabListWrapper from '@/app/features/tabs/components/TabListWrapper'
 import Header from '@/app/components/header/Header'
 
 export default function Home() {

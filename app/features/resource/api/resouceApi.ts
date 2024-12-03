@@ -28,6 +28,7 @@ export const resourceApi = {
 		mimeType,
 		description,
 		isGoogleDrive,
+		order,
 	}: CreateResourcePayload): Promise<CreateResourceResponse> => {
 		const response = await fetch('/api/resources', {
 			method: 'POST',
@@ -42,6 +43,7 @@ export const resourceApi = {
 				mimeType,
 				description,
 				isGoogleDrive,
+				order,
 			}),
 		})
 

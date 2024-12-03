@@ -18,6 +18,7 @@ export interface CreateResourcePayload {
 	mimeType?: string
 	description?: string
 	isGoogleDrive?: boolean
+	order?: number
 }
 
 export interface UpdateResourcePayload {

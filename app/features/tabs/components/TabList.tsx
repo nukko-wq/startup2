@@ -2,14 +2,19 @@
 
 import { Diamond, GripVertical } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Button, GridList, GridListItem } from 'react-aria-components'
+import {
+	Button,
+	GridList,
+	GridListItem,
+	useDragAndDrop,
+} from 'react-aria-components'
 import { useDispatch, useSelector } from 'react-redux'
 import type { RootState } from '@/app/store/store'
 import { setTabs, sendMessageToExtension } from '@/app/features/tabs/tabsSlice'
 import type { Tab } from '@/app/features/tabs/types/tabs'
-import TabDeleteButton from './TabDeleteButton'
-import TabSaveButton from './TabSaveButton'
-import TabsMenu from './TabsMenu'
+import TabDeleteButton from '@/app/features/tabs/components/TabDeleteButton'
+import TabSaveButton from '@/app/features/tabs/components/TabSaveButton'
+import TabsMenu from '@/app/features/tabs/components/TabsMenu'
 
 const TabList = () => {
 	const dispatch = useDispatch()
@@ -67,6 +72,19 @@ const TabList = () => {
 		}
 	}
 
+	const { dragAndDropHooks } = useDragAndDrop({
+		getItems(keys) {
+			const tab = tabs.find((t) => t.id === Array.from(keys)[0])
+			if (!tab) return []
+			return [
+				{
+					'tab-item': JSON.stringify(tab),
+					'text/plain': tab.title,
+				},
+			]
+		},
+	})
+
 	if (!isExtensionInstalled) {
 		return (
 			<div className="flex-grow py-5 pr-[16px] pl-[32px] max-w-[920px]">
@@ -97,6 +115,7 @@ const TabList = () => {
 			<GridList
 				aria-label="Tabs"
 				items={tabs}
+				dragAndDropHooks={dragAndDropHooks}
 				className="border-slate-400 rounded-md flex flex-col bg-white shadow-sm"
 			>
 				{(tab) => (

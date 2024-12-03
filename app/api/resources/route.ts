@@ -19,6 +19,7 @@ export async function POST(request: Request) {
 			mimeType,
 			description,
 			isGoogleDrive,
+			order,
 		} = json
 
 		const section = await prisma.section.findUnique({
@@ -29,29 +30,55 @@ export async function POST(request: Request) {
 			return new NextResponse('Section not found', { status: 404 })
 		}
 
-		// 最後のorder値を取得
-		const lastResource = await prisma.resource.findFirst({
+		// 既存のリソースを取得
+		const existingResources = await prisma.resource.findMany({
 			where: { sectionId },
-			orderBy: { order: 'desc' },
+			orderBy: { order: 'asc' },
 		})
 
-		const newOrder = lastResource ? lastResource.order + 1 : 0
+		// トランザクションで新規作成と順序の更新を行う
+		const result = await prisma.$transaction(async (tx) => {
+			// 既存のリソースの順序を更新
+			if (typeof order === 'number') {
+				await tx.resource.updateMany({
+					where: {
+						sectionId,
+						order: {
+							gte: order, // 新しいリソースのorder以上のリソースを対象
+						},
+					},
+					data: {
+						order: {
+							increment: 1, // orderを1つずつ増やす
+						},
+					},
+				})
+			}
 
-		const resource = await prisma.resource.create({
-			data: {
-				title,
-				url,
-				faviconUrl,
-				mimeType,
-				description,
-				isGoogleDrive,
-				order: newOrder,
-				userId: user.id,
-				sectionId,
-			},
+			// 新しいリソースを作成
+			const resource = await tx.resource.create({
+				data: {
+					title,
+					url,
+					faviconUrl,
+					mimeType,
+					description,
+					isGoogleDrive,
+					order:
+						order !== undefined
+							? order
+							: existingResources.length > 0
+								? existingResources[existingResources.length - 1].order + 1
+								: 0,
+					userId: user.id,
+					sectionId,
+				},
+			})
+
+			return resource
 		})
 
-		return NextResponse.json(resource)
+		return NextResponse.json(result)
 	} catch (error) {
 		console.error('Error creating resource:', error)
 		return new NextResponse('Internal Error', { status: 500 })
