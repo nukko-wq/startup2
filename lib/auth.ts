@@ -20,6 +20,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 						'https://www.googleapis.com/auth/drive.metadata.readonly',
 					].join(' '),
 					access_type: 'offline',
+					prompt: 'consent',
 				},
 			},
 		}),
@@ -49,8 +50,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
 				const existingUser = await db.user.findUnique({
 					where: { email: user.email },
+					include: { accounts: true },
 				})
-				if (!existingUser) {
+
+				if (existingUser) {
+					await db.account.update({
+						where: {
+							provider_providerAccountId: {
+								provider: 'google',
+								providerAccountId: account.providerAccountId,
+							},
+						},
+						data: {
+							access_token: account.access_token,
+							refresh_token: account.refresh_token,
+							expires_at: account.expires_at,
+							scope: account.scope,
+							token_type: account.token_type,
+							id_token: account.id_token,
+						},
+					})
+				} else {
 					await db.user.create({
 						data: {
 							email: user.email,

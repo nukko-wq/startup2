@@ -17,13 +17,6 @@ interface GoogleDriveListProps {
 	}) => void
 }
 
-interface GoogleDriveFile {
-	id: string
-	name: string
-	webViewLink: string
-	mimeType: string
-}
-
 const GoogleDriveList = ({ onSelect }: GoogleDriveListProps) => {
 	const dispatch = useDispatch<AppDispatch>()
 	const { files, loading, error } = useSelector(
@@ -66,6 +59,9 @@ const GoogleDriveList = ({ onSelect }: GoogleDriveListProps) => {
 				className="flex flex-col flex-grow w-[400px] h-[428px] border-l"
 				aria-label="Recent Google Drive Files"
 			>
+				{/* 検索結果を表示する */}
+
+				{/* 最近のファイルを表示する */}
 				<div className="flex items-center justify-center h-[17px]">
 					<div className="border-t border-zinc-200 flex-grow" />
 					<h2 className="text-sm text-zinc-500 px-4">Recent</h2>

@@ -7,47 +7,55 @@ export async function getGoogleAuth(session: Session | null) {
 		throw new Error('ユーザーが見つかりません')
 	}
 
-	if (!session?.accessToken) {
-		throw new Error('アクセストークンが見つかりません')
-	}
-
 	const oauth2Client = new google.auth.OAuth2(
 		process.env.AUTH_GOOGLE_ID,
 		process.env.AUTH_GOOGLE_SECRET,
 	)
 
-	oauth2Client.setCredentials({
-		access_token: session.accessToken,
-		refresh_token: session.refreshToken,
-		expiry_date: session.expiresAt ? session.expiresAt * 1000 : undefined,
-	})
+	try {
+		const account = await prisma.account.findFirst({
+			where: {
+				provider: 'google',
+				userId: session.user.id,
+			},
+		})
 
-	oauth2Client.on('tokens', async (tokens) => {
-		if (tokens.access_token) {
+		if (!account) {
+			throw new Error('Googleアカウントが見つかりません')
+		}
+
+		if (!account.refresh_token) {
+			throw new Error('再認証が必要です')
+		}
+
+		oauth2Client.setCredentials({
+			access_token: account.access_token,
+			refresh_token: account.refresh_token,
+			expiry_date: account.expires_at ? account.expires_at * 1000 : undefined,
+		})
+
+		if (!account.expires_at || account.expires_at * 1000 < Date.now()) {
+			const { credentials } = await oauth2Client.refreshAccessToken()
+
 			await prisma.account.update({
 				where: {
 					provider_providerAccountId: {
 						provider: 'google',
-						providerAccountId: session.user.id,
+						providerAccountId: account.providerAccountId,
 					},
 				},
 				data: {
-					access_token: tokens.access_token,
-					expires_at: Math.floor(Date.now() / 1000 + 3600),
+					access_token: credentials.access_token,
+					expires_at: Math.floor((credentials.expiry_date as number) / 1000),
 				},
 			})
-		}
-	})
 
-	if (session.expiresAt && session.expiresAt * 1000 < Date.now()) {
-		try {
-			const { credentials } = await oauth2Client.refreshAccessToken()
 			oauth2Client.setCredentials(credentials)
-		} catch (error) {
-			console.error('Failed to refresh token:', error)
-			throw new Error('トークンの更新に失敗しました')
 		}
-	}
 
-	return oauth2Client
+		return oauth2Client
+	} catch (error) {
+		console.error('Google Auth Error:', error)
+		throw new Error('Google認証に失敗しました')
+	}
 }
