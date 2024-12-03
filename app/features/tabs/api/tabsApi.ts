@@ -7,21 +7,27 @@ export const tabsApi = {
 	sendMessageToExtension: async (
 		message: ExtensionMessage,
 	): Promise<ExtensionResponse> => {
-		// 拡張機能が存在しない場合は静かに失敗
 		if (!window.chrome?.runtime) {
 			return { success: false, error: 'Extension not installed' }
 		}
 
 		try {
-			// ローカルストレージから拡張機能のIDを取得
-			const response = await fetch('http://localhost:3000/api/extension/id')
+			const apiUrl =
+				process.env.NODE_ENV === 'development'
+					? 'http://localhost:3000/api/extension/id'
+					: 'https://startup.nukko.dev/api/extension/id'
+
+			const response = await fetch(apiUrl)
 			const { extensionId } = await response.json()
 
-			// 拡張機能にメッセージを送信
+			if (!extensionId) {
+				throw new Error('Extension ID not found')
+			}
+
 			const result = await chrome.runtime.sendMessage(extensionId, message)
 			return result
 		} catch (error) {
-			// エラーをスローせずに結果を返す
+			console.error('Error sending message to extension:', error)
 			return {
 				success: false,
 				error: error instanceof Error ? error.message : 'Unknown error',
