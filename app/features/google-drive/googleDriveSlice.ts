@@ -1,17 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-
-interface GoogleDriveFile {
-	id: string
-	name: string
-	webViewLink: string
-	mimeType: string
-}
-
-interface GoogleDriveState {
-	files: GoogleDriveFile[]
-	loading: boolean
-	error: string | null
-}
+import { googleDriveApi } from '@/app/features/google-drive/api/googleDriveApi'
+import type { GoogleDriveState } from '@/app/features/google-drive/types/googleDrive'
 
 const initialState: GoogleDriveState = {
 	files: [],
@@ -22,15 +11,8 @@ const initialState: GoogleDriveState = {
 export const fetchGoogleDriveFiles = createAsyncThunk(
 	'googleDrive/fetchFiles',
 	async (query?: string) => {
-		const url = query
-			? `/api/googleapis?q=${encodeURIComponent(query)}`
-			: '/api/googleapis'
-		const response = await fetch(url)
-		if (!response.ok) {
-			throw new Error('Google Driveファイルの取得に失敗しました')
-		}
-		const data = await response.json()
-		return data.files
+		const response = await googleDriveApi.fetchFiles(query)
+		return response.files
 	},
 )
 
