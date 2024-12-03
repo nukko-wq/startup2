@@ -277,14 +277,11 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 				}
 			}
 
-			// タブが見つからないか、切り替えに失敗した場合は新しいタブを作成
-			await sendMessageToExtension({
-				type: 'CREATE_TAB',
-				url: resource.url,
-			})
+			// タブが見つからない場合は新しいタブを開く
+			window.open(resource.url, '_blank')
 		} catch (error) {
 			console.error('Failed to handle resource click:', error)
-			// エラーの場合はフォールバックとして直接開く
+			// エラーの場合も新しいタブで開く
 			window.open(resource.url, '_blank')
 		}
 	}
