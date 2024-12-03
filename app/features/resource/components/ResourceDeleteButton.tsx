@@ -16,13 +16,21 @@ interface ResourceDeleteButtonProps {
 
 const ResourceDeleteButton = ({ resourceId }: ResourceDeleteButtonProps) => {
 	const [isTooltipVisible, setIsTooltipVisible] = useState(false)
+	const [isDeleting, setIsDeleting] = useState(false)
 	const dispatch = useDispatch<AppDispatch>()
 
 	const handleDelete = async () => {
+		if (isDeleting) return // 二重クリック防止
+
 		try {
+			setIsDeleting(true)
 			await dispatch(deleteResource(resourceId)).unwrap()
 		} catch (error) {
 			console.error('リソースの削除に失敗しました:', error)
+			// エラー時のフィードバックを表示（オプション）
+			// toast.error('リソースの削除に失敗しました')
+		} finally {
+			setIsDeleting(false)
 		}
 	}
 
@@ -34,8 +42,10 @@ const ResourceDeleteButton = ({ resourceId }: ResourceDeleteButtonProps) => {
 			closeDelay={0}
 		>
 			<Button
-				className="p-2 mr-1 hover:bg-gray-200 transition-colors duration-200 rounded-full outline-none"
+				className={`p-2 mr-1 transition-colors duration-200 rounded-full outline-none
+					${isDeleting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-200'}`}
 				onPress={handleDelete}
+				isDisabled={isDeleting}
 			>
 				<Trash2 className="w-5 h-5 text-zinc-700" />
 			</Button>

@@ -247,16 +247,6 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 		},
 	})
 
-	// 新しい順序を計算するヘルパー関数
-	const calculateNewOrder = (items: Resource[], targetIndex: number) => {
-		if (items.length === 0) return 0
-		if (targetIndex === 0) return items[0].order / 2
-		if (targetIndex >= items.length) return items[items.length - 1].order + 1
-		const prevOrder = items[targetIndex - 1].order
-		const nextOrder = items[targetIndex].order
-		return prevOrder + (nextOrder - prevOrder) / 2
-	}
-
 	const handleResourceClick = async (resource: Resource) => {
 		try {
 			// まず現在のウィンドウの既存のタブを探す

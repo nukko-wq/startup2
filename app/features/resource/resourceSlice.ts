@@ -90,11 +90,38 @@ const resourceSlice = createSlice({
 				}
 			})
 			// deleteResource
+			.addCase(deleteResource.pending, (state, action) => {
+				const resourceId = action.meta.arg
+				for (const sectionId of Object.keys(state.resourcesBySection)) {
+					const section = state.resourcesBySection[sectionId]
+					const resourceIndex = section.resources.findIndex(
+						(r) => r.id === resourceId,
+					)
+
+					if (resourceIndex !== -1) {
+						const resources = [...section.resources]
+						resources.splice(resourceIndex, 1)
+
+						const updatedResources = resources.map((resource, index) => ({
+							...resource,
+							order: index,
+						}))
+
+						state.resourcesBySection[sectionId].resources = updatedResources
+					}
+				}
+			})
 			.addCase(deleteResource.fulfilled, (state, action) => {
 				const { sectionId, updatedResources } = action.payload
 				if (state.resourcesBySection[sectionId]) {
-					// サーバーから返された更新済みのリソース配列で置き換え
 					state.resourcesBySection[sectionId].resources = updatedResources
+				}
+			})
+			.addCase(deleteResource.rejected, (state, action) => {
+				console.error('Failed to delete resource:', action.error)
+				if (state.resourcesBySection[action.meta.arg]) {
+					state.resourcesBySection[action.meta.arg].error =
+						action.error.message || 'リソースの削除に失敗しました'
 				}
 			})
 			// updateResource
@@ -111,7 +138,6 @@ const resourceSlice = createSlice({
 			.addCase(reorderResource.fulfilled, (state, action) => {
 				const { sectionId, updatedResources } = action.payload
 				if (state.resourcesBySection[sectionId]) {
-					// サーバーから返された更新済みのリソース配列で置き換え
 					state.resourcesBySection[sectionId].resources = updatedResources
 				}
 			})
@@ -120,7 +146,6 @@ const resourceSlice = createSlice({
 				const { movedResource, sourceSectionId, targetSectionId } =
 					action.payload
 
-				// 古いセクションからリソースを削除
 				if (state.resourcesBySection[sourceSectionId]) {
 					state.resourcesBySection[sourceSectionId].resources =
 						state.resourcesBySection[sourceSectionId].resources.filter(
@@ -128,7 +153,6 @@ const resourceSlice = createSlice({
 						)
 				}
 
-				// 新しいセクションにリソースを追加
 				if (state.resourcesBySection[targetSectionId]) {
 					state.resourcesBySection[targetSectionId].resources = [
 						...state.resourcesBySection[targetSectionId].resources,
