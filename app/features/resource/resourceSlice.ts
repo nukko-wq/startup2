@@ -91,7 +91,7 @@ const resourceSlice = createSlice({
 			})
 			// deleteResource
 			.addCase(deleteResource.fulfilled, (state, action) => {
-				const { sectionId, deletedResource, updatedResources } = action.payload
+				const { sectionId, updatedResources } = action.payload
 				if (state.resourcesBySection[sectionId]) {
 					// サーバーから返された更新済みのリソース配列で置き換え
 					state.resourcesBySection[sectionId].resources = updatedResources
