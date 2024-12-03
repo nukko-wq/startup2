@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server'
 
 export async function GET() {
-	// この値は環境変数から取得するのがベストプラクティスです
-	const extensionId = process.env.EXTENSION_ID
+	const extensionIdsStr = process.env.EXTENSION_ID
+	if (!extensionIdsStr) {
+		return new NextResponse('Extension IDs not configured', { status: 500 })
+	}
 
-	return NextResponse.json({ extensionId })
+	// カンマ区切りの文字列を配列に変換
+	const extensionIds = extensionIdsStr.split(',').map((id) => id.trim())
+
+	return NextResponse.json({ extensionIds })
 }

@@ -18,14 +18,27 @@ export const tabsApi = {
 					: 'https://startup.nukko.dev/api/extension/id'
 
 			const response = await fetch(apiUrl)
-			const { extensionId } = await response.json()
+			const { extensionIds } = await response.json()
 
-			if (!extensionId) {
-				throw new Error('Extension ID not found')
+			if (!extensionIds || extensionIds.length === 0) {
+				throw new Error('Extension IDs not found')
 			}
 
-			const result = await chrome.runtime.sendMessage(extensionId, message)
-			return result
+			for (const extensionId of extensionIds) {
+				try {
+					const result = await chrome.runtime.sendMessage(extensionId, message)
+					if (result) {
+						return result
+					}
+				} catch (error) {
+					console.debug(
+						`Failed to send message to extension ${extensionId}:`,
+						error,
+					)
+				}
+			}
+
+			throw new Error('Failed to send message to all extensions')
 		} catch (error) {
 			console.error('Error sending message to extension:', error)
 			return {
