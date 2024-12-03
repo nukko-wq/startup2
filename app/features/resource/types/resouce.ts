@@ -46,7 +46,8 @@ export interface CreateResourceResponse extends Resource {}
 export interface UpdateResourceResponse extends Resource {}
 
 export interface DeleteResourceResponse {
-	id: string
+	deletedResource: Resource
+	updatedResources: Resource[]
 	sectionId: string
 }
 

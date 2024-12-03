@@ -15,14 +15,49 @@ export async function DELETE(
 		const resolvedParams = await params
 		const { resourceId } = resolvedParams
 
-		const resource = await prisma.resource.delete({
-			where: {
-				id: resourceId,
-				userId: user.id,
-			},
+		const result = await prisma.$transaction(async (tx) => {
+			const targetResource = await tx.resource.findUnique({
+				where: { id: resourceId },
+			})
+
+			if (!targetResource) {
+				throw new Error('Resource not found')
+			}
+
+			const deletedResource = await tx.resource.delete({
+				where: {
+					id: resourceId,
+					userId: user.id,
+				},
+			})
+
+			await tx.resource.updateMany({
+				where: {
+					sectionId: targetResource.sectionId,
+					order: {
+						gt: targetResource.order,
+					},
+				},
+				data: {
+					order: {
+						decrement: 1,
+					},
+				},
+			})
+
+			const updatedResources = await tx.resource.findMany({
+				where: { sectionId: targetResource.sectionId },
+				orderBy: { order: 'asc' },
+			})
+
+			return {
+				deletedResource,
+				updatedResources,
+				sectionId: targetResource.sectionId,
+			}
 		})
 
-		return NextResponse.json(resource)
+		return NextResponse.json(result)
 	} catch (error) {
 		console.error(error)
 		return new NextResponse('Internal Error', { status: 500 })
