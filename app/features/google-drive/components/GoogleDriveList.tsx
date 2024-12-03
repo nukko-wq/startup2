@@ -49,7 +49,7 @@ const GoogleDriveList = ({ onSelect }: GoogleDriveListProps) => {
 				<Search className="w-[20px] h-[20px] text-zinc-700 ml-4 mr-2" />
 				<Input
 					className="w-[400px] text-zinc-700 outline-none"
-					placeholder="Search Drive for resouces to add..."
+					placeholder="Search Drive for resources to add..."
 					aria-label="Search Drive"
 					value={searchQuery}
 					onChange={(e) => setSearchQuery(e.target.value)}
@@ -59,12 +59,11 @@ const GoogleDriveList = ({ onSelect }: GoogleDriveListProps) => {
 				className="flex flex-col flex-grow w-[400px] h-[428px] border-l"
 				aria-label="Recent Google Drive Files"
 			>
-				{/* 検索結果を表示する */}
-
-				{/* 最近のファイルを表示する */}
 				<div className="flex items-center justify-center h-[17px]">
 					<div className="border-t border-zinc-200 flex-grow" />
-					<h2 className="text-sm text-zinc-500 px-4">Recent</h2>
+					{!searchQuery && (
+						<h2 className="text-sm text-zinc-500 px-4">Recent</h2>
+					)}
 					<div className="border-t border-zinc-200 flex-grow" />
 				</div>
 				{loading ? (
