@@ -312,6 +312,9 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 			if (pathname.startsWith('/drive/')) {
 				return 'Google Drive'
 			}
+			if (pathname.startsWith('/document/')) {
+				return 'Google Document'
+			}
 		}
 
 		return 'Webpage'
