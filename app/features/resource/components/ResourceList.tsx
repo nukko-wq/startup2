@@ -286,6 +286,37 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 		}
 	}
 
+	const getResourceDescription = (resource: Resource) => {
+		if (resource.description) {
+			return resource.description
+		}
+
+		const url = new URL(resource.url)
+		const hostname = url.hostname
+		const pathname = url.pathname
+
+		if (hostname === 'mail.google.com') {
+			return 'Gmail'
+		}
+		if (hostname === 'github.com') {
+			return 'GitHub'
+		}
+
+		if (hostname === 'docs.google.com') {
+			if (pathname.startsWith('/forms/')) {
+				return 'Google Form'
+			}
+			if (pathname.startsWith('/spreadsheets/')) {
+				return 'Google Sheet'
+			}
+			if (pathname.startsWith('/drive/')) {
+				return 'Google Drive'
+			}
+		}
+
+		return 'Webpage'
+	}
+
 	/*
 	if (loading) {
 		return <div>読み込み中...</div>
@@ -338,8 +369,8 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 							/>
 							<div className="flex flex-col truncate">
 								<span className="truncate">{resource.title}</span>
-								<span className="text-xs text-muted-foreground">
-									{resource.description || 'Webpage'}
+								<span className="text-xs text-gray-400">
+									{getResourceDescription(resource)}
 								</span>
 							</div>
 						</div>
