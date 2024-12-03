@@ -128,10 +128,10 @@ const WorkspaceList = () => {
 	if (error) return <div className="text-zinc-50">エラーが発生しました</div>
 
 	return (
-		<div className="space-y-1">
+		<div className="">
 			{/* デフォルトワークスペース */}
 			{defaultWorkspace && (
-				<div className="mb-4">
+				<div className="">
 					<div className="flex items-center">
 						<div className="flex flex-col flex-grow justify-between">
 							<div className="flex items-center justify-between mb-1">
@@ -165,7 +165,7 @@ const WorkspaceList = () => {
 					>
 						<div className="flex items-center">
 							<div className="flex flex-col flex-grow justify-between">
-								<div className="flex items-center justify-between group min-h-[40px]">
+								<div className="flex items-center justify-between group min-h-[40px] mt-1">
 									<div className="flex items-center flex-grow">
 										<div className="flex items-center cursor-grab">
 											<Button
