@@ -7,9 +7,15 @@ import {
 	Menu,
 } from 'react-aria-components'
 import { closeAllTabs, sortTabsByDomain } from '@/app/features/tabs/tabsSlice'
+import { useSelector } from 'react-redux'
+import type { RootState } from '@/app/store/store'
 
 const TabsMenu = () => {
+	const tabs = useSelector((state: RootState) => state.tabs.tabs)
+	const hasUnpinnedTabs = tabs.some((tab) => !tab.pinned)
+
 	const handleCloseAllTabs = async () => {
+		if (!hasUnpinnedTabs) return
 		try {
 			await closeAllTabs()
 		} catch (error) {
@@ -18,6 +24,7 @@ const TabsMenu = () => {
 	}
 
 	const handleSortByDomain = async () => {
+		if (!hasUnpinnedTabs) return
 		try {
 			await sortTabsByDomain()
 		} catch (error) {
@@ -38,7 +45,13 @@ const TabsMenu = () => {
 					<Menu className="bg-zinc-50 outline-none border rounded-lg shadow-md min-w-[200px]">
 						<MenuItem
 							onAction={handleSortByDomain}
-							className="p-2 outline-none hover:bg-zinc-200 cursor-pointer"
+							className={`p-2 outline-none cursor-pointer
+								${
+									hasUnpinnedTabs
+										? 'hover:bg-zinc-200'
+										: 'opacity-50 cursor-not-allowed'
+								}`}
+							isDisabled={!hasUnpinnedTabs}
 						>
 							<div className="flex items-center gap-2">
 								<FilePlus className="w-4 h-4" />
@@ -46,8 +59,14 @@ const TabsMenu = () => {
 							</div>
 						</MenuItem>
 						<MenuItem
-							className="p-2 outline-none hover:bg-zinc-200 text-red-600 cursor-pointer"
+							className={`p-2 outline-none text-red-600 cursor-pointer
+								${
+									hasUnpinnedTabs
+										? 'hover:bg-zinc-200'
+										: 'opacity-50 cursor-not-allowed'
+								}`}
 							onAction={handleCloseAllTabs}
+							isDisabled={!hasUnpinnedTabs}
 						>
 							<div className="flex items-center gap-2">
 								<Trash2 className="w-4 h-4" />

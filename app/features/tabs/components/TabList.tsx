@@ -112,62 +112,69 @@ const TabList = () => {
 				</div>
 				<TabsMenu />
 			</div>
-			<GridList
-				aria-label="Tabs"
-				items={tabs}
-				dragAndDropHooks={dragAndDropHooks}
-				className="border-slate-400 rounded-md flex flex-col bg-white shadow-sm"
-			>
-				{(tab) => (
-					<GridListItem
-						key={tab.id}
-						className="block items-center gap-2 pr-2 py-1 truncate hover:bg-zinc-100 rounded cursor-grab group outline-none"
-						onAction={() => handleTabAction(tab)}
-					>
-						<div className="grid grid-cols-[1fr_72px] items-center gap-2">
-							<div className="flex items-center gap-2 truncate">
-								<div
-									className="cursor-grab flex items-center opacity-0 group-hover:opacity-100 pl-3"
-									aria-label="Drag Wrapper"
-								>
-									<Button
-										className="cursor-grab"
-										slot="drag"
-										aria-label="ドラッグハンドル"
-									>
-										<GripVertical className="w-4 h-4 text-zinc-500" />
-									</Button>
-								</div>
+			{tabs.length > 0 && (
+				<GridList
+					aria-label="Tabs"
+					items={tabs}
+					dragAndDropHooks={dragAndDropHooks}
+					className="border-slate-400 rounded-md flex flex-col bg-white shadow-sm"
+				>
+					{(tab) => (
+						<GridListItem
+							key={tab.id}
+							className="block items-center gap-2 pr-2 py-1 truncate hover:bg-zinc-100 rounded cursor-grab group outline-none"
+							onAction={() => handleTabAction(tab)}
+						>
+							<div className="grid grid-cols-[1fr_72px] items-center gap-2">
 								<div className="flex items-center gap-2 truncate">
-									{tab.faviconUrl ? (
-										<img
-											src={tab.faviconUrl}
-											alt=""
-											className="w-4 h-4 flex-grow"
+									<div
+										className="cursor-grab flex items-center opacity-0 group-hover:opacity-100 pl-3"
+										aria-label="Drag Wrapper"
+									>
+										<Button
+											className="cursor-grab"
+											slot="drag"
+											aria-label="ドラッグハンドル"
+										>
+											<GripVertical className="w-4 h-4 text-zinc-500" />
+										</Button>
+									</div>
+									<div className="flex items-center gap-2 truncate">
+										{tab.faviconUrl ? (
+											<img
+												src={tab.faviconUrl}
+												alt=""
+												className="w-4 h-4 flex-grow"
+											/>
+										) : (
+											<div className="w-4 h-4 bg-gray-200 rounded-full" />
+										)}
+										<span className="truncate">{tab.title}</span>
+									</div>
+								</div>
+								<div className="flex items-center">
+									<div className="opacity-0 group-hover:opacity-100">
+										<TabSaveButton
+											tabId={tab.id}
+											title={tab.title}
+											url={tab.url}
+											faviconUrl={tab.faviconUrl}
 										/>
-									) : (
-										<div className="w-4 h-4 bg-gray-200 rounded-full" />
-									)}
-									<span className="truncate">{tab.title}</span>
+									</div>
+									<div className="opacity-0 group-hover:opacity-100">
+										<TabDeleteButton tabId={tab.id} />
+									</div>
 								</div>
 							</div>
-							<div className="flex items-center">
-								<div className="opacity-0 group-hover:opacity-100">
-									<TabSaveButton
-										tabId={tab.id}
-										title={tab.title}
-										url={tab.url}
-										faviconUrl={tab.faviconUrl}
-									/>
-								</div>
-								<div className="opacity-0 group-hover:opacity-100">
-									<TabDeleteButton tabId={tab.id} />
-								</div>
-							</div>
-						</div>
-					</GridListItem>
-				)}
-			</GridList>
+						</GridListItem>
+					)}
+				</GridList>
+			)}
+			{tabs.length === 0 && (
+				<div className="border-slate-400 rounded-md flex flex-col bg-white shadow-sm h-[56px] justify-center items-center">
+					<p className="text-zinc-400 text-sm">Start browsing</p>
+				</div>
+			)}
 		</div>
 	)
 }
