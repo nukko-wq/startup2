@@ -59,7 +59,8 @@ export interface CreateSpaceResponse {
 }
 
 export interface DeleteSpaceResponse {
-	spaceId: string
+	deletedSpace: Space
+	updatedSpaces: Space[]
 	workspaceId: string
 }
 

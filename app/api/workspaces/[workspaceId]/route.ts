@@ -15,25 +15,58 @@ export async function DELETE(
 		const resolvedParams = await params
 		const { workspaceId } = resolvedParams
 
-		const workspace = await prisma.workspace.findUnique({
-			where: {
-				id: workspaceId,
-				userId: user.id,
-			},
+		const result = await prisma.$transaction(async (tx) => {
+			// 削除対象のワークスペースを取得
+			const targetWorkspace = await tx.workspace.findUnique({
+				where: {
+					id: workspaceId,
+					userId: user.id,
+				},
+			})
+
+			if (!targetWorkspace) {
+				throw new Error('Workspace not found')
+			}
+
+			// ワークスペースを削除
+			const deletedWorkspace = await tx.workspace.delete({
+				where: {
+					id: workspaceId,
+					userId: user.id,
+				},
+			})
+
+			// 同じユーザーの、削除したワークスペースより大きいorderを持つワークスペースのorderを1つずつ減らす
+			await tx.workspace.updateMany({
+				where: {
+					userId: user.id,
+					isDefault: false,
+					order: {
+						gt: targetWorkspace.order,
+					},
+				},
+				data: {
+					order: {
+						decrement: 1,
+					},
+				},
+			})
+
+			// 更新後のワークスペース一覧を取得
+			const updatedWorkspaces = await tx.workspace.findMany({
+				where: {
+					userId: user.id,
+				},
+				orderBy: { order: 'asc' },
+			})
+
+			return {
+				deletedWorkspace,
+				updatedWorkspaces,
+			}
 		})
 
-		if (!workspace) {
-			return new NextResponse('Workspace not found', { status: 404 })
-		}
-
-		await prisma.workspace.delete({
-			where: {
-				id: workspaceId,
-				userId: user.id,
-			},
-		})
-
-		return new NextResponse(null, { status: 204 })
+		return NextResponse.json(result)
 	} catch (error) {
 		console.error('Error deleting workspace:', error)
 		return new NextResponse('Internal Error', { status: 500 })

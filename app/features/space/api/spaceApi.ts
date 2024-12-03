@@ -36,7 +36,10 @@ export const spaceApi = {
 		return { space: data, workspaceId }
 	},
 
-	deleteSpace: async (spaceId: string, workspaceId: string) => {
+	deleteSpace: async (
+		spaceId: string,
+		workspaceId: string,
+	): Promise<DeleteSpaceResponse> => {
 		const response = await fetch(
 			`/api/workspaces/${workspaceId}/spaces/${spaceId}`,
 			{
@@ -46,7 +49,7 @@ export const spaceApi = {
 		if (!response.ok) {
 			throw new Error('スペースの削除に失敗しました')
 		}
-		return { spaceId, workspaceId }
+		return response.json()
 	},
 
 	setActiveSpace: async (spaceId: string) => {

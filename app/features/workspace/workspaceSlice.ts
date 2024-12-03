@@ -108,9 +108,12 @@ const workspaceSlice = createSlice({
 				state.error = null
 			})
 			.addCase(deleteWorkspace.fulfilled, (state, action) => {
-				state.workspaces = state.workspaces.filter(
-					(workspace) => workspace.id !== action.payload.workspaceId,
-				)
+				const { updatedWorkspaces } = action.payload
+				const defaultWorkspace = updatedWorkspaces.find((w) => w.isDefault)
+				const normalWorkspaces = updatedWorkspaces.filter((w) => !w.isDefault)
+
+				state.defaultWorkspace = defaultWorkspace || null
+				state.workspaces = normalWorkspaces
 				state.loading = false
 			})
 			.addCase(deleteWorkspace.rejected, (state, action) => {
