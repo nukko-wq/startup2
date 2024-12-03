@@ -29,6 +29,7 @@ const WorkspaceCreateForm = ({ onClose }: { onClose: () => void }) => {
 
 	const onSubmit = async (data: FormData) => {
 		try {
+			setIsSubmitting(true)
 			await dispatch(createWorkspace(data.name)).unwrap()
 			onClose()
 		} catch (error) {

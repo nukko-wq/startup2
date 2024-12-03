@@ -92,7 +92,7 @@ const SpaceCreateForm = ({ onClose, workspaceId }: SpaceCreateFormProps) => {
 				<Button
 					type="button"
 					onPress={onClose}
-					className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 outline-none"
+					className="px-4 py-2 border rounded hover:bg-gray-50 outline-none"
 				>
 					キャンセル
 				</Button>

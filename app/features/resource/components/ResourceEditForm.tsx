@@ -1,5 +1,5 @@
 import { Earth } from 'lucide-react'
-import React from 'react'
+import React, { useState } from 'react'
 import { Button, Form, Input, Label, TextField } from 'react-aria-components'
 import { Controller, useForm } from 'react-hook-form'
 import { useDispatch } from 'react-redux'
@@ -20,11 +20,11 @@ interface ResourceFormData {
 
 const ResourceEditForm = ({ resource, onClose }: ResourceEditFormProps) => {
 	const dispatch = useDispatch<AppDispatch>()
-
+	const [isSubmitting, setIsSubmitting] = useState(false)
 	const {
 		control,
 		handleSubmit,
-		formState: { isSubmitting },
+		formState: { isValid },
 	} = useForm<ResourceFormData>({
 		defaultValues: {
 			title: resource.title,
@@ -35,6 +35,7 @@ const ResourceEditForm = ({ resource, onClose }: ResourceEditFormProps) => {
 
 	const onSubmit = async (data: ResourceFormData) => {
 		try {
+			setIsSubmitting(true)
 			await dispatch(
 				updateResource({
 					id: resource.id,
@@ -46,6 +47,8 @@ const ResourceEditForm = ({ resource, onClose }: ResourceEditFormProps) => {
 			onClose()
 		} catch (error) {
 			console.error('リソースの更新に失敗しました:', error)
+		} finally {
+			setIsSubmitting(false)
 		}
 	}
 
@@ -115,14 +118,14 @@ const ResourceEditForm = ({ resource, onClose }: ResourceEditFormProps) => {
 						onPress={onClose}
 						className="px-4 py-2 text-sm border rounded hover:bg-gray-50 outline-none"
 					>
-						Cancel
+						キャンセル
 					</Button>
 					<Button
 						type="submit"
-						isDisabled={isSubmitting}
+						isDisabled={!isValid || isSubmitting}
 						className="px-4 py-2 text-sm border rounded bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 outline-none"
 					>
-						{isSubmitting ? 'Saving...' : 'Save'}
+						{isSubmitting ? '保存中...' : '保存'}
 					</Button>
 				</div>
 			</div>
