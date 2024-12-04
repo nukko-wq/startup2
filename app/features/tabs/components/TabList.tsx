@@ -42,20 +42,12 @@ const TabList = () => {
 
 		const requestInitialTabs = async () => {
 			try {
-				if (!isExtensionInstalled) return
 				const result = await sendMessageToExtension({
 					type: 'REQUEST_TABS_UPDATE',
 				})
-				if (!result.success && result.error !== 'Extension not installed') {
-					console.debug('Failed to request tabs:', result.error)
-				}
-			} catch (error: unknown) {
-				if (
-					error instanceof Error &&
-					error.message !== 'Extension not installed'
-				) {
-					console.debug('Error requesting initial tabs:', error)
-				}
+				console.log('Initial tabs request result:', result)
+			} catch (error) {
+				console.error('Error requesting initial tabs:', error)
 			}
 		}
 		requestInitialTabs()
