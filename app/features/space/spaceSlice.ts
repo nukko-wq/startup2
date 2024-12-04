@@ -203,11 +203,35 @@ const spaceSlice = createSlice({
 			.addCase(setActiveSpace.fulfilled, (state, action) => {
 				const { spaceId } = action.payload
 				state.activeSpaceId = spaceId
-				// 全てのスペースのisLastActiveをfalseに設定
+
+				// 全てのワークスペースのスペースを一度に更新
+				const updatedSpaces = new Map()
+
+				// まず全てのスペースのisLastActiveをfalseに設定
 				for (const workspace of Object.values(state.spacesByWorkspace)) {
 					for (const space of workspace.spaces) {
-						space.isLastActive = space.id === spaceId
+						space.isLastActive = false
+						updatedSpaces.set(space.id, space)
 					}
+				}
+
+				// 次に、選択されたスペースのisLastActiveをtrueに設定
+				for (const workspace of Object.values(state.spacesByWorkspace)) {
+					const targetSpace = workspace.spaces.find(
+						(space) => space.id === spaceId,
+					)
+					if (targetSpace) {
+						targetSpace.isLastActive = true
+						updatedSpaces.set(targetSpace.id, targetSpace)
+						break
+					}
+				}
+
+				// 更新されたスペースを各ワークスペースに反映
+				for (const workspace of Object.values(state.spacesByWorkspace)) {
+					workspace.spaces = workspace.spaces.map(
+						(space) => updatedSpaces.get(space.id) || space,
+					)
 				}
 			})
 			.addCase(setActiveSpace.rejected, (state, action) => {

@@ -63,8 +63,12 @@ export const spaceApi = {
 		if (!response.ok) {
 			throw new Error('アクティブスペースの設定に失敗しました')
 		}
-		const data = await response.json()
-		return { spaceId, workspaceId }
+		const updatedSpace = await response.json()
+		return {
+			spaceId: updatedSpace.id,
+			workspaceId,
+			space: updatedSpace,
+		}
 	},
 
 	renameSpace: async (spaceId: string, name: string, workspaceId: string) => {
