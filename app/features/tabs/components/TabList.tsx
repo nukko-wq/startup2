@@ -33,32 +33,31 @@ const TabList = () => {
 				event.data.source === 'startup-extension' &&
 				event.data.type === 'TABS_UPDATED'
 			) {
-				console.log('Received tabs update:', event.data.tabs)
+				console.log('Received TABS_UPDATED message:', event.data.tabs)
 				dispatch(setTabs(event.data.tabs))
 			}
 		}
 
 		window.addEventListener('message', handleMessage)
 
-		const requestInitialTabs = async () => {
+		const requestTabs = async () => {
 			try {
-				if (!isExtensionInstalled) return
-				const result = await sendMessageToExtension({
+				console.log('Requesting initial tabs...')
+				const response = await sendMessageToExtension({
 					type: 'REQUEST_TABS_UPDATE',
 				})
-				if (!result.success && result.error !== 'Extension not installed') {
-					console.debug('Failed to request tabs:', result.error)
+				console.log('Initial tabs response:', response)
+
+				if (response.success && Array.isArray(response.tabs)) {
+					dispatch(setTabs(response.tabs))
+				} else {
+					console.error('Invalid tabs response:', response)
 				}
-			} catch (error: unknown) {
-				if (
-					error instanceof Error &&
-					error.message !== 'Extension not installed'
-				) {
-					console.debug('Error requesting initial tabs:', error)
-				}
+			} catch (error) {
+				console.error('Error requesting initial tabs:', error)
 			}
 		}
-		requestInitialTabs()
+		requestTabs()
 
 		return () => window.removeEventListener('message', handleMessage)
 	}, [dispatch, isExtensionInstalled])
