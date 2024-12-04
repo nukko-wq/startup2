@@ -1,4 +1,5 @@
 import { Providers } from '@/app/providers'
+import { ExtensionConnector } from '@/app/features/extension/ExtensionConnector'
 import type { Metadata } from 'next'
 import './globals.css'
 
@@ -19,7 +20,10 @@ export default function RootLayout({
 	return (
 		<html lang="ja">
 			<body>
-				<Providers>{children}</Providers>
+				<Providers>
+					<ExtensionConnector />
+					{children}
+				</Providers>
 			</body>
 		</html>
 	)
