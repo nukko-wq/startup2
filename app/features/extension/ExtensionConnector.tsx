@@ -10,29 +10,40 @@ export function ExtensionConnector() {
 		const sendTokenToExtension = async () => {
 			if (session?.accessToken) {
 				try {
-					// 拡張機能のIDを取得
 					const response = await fetch('/api/extension/id')
-					const { extensionId } = await response.json()
+					const { extensionIds } = await response.json()
 
-					if (!extensionId) {
-						console.error('Extension ID not found')
+					if (!extensionIds || extensionIds.length === 0) {
+						console.error('Extension IDs not found')
 						return
 					}
 
-					// トークンを拡張機能に送信
-					await chrome.runtime.sendMessage(extensionId, {
-						type: 'SET_TOKEN',
-						token: session.accessToken,
-					})
-					console.log('Token sent to extension')
+					console.log('Sending token to extensions:', extensionIds)
+
+					for (const extensionId of extensionIds) {
+						try {
+							const result = await chrome.runtime.sendMessage(extensionId, {
+								type: 'SET_TOKEN',
+								token: session.accessToken,
+							})
+							console.log('Token sent successfully:', result)
+						} catch (error) {
+							console.error(
+								`Failed to send token to extension ${extensionId}:`,
+								error,
+							)
+						}
+					}
 				} catch (error) {
 					console.error('Failed to send token to extension:', error)
 				}
+			} else {
+				console.log('No access token available')
 			}
 		}
 
 		sendTokenToExtension()
-	}, [session])
+	}, [session?.accessToken])
 
 	return null
 }
