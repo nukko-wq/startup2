@@ -33,14 +33,31 @@ const TabList = () => {
 				event.data.source === 'startup-extension' &&
 				event.data.type === 'TABS_UPDATED'
 			) {
-				console.log('Received tabs in React:', event.data.tabs)
+				console.log('Received TABS_UPDATED message:', event.data.tabs)
 				dispatch(setTabs(event.data.tabs))
 			}
 		}
 
 		window.addEventListener('message', handleMessage)
-		console.log('Requesting initial tabs...')
-		sendMessageToExtension({ type: 'REQUEST_TABS_UPDATE' })
+
+		const requestTabs = async () => {
+			try {
+				console.log('Requesting initial tabs...')
+				const response = await sendMessageToExtension({
+					type: 'REQUEST_TABS_UPDATE',
+				})
+				console.log('Initial tabs response:', response)
+
+				if (response.success && Array.isArray(response.tabs)) {
+					dispatch(setTabs(response.tabs))
+				} else {
+					console.error('Invalid tabs response:', response)
+				}
+			} catch (error) {
+				console.error('Error requesting initial tabs:', error)
+			}
+		}
+		requestTabs()
 
 		return () => window.removeEventListener('message', handleMessage)
 	}, [dispatch, isExtensionInstalled])
