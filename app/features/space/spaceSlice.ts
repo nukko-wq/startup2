@@ -36,10 +36,15 @@ export const deleteSpace = createAsyncThunk(
 	},
 )
 
+export interface SetActiveSpacePayload {
+	spaceId: string
+	workspaceId: string
+}
+
 export const setActiveSpace = createAsyncThunk(
 	'space/setActiveSpace',
-	async (spaceId: string) => {
-		return await spaceApi.setActiveSpace(spaceId)
+	async ({ spaceId, workspaceId }: SetActiveSpacePayload) => {
+		return await spaceApi.setActiveSpace(spaceId, workspaceId)
 	},
 )
 
@@ -196,11 +201,12 @@ const spaceSlice = createSlice({
 				// オプション: ローディング状態の管理が必要な場合
 			})
 			.addCase(setActiveSpace.fulfilled, (state, action) => {
-				state.activeSpaceId = action.payload
+				const { spaceId } = action.payload
+				state.activeSpaceId = spaceId
 				// 全てのスペースのisLastActiveをfalseに設定
 				for (const workspace of Object.values(state.spacesByWorkspace)) {
 					for (const space of workspace.spaces) {
-						space.isLastActive = space.id === action.payload
+						space.isLastActive = space.id === spaceId
 					}
 				}
 			})

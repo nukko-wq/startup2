@@ -49,7 +49,7 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 	}, [dispatch, workspaceId])
 
 	const handleSpaceClick = (spaceId: string) => {
-		dispatch(setActiveSpace(spaceId))
+		dispatch(setActiveSpace({ spaceId, workspaceId }))
 	}
 
 	const { dragAndDropHooks } = useDragAndDrop({
