@@ -242,22 +242,23 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 		return <div className="text-zinc-50">{workspaceSpaces.error}</div>
 
 	return (
-		<GridList
-			aria-label="Spaces"
-			items={workspaceSpaces.spaces}
-			dragAndDropHooks={dragAndDropHooks}
-			selectionMode="single"
-			className="flex flex-col outline-none min-h-[40px]"
-			renderEmptyState={() => (
-				<div className="ml-11 mr-4">
-					<CreateSpaceInWorkspace workspaceId={workspaceId} />
-				</div>
-			)}
-		>
-			{(space) => (
-				<GridListItem
-					key={space.id}
-					className={`
+		<>
+			<GridList
+				aria-label="Spaces"
+				items={workspaceSpaces.spaces}
+				dragAndDropHooks={dragAndDropHooks}
+				selectionMode="single"
+				className="flex flex-col outline-none min-h-[40px]"
+				renderEmptyState={() => (
+					<div className="ml-11 mr-4">
+						<CreateSpaceInWorkspace workspaceId={workspaceId} />
+					</div>
+				)}
+			>
+				{(space) => (
+					<GridListItem
+						key={space.id}
+						className={`
 						flex flex-grow justify-between text-gray-400 outline-none cursor-pointer 
 						hover:bg-gray-700 hover:bg-opacity-75 group transition duration-200 pl-3
 						${
@@ -266,28 +267,53 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 								: 'border-l-4 border-transparent'
 						}
 					`}
-					onAction={() => handleSpaceClick(space.id)}
-				>
-					<div className="flex flex-grow items-center justify-between py-1 group">
-						<div className="flex items-center flex-grow">
-							<div className="flex items-center cursor-grab">
-								<Button
-									slot="drag"
-									className="cursor-grab flex items-center pr-3"
-									area-label="drag handle"
-								>
-									<GripVertical className="w-4 h-4 text-zinc-500" />
-								</Button>
+						onAction={() => handleSpaceClick(space.id)}
+					>
+						<div className="flex flex-grow items-center justify-between py-1 group">
+							<div className="flex items-center flex-grow">
+								<div className="flex items-center cursor-grab">
+									<Button
+										slot="drag"
+										className="cursor-grab flex items-center pr-3"
+										area-label="drag handle"
+									>
+										<GripVertical className="w-4 h-4 text-zinc-500" />
+									</Button>
+								</div>
+								<div className="text-left outline-none text-sm">
+									{space.name}
+								</div>
 							</div>
-							<div className="text-left outline-none text-sm">{space.name}</div>
+							<div className="opacity-0 group-hover:opacity-100">
+								<SpaceMenu spaceId={space.id} workspaceId={workspaceId} />
+							</div>
 						</div>
-						<div className="opacity-0 group-hover:opacity-100">
-							<SpaceMenu spaceId={space.id} workspaceId={workspaceId} />
+					</GridListItem>
+				)}
+			</GridList>
+
+			{/* Space List Overlay */}
+			<div className="fixed inset-0 z-50 bg-[#292f3d]/10 hidden">
+				<div className="h-full bg-[#292f3d]/10">
+					<div className="flex items-center justify-center h-full">
+						<div
+							className="flex flex-col justify-center items-center min-w-[320px] bg-zinc-50 text-zinc-800 border border-zinc-50 rounded-xl p-2 shadow-md"
+							aria-label="Space List Overlay"
+						>
+							<div className="w-full h-10 inline-flex items-center hover:bg-gray-700 hover:bg-opacity-75 group transition duration-200 rounded-md px-2">
+								Space1
+							</div>
+							<div className="w-full h-10 inline-flex items-center hover:bg-gray-700 hover:bg-opacity-75 group transition duration-200 rounded-md px-2">
+								Space2
+							</div>
+							<div className="w-full h-10 inline-flex items-center hover:bg-gray-700 hover:bg-opacity-75 group transition duration-200 rounded-md px-2">
+								Space3
+							</div>
 						</div>
 					</div>
-				</GridListItem>
-			)}
-		</GridList>
+				</div>
+			</div>
+		</>
 	)
 }
 
