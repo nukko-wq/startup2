@@ -15,6 +15,7 @@ import type { Tab } from '@/app/features/tabs/types/tabs'
 import TabDeleteButton from '@/app/features/tabs/components/TabDeleteButton'
 import TabSaveButton from '@/app/features/tabs/components/TabSaveButton'
 import TabsMenu from '@/app/features/tabs/components/TabsMenu'
+import { tabsApi } from '@/app/features/tabs/api/tabsApi'
 
 const TabList = () => {
 	const dispatch = useDispatch()
@@ -33,32 +34,32 @@ const TabList = () => {
 				event.data.source === 'startup-extension' &&
 				event.data.type === 'TABS_UPDATED'
 			) {
-				console.log('Received tabs update:', event.data.tabs)
+				console.log('Received TABS_UPDATED message:', event.data.tabs)
 				dispatch(setTabs(event.data.tabs))
 			}
 		}
 
 		window.addEventListener('message', handleMessage)
 
-		const requestInitialTabs = async () => {
+		const requestTabs = async () => {
 			try {
 				if (!isExtensionInstalled) return
-				const result = await sendMessageToExtension({
+				const result = await tabsApi.sendMessageToExtension({
 					type: 'REQUEST_TABS_UPDATE',
 				})
-				if (!result.success && result.error !== 'Extension not installed') {
+				if (!result.success) {
 					console.debug('Failed to request tabs:', result.error)
 				}
 			} catch (error: unknown) {
-				if (
-					error instanceof Error &&
-					error.message !== 'Extension not installed'
-				) {
+				if (error instanceof Error) {
 					console.debug('Error requesting initial tabs:', error)
+
 				}
+			} catch (error) {
+				console.error('Error requesting initial tabs:', error)
 			}
 		}
-		requestInitialTabs()
+		requestTabs()
 
 		return () => window.removeEventListener('message', handleMessage)
 	}, [dispatch, isExtensionInstalled])
