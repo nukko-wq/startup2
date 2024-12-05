@@ -238,6 +238,42 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 		},
 	})
 
+	useEffect(() => {
+		const handleMessage = async (event: MessageEvent) => {
+			if (
+				event.data?.source === 'startup-extension' &&
+				event.data?.type === 'SET_ACTIVE_SPACE'
+			) {
+				try {
+					const { spaceId, workspaceId } = event.data
+					await dispatch(setActiveSpace({ spaceId, workspaceId })).unwrap()
+
+					window.postMessage(
+						{
+							source: 'startup-web-app',
+							type: 'SPACE_UPDATED',
+							spaceId,
+						},
+						'*',
+					)
+				} catch (error) {
+					console.error('Failed to set active space:', error)
+					window.postMessage(
+						{
+							source: 'startup-web-app',
+							type: 'SPACE_UPDATE_ERROR',
+							error: error instanceof Error ? error.message : 'Unknown error',
+						},
+						'*',
+					)
+				}
+			}
+		}
+
+		window.addEventListener('message', handleMessage)
+		return () => window.removeEventListener('message', handleMessage)
+	}, [dispatch])
+
 	if (workspaceSpaces.error)
 		return <div className="text-zinc-50">{workspaceSpaces.error}</div>
 

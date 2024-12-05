@@ -57,6 +57,7 @@ export const spaceApi = {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json',
+				'Cache-Control': 'no-cache',
 			},
 			body: JSON.stringify({ workspaceId }),
 		})
@@ -64,7 +65,11 @@ export const spaceApi = {
 			throw new Error('アクティブスペースの設定に失敗しました')
 		}
 		const data = await response.json()
-		return { spaceId, workspaceId }
+		return {
+			spaceId: data.space.id,
+			workspaceId,
+			space: data.space,
+		}
 	},
 
 	renameSpace: async (spaceId: string, name: string, workspaceId: string) => {

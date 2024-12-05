@@ -9,37 +9,58 @@ export async function PUT(
 	try {
 		const user = await getCurrentUser()
 		if (!user) {
-			return new NextResponse('Unauthorized', { status: 401 })
+			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 		}
 
 		const resolvedParams = await params
 		const spaceId = resolvedParams.spaceId
+		const body = await request.json().catch(() => ({}))
 
-		// 現在のアクティブスペースをリセット
-		await prisma.space.updateMany({
-			where: {
-				userId: user.id,
-				isLastActive: true,
-			},
-			data: {
-				isLastActive: false,
-			},
+		// トランザクションを使用して一貫性を保証
+		const updatedSpace = await prisma.$transaction(async (tx) => {
+			// 現在のアクティブスペースをリセット
+			await tx.space.updateMany({
+				where: {
+					userId: user.id,
+					isLastActive: true,
+				},
+				data: {
+					isLastActive: false,
+				},
+			})
+
+			// 新しいアクティブスペースを設定して返す
+			return await tx.space.update({
+				where: {
+					id: spaceId,
+					userId: user.id,
+				},
+				data: {
+					isLastActive: true,
+				},
+				include: {
+					workspace: true,
+				},
+			})
 		})
 
-		// 新しいアクティブスペースを設定
-		const updatedSpace = await prisma.space.update({
-			where: {
-				id: spaceId,
-				userId: user.id,
+		return NextResponse.json(
+			{ success: true, space: updatedSpace },
+			{
+				headers: {
+					'Cache-Control': 'no-store, no-cache, must-revalidate',
+					Pragma: 'no-cache',
+				},
 			},
-			data: {
-				isLastActive: true,
-			},
-		})
-
-		return NextResponse.json(updatedSpace)
+		)
 	} catch (error) {
 		console.error('Error updating active space:', error)
-		return new NextResponse('Internal Error', { status: 500 })
+		return NextResponse.json(
+			{
+				error: 'Internal Server Error',
+				details: error instanceof Error ? error.message : 'Unknown error',
+			},
+			{ status: 500 },
+		)
 	}
 }
