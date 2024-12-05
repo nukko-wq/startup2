@@ -88,11 +88,19 @@ export const tabsApi = {
 
 	sortTabsByDomain: async () => {
 		try {
-			await tabsApi.sendMessageToExtension({
+			const result = await tabsApi.sendMessageToExtension({
 				type: 'SORT_TABS_BY_DOMAIN',
+			})
+			if (!result.success) {
+				throw new Error(result.error || 'Failed to sort tabs')
+			}
+			// 並び替え後、タブリストの更新をリクエスト
+			return await tabsApi.sendMessageToExtension({
+				type: 'REQUEST_TABS_UPDATE',
 			})
 		} catch (error) {
 			console.error('Error sorting tabs by domain:', error)
+			throw error
 		}
 	},
 }
