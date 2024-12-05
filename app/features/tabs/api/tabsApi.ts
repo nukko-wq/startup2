@@ -26,10 +26,16 @@ export const tabsApi = {
 
 			for (const extensionId of extensionIds) {
 				try {
-					const result = await chrome.runtime.sendMessage(extensionId, message)
-					if (result) {
-						return result
-					}
+					window.postMessage(
+						{
+							...message,
+							extensionId,
+							source: 'webapp',
+						},
+						'*',
+					)
+
+					return { success: true }
 				} catch (error) {
 					console.debug(
 						`Failed to send message to extension ${extensionId}:`,
