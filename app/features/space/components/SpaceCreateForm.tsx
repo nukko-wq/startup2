@@ -44,7 +44,12 @@ const SpaceCreateForm = ({ onClose, workspaceId }: SpaceCreateFormProps) => {
 				await dispatch(createSection(result.space.id)).unwrap()
 
 				try {
-					await dispatch(setActiveSpace(result.space.id)).unwrap()
+					await dispatch(
+						setActiveSpace({
+							spaceId: result.space.id,
+							workspaceId: result.space.workspaceId,
+						}),
+					).unwrap()
 					onClose()
 				} catch (activeError) {
 					console.error('Failed to set active space:', activeError)

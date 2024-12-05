@@ -40,4 +40,5 @@ export interface ExtensionResponse {
 	tabId?: number
 	success?: boolean
 	error?: string
+	tabs?: Tab[]
 }
