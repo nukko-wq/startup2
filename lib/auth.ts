@@ -1,9 +1,30 @@
-import NextAuth from 'next-auth'
+import NextAuth, { type DefaultSession } from 'next-auth'
 import Google from 'next-auth/providers/google'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import { db } from '@/lib/db'
 
 const allowedEmails = process.env.ALLOWED_EMAILS?.split(',') ?? []
+
+// セッションの型定義を拡張
+declare module 'next-auth' {
+	interface Session {
+		user: {
+			id: string
+			email: string
+			name: string
+		} & DefaultSession['user']
+		accessToken: string | null
+		refreshToken: string | null
+		expiresAt: number | null
+	}
+
+	interface JWT {
+		id: string
+		accessToken?: string
+		refreshToken?: string
+		expiresAt?: number
+	}
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
 	adapter: PrismaAdapter(db),
@@ -100,18 +121,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 		async session({ session, token }) {
 			if (session.user) {
 				session.user.id = token.id as string
-				session.accessToken = token.accessToken as string
-				session.refreshToken = token.refreshToken as string
-				session.expiresAt = token.expiresAt as number
+				session.accessToken = token.accessToken as string | null
+				session.refreshToken = token.refreshToken as string | null
+				session.expiresAt = token.expiresAt as number | null
 			}
 			return session
 		},
 		async jwt({ token, account, user }) {
-			if (account && user && user.id) {
+			if (account && user) {
 				token.id = user.id
 				token.accessToken = account.access_token
 				token.refreshToken = account.refresh_token
-				token.expires_at = account.expires_at
+				token.expiresAt = account.expires_at
 			}
 			return token
 		},

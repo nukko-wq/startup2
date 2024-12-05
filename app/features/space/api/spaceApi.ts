@@ -52,17 +52,24 @@ export const spaceApi = {
 		return response.json()
 	},
 
-	setActiveSpace: async (spaceId: string) => {
+	setActiveSpace: async (spaceId: string, workspaceId: string) => {
 		const response = await fetch(`/api/spaces/${spaceId}/active`, {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json',
+				'Cache-Control': 'no-cache',
 			},
+			body: JSON.stringify({ workspaceId }),
 		})
 		if (!response.ok) {
 			throw new Error('アクティブスペースの設定に失敗しました')
 		}
-		return spaceId
+		const data = await response.json()
+		return {
+			spaceId: data.space.id,
+			workspaceId,
+			space: data.space,
+		}
 	},
 
 	renameSpace: async (spaceId: string, name: string, workspaceId: string) => {
