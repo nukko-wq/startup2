@@ -70,11 +70,19 @@ export const tabsApi = {
 
 	closeAllTabs: async () => {
 		try {
-			await tabsApi.sendMessageToExtension({
+			const result = await tabsApi.sendMessageToExtension({
 				type: 'CLOSE_ALL_TABS',
+			})
+			if (!result.success) {
+				throw new Error(result.error || 'Failed to close all tabs')
+			}
+			// タブを閉じた後、更新をリクエスト
+			return await tabsApi.sendMessageToExtension({
+				type: 'REQUEST_TABS_UPDATE',
 			})
 		} catch (error) {
 			console.error('Error closing all tabs:', error)
+			throw error
 		}
 	},
 
