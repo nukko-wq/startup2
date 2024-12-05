@@ -15,6 +15,7 @@ import type { Tab } from '@/app/features/tabs/types/tabs'
 import TabDeleteButton from '@/app/features/tabs/components/TabDeleteButton'
 import TabSaveButton from '@/app/features/tabs/components/TabSaveButton'
 import TabsMenu from '@/app/features/tabs/components/TabsMenu'
+import { tabsApi } from '@/app/features/tabs/api/tabsApi'
 
 const TabList = () => {
 	const dispatch = useDispatch()
@@ -42,16 +43,17 @@ const TabList = () => {
 
 		const requestTabs = async () => {
 			try {
-				console.log('Requesting initial tabs...')
-				const response = await sendMessageToExtension({
+				if (!isExtensionInstalled) return
+				const result = await tabsApi.sendMessageToExtension({
 					type: 'REQUEST_TABS_UPDATE',
 				})
-				console.log('Initial tabs response:', response)
+				if (!result.success) {
+					console.debug('Failed to request tabs:', result.error)
+				}
+			} catch (error: unknown) {
+				if (error instanceof Error) {
+					console.debug('Error requesting initial tabs:', error)
 
-				if (response.success && Array.isArray(response.tabs)) {
-					dispatch(setTabs(response.tabs))
-				} else {
-					console.error('Invalid tabs response:', response)
 				}
 			} catch (error) {
 				console.error('Error requesting initial tabs:', error)

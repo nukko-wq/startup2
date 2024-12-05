@@ -24,21 +24,36 @@ export const tabsApi = {
 				throw new Error('Extension IDs not found')
 			}
 
-			for (const extensionId of extensionIds) {
-				try {
-					const result = await chrome.runtime.sendMessage(extensionId, message)
-					if (result) {
-						return result
+			return new Promise<ExtensionResponse>((resolve, reject) => {
+				const handleResponse = (event: MessageEvent) => {
+					if (event.data.source === 'startup-extension') {
+						window.removeEventListener('message', handleResponse)
+						if (event.data.success) {
+							resolve(event.data)
+						} else {
+							reject(new Error(event.data.error))
+						}
 					}
-				} catch (error) {
-					console.debug(
-						`Failed to send message to extension ${extensionId}:`,
-						error,
+				}
+
+				window.addEventListener('message', handleResponse)
+
+				const timeoutId = setTimeout(() => {
+					window.removeEventListener('message', handleResponse)
+					reject(new Error('Message timeout'))
+				}, 5000)
+
+				for (const extensionId of extensionIds) {
+					window.postMessage(
+						{
+							...message,
+							extensionId,
+							source: 'webapp',
+						},
+						'*',
 					)
 				}
-			}
-
-			throw new Error('Failed to send message to all extensions')
+			})
 		} catch (error) {
 			console.error('Error sending message to extension:', error)
 			return {
