@@ -201,38 +201,28 @@ const spaceSlice = createSlice({
 				// オプション: ローディング状態の管理が必要な場合
 			})
 			.addCase(setActiveSpace.fulfilled, (state, action) => {
-				const { spaceId } = action.payload
+				const { spaceId, space } = action.payload
 				state.activeSpaceId = spaceId
 
-				// 全てのワークスペースのスペースを一度に更新
-				const updatedSpaces = new Map()
-
-				// まず全てのスペースのisLastActiveをfalseに設定
-				for (const workspace of Object.values(state.spacesByWorkspace)) {
-					for (const space of workspace.spaces) {
-						space.isLastActive = false
-						updatedSpaces.set(space.id, space)
-					}
+				// 全てのワークスペースのスペースを更新
+				for (const workspaceState of Object.values(state.spacesByWorkspace)) {
+					workspaceState.spaces = workspaceState.spaces.map((existingSpace) => {
+						if (existingSpace.id === spaceId) {
+							return { ...existingSpace, ...space, isLastActive: true }
+						}
+						return { ...existingSpace, isLastActive: false }
+					})
 				}
 
-				// 次に、選択されたスペースのisLastActiveをtrueに設定
-				for (const workspace of Object.values(state.spacesByWorkspace)) {
-					const targetSpace = workspace.spaces.find(
-						(space) => space.id === spaceId,
-					)
-					if (targetSpace) {
-						targetSpace.isLastActive = true
-						updatedSpaces.set(targetSpace.id, targetSpace)
-						break
-					}
-				}
-
-				// 更新されたスペースを各ワークスペースに反映
-				for (const workspace of Object.values(state.spacesByWorkspace)) {
-					workspace.spaces = workspace.spaces.map(
-						(space) => updatedSpaces.get(space.id) || space,
-					)
-				}
+				// 状態が更新されたことをUIに通知
+				window.postMessage(
+					{
+						source: 'startup-web-app',
+						type: 'SPACE_STATE_UPDATED',
+						activeSpaceId: spaceId,
+					},
+					'*',
+				)
 			})
 			.addCase(setActiveSpace.rejected, (state, action) => {
 				// エラー処理が必要な場合

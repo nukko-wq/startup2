@@ -9,11 +9,12 @@ export async function PUT(
 	try {
 		const user = await getCurrentUser()
 		if (!user) {
-			return new NextResponse('Unauthorized', { status: 401 })
+			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 		}
 
 		const resolvedParams = await params
 		const spaceId = resolvedParams.spaceId
+		const body = await request.json().catch(() => ({}))
 
 		// トランザクションを使用して一貫性を保証
 		const updatedSpace = await prisma.$transaction(async (tx) => {
@@ -38,14 +39,28 @@ export async function PUT(
 					isLastActive: true,
 				},
 				include: {
-					workspace: true, // ワークスペース情報も含める
+					workspace: true,
 				},
 			})
 		})
 
-		return NextResponse.json(updatedSpace)
+		return NextResponse.json(
+			{ success: true, space: updatedSpace },
+			{
+				headers: {
+					'Cache-Control': 'no-store, no-cache, must-revalidate',
+					Pragma: 'no-cache',
+				},
+			},
+		)
 	} catch (error) {
 		console.error('Error updating active space:', error)
-		return new NextResponse('Internal Error', { status: 500 })
+		return NextResponse.json(
+			{
+				error: 'Internal Server Error',
+				details: error instanceof Error ? error.message : 'Unknown error',
+			},
+			{ status: 500 },
+		)
 	}
 }

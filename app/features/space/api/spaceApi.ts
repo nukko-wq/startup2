@@ -57,17 +57,18 @@ export const spaceApi = {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json',
+				'Cache-Control': 'no-cache',
 			},
 			body: JSON.stringify({ workspaceId }),
 		})
 		if (!response.ok) {
 			throw new Error('アクティブスペースの設定に失敗しました')
 		}
-		const updatedSpace = await response.json()
+		const data = await response.json()
 		return {
-			spaceId: updatedSpace.id,
+			spaceId: data.space.id,
 			workspaceId,
-			space: updatedSpace,
+			space: data.space,
 		}
 	},
 
