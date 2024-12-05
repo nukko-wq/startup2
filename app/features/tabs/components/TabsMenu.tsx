@@ -9,6 +9,7 @@ import {
 import { closeAllTabs, sortTabsByDomain } from '@/app/features/tabs/tabsSlice'
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/app/store/store'
+import { tabsApi } from '@/app/features/tabs/api/tabsApi'
 
 const TabsMenu = () => {
 	const tabs = useSelector((state: RootState) => state.tabs.tabs)
@@ -18,6 +19,9 @@ const TabsMenu = () => {
 		if (!hasUnpinnedTabs) return
 		try {
 			await closeAllTabs()
+			await tabsApi.sendMessageToExtension({
+				type: 'REQUEST_TABS_UPDATE',
+			})
 		} catch (error) {
 			console.error('Failed to close all tabs:', error)
 		}
