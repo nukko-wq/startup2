@@ -12,17 +12,22 @@ export interface TabsState {
 	error: string | null
 }
 
+export type ExtensionMessageType =
+	| 'SWITCH_TO_TAB'
+	| 'CLOSE_TAB'
+	| 'CLOSE_ALL_TABS'
+	| 'SORT_TABS_BY_DOMAIN'
+	| 'FIND_TAB'
+	| 'CREATE_TAB'
+	| 'REQUEST_TABS_UPDATE'
+	| 'SET_TOKEN'
+
 export interface ExtensionMessage {
-	type:
-		| 'SWITCH_TO_TAB'
-		| 'CLOSE_TAB'
-		| 'CLOSE_ALL_TABS'
-		| 'SORT_TABS_BY_DOMAIN'
-		| 'FIND_TAB'
-		| 'CREATE_TAB'
-		| 'REQUEST_TABS_UPDATE'
+	type: ExtensionMessageType
 	tabId?: number
 	url?: string
+	token?: string
+	source?: 'webapp'
 }
 
 export interface TabAction {
@@ -37,7 +42,9 @@ export interface SaveTabAction extends TabAction {
 }
 
 export interface ExtensionResponse {
+	source?: 'startup-extension'
 	tabId?: number
-	success?: boolean
+	success: boolean
 	error?: string
+	tabs?: Tab[]
 }
