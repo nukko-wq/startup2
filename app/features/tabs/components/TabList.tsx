@@ -20,6 +20,8 @@ const TabList = () => {
 	const dispatch = useDispatch()
 	const tabs = useSelector((state: RootState) => state.tabs.tabs)
 	const [isExtensionInstalled, setIsExtensionInstalled] = useState(true)
+	const [retryCount, setRetryCount] = useState(0)
+	const MAX_RETRIES = 3
 
 	useEffect(() => {
 		setIsExtensionInstalled(!!window.chrome?.runtime)
@@ -43,32 +45,60 @@ const TabList = () => {
 		const requestInitialTabs = async () => {
 			try {
 				if (!isExtensionInstalled) return
+
+				await new Promise((resolve) => setTimeout(resolve, 1000))
+
 				const result = await sendMessageToExtension({
 					type: 'REQUEST_TABS_UPDATE',
 				})
-				if (!result.success && result.error !== 'Extension not installed') {
-					console.debug('Failed to request tabs:', result.error)
+
+				if (!result.success) {
+					if (retryCount < MAX_RETRIES) {
+						console.debug(
+							`Retrying tab request (${retryCount + 1}/${MAX_RETRIES})`,
+						)
+						setRetryCount((prev) => prev + 1)
+						setTimeout(requestInitialTabs, 2000)
+					} else if (result.error !== 'Extension not installed') {
+						console.debug('Failed to request tabs after retries:', result.error)
+					}
+				} else {
+					setRetryCount(0)
 				}
 			} catch (error: unknown) {
 				if (
 					error instanceof Error &&
-					error.message !== 'Extension not installed'
+					error.message !== 'Extension not installed' &&
+					retryCount < MAX_RETRIES
 				) {
-					console.debug('Error requesting initial tabs:', error)
+					console.debug(
+						`Error requesting tabs (retry ${retryCount + 1}/${MAX_RETRIES}):`,
+						error,
+					)
+					setRetryCount((prev) => prev + 1)
+					setTimeout(requestInitialTabs, 2000)
 				}
 			}
 		}
+
 		requestInitialTabs()
 
 		return () => window.removeEventListener('message', handleMessage)
-	}, [dispatch, isExtensionInstalled])
+	}, [dispatch, isExtensionInstalled, retryCount])
 
 	const handleTabAction = async (tab: Tab) => {
-		if (tab.id) {
-			await sendMessageToExtension({
-				type: 'SWITCH_TO_TAB',
-				tabId: tab.id,
-			})
+		try {
+			if (tab.id) {
+				const result = await sendMessageToExtension({
+					type: 'SWITCH_TO_TAB',
+					tabId: tab.id,
+				})
+				if (!result.success) {
+					console.debug('Failed to switch tab:', result.error)
+				}
+			}
+		} catch (error) {
+			console.debug('Error switching tab:', error)
 		}
 	}
 
