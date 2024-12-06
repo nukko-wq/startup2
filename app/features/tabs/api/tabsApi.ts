@@ -20,36 +20,46 @@ export const tabsApi = {
 			const response = await fetch(apiUrl)
 			const { extensionIds } = await response.json()
 
-			console.log('Fetched extension IDs:', extensionIds)
-
 			if (!extensionIds || extensionIds.length === 0) {
 				throw new Error('Extension IDs not found')
 			}
 
-			let lastError = null
-			for (const extensionId of extensionIds) {
-				try {
-					window.postMessage(
-						{
-							...message,
-							extensionId,
-							source: 'webapp',
-						},
-						'*',
-					)
-					console.debug(`Message sent to extension ${extensionId}`)
-				} catch (error) {
-					console.debug(
-						`Failed to send message to extension ${extensionId}:`,
-						error,
-					)
-					lastError = error
-					// biome-ignore lint/correctness/noUnnecessaryContinue: <explanation>
-					continue
+			return new Promise((resolve) => {
+				const messageHandler = (event: MessageEvent) => {
+					if (event.data.source === 'startup-extension') {
+						window.removeEventListener('message', messageHandler)
+						resolve(event.data)
+					}
 				}
-			}
 
-			return { success: true }
+				window.addEventListener('message', messageHandler)
+
+				for (const extensionId of extensionIds) {
+					try {
+						window.postMessage(
+							{
+								...message,
+								extensionId,
+								source: 'webapp',
+							} as ExtensionMessage,
+							'*',
+						)
+					} catch (error) {
+						console.error(
+							`Failed to send message to extension ${extensionId}:`,
+							error,
+						)
+					}
+				}
+
+				setTimeout(() => {
+					window.removeEventListener('message', messageHandler)
+					resolve({
+						success: false,
+						error: 'Timeout waiting for extension response',
+					})
+				}, 5000)
+			})
 		} catch (error) {
 			console.error('Error sending message to extension:', error)
 			return {
