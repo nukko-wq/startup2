@@ -32,7 +32,7 @@ const TabsMenu = () => {
 		try {
 			await sortTabsByDomain()
 		} catch (error) {
-			console.error('Failed to sort tabs:', error)
+			console.error('Error sorting tabs:', error)
 		}
 	}
 
