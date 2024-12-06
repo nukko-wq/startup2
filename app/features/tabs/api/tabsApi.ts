@@ -20,6 +20,8 @@ export const tabsApi = {
 			const response = await fetch(apiUrl)
 			const { extensionIds } = await response.json()
 
+			console.debug('Fetched extension IDs:', extensionIds)
+
 			if (!extensionIds || extensionIds.length === 0) {
 				throw new Error('Extension IDs not found')
 			}
