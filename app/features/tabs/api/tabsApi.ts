@@ -26,6 +26,7 @@ export const tabsApi = {
 				throw new Error('Extension IDs not found')
 			}
 
+			let lastError = null
 			for (const extensionId of extensionIds) {
 				try {
 					window.postMessage(
@@ -36,17 +37,19 @@ export const tabsApi = {
 						},
 						'*',
 					)
-
-					return { success: true }
+					console.debug(`Message sent to extension ${extensionId}`)
 				} catch (error) {
 					console.debug(
 						`Failed to send message to extension ${extensionId}:`,
 						error,
 					)
+					lastError = error
+					// biome-ignore lint/correctness/noUnnecessaryContinue: <explanation>
+					continue
 				}
 			}
 
-			throw new Error('Failed to send message to all extensions')
+			return { success: true }
 		} catch (error) {
 			console.error('Error sending message to extension:', error)
 			return {
