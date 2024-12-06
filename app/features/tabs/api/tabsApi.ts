@@ -88,13 +88,26 @@ export const tabsApi = {
 			const result = await tabsApi.sendMessageToExtension({
 				type: 'SORT_TABS_BY_DOMAIN',
 			})
+
 			if (!result.success) {
-				throw new Error(result.error || 'Failed to sort tabs')
+				const errorMessage = result.error || 'Failed to sort tabs'
+				console.error('Sort tabs error:', errorMessage)
+				throw new Error(errorMessage)
 			}
-			// 並び替え後、タブリストの更新をリクエスト
-			return await tabsApi.sendMessageToExtension({
+
+			// 並び替え後、少し待ってからタブリストの更新をリクエスト
+			await new Promise((resolve) => setTimeout(resolve, 1000))
+			const updateResult = await tabsApi.sendMessageToExtension({
 				type: 'REQUEST_TABS_UPDATE',
 			})
+
+			if (!updateResult.success) {
+				throw new Error(
+					updateResult.error || 'Failed to update tabs after sorting',
+				)
+			}
+
+			return updateResult
 		} catch (error) {
 			console.error('Error sorting tabs by domain:', error)
 			throw error
