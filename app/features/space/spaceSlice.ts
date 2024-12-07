@@ -13,6 +13,11 @@ import type {
 const initialState: SpaceState = {
 	spacesByWorkspace: {},
 	activeSpaceId: null,
+	allSpaces: {
+		spaces: [],
+		loading: false,
+		error: null,
+	},
 }
 
 export const fetchSpaces = createAsyncThunk(
@@ -81,6 +86,13 @@ export const moveSpace = createAsyncThunk(
 			targetWorkspaceId,
 			newOrder,
 		)
+	},
+)
+
+export const fetchAllSpaces = createAsyncThunk(
+	'space/fetchAllSpaces',
+	async () => {
+		return await spaceApi.fetchAllSpaces()
 	},
 )
 
@@ -243,6 +255,27 @@ const spaceSlice = createSlice({
 						...state.spacesByWorkspace[targetWorkspaceId].spaces,
 						movedSpace,
 					].sort((a, b) => a.order - b.order)
+				}
+			})
+			.addCase(fetchAllSpaces.pending, (state) => {
+				state.allSpaces = {
+					spaces: [],
+					loading: true,
+					error: null,
+				}
+			})
+			.addCase(fetchAllSpaces.fulfilled, (state, action) => {
+				state.allSpaces = {
+					spaces: action.payload,
+					loading: false,
+					error: null,
+				}
+			})
+			.addCase(fetchAllSpaces.rejected, (state, action) => {
+				state.allSpaces = {
+					spaces: [],
+					loading: false,
+					error: action.error.message || 'エラーが発生しました',
 				}
 			})
 	},

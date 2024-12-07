@@ -2,6 +2,7 @@ import Sidebar from '@/app/components/sidebar/Sidebar'
 import SectionListWrapper from '@/app/features/section/components/SectionListWrapper'
 import TabListWrapper from '@/app/features/tabs/components/TabListWrapper'
 import Header from '@/app/components/header/Header'
+import SpaceListOverlay from '@/app/features/space/components/SpaceListOverlay'
 
 export default function Home() {
 	return (
@@ -21,6 +22,7 @@ export default function Home() {
 						</div>
 					</main>
 				</div>
+				<SpaceListOverlay />
 			</div>
 		</div>
 	)

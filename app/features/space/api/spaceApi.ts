@@ -136,4 +136,12 @@ export const spaceApi = {
 		}
 		return response.json()
 	},
+
+	fetchAllSpaces: async () => {
+		const response = await fetch('/api/spaces')
+		if (!response.ok) {
+			throw new Error('全スペースの取得に失敗しました')
+		}
+		return await response.json()
+	},
 }

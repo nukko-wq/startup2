@@ -23,7 +23,7 @@ import {
 } from 'react-aria-components'
 import SpaceMenu from '@/app/features/space/components/SpaceMenu'
 import CreateSpaceInWorkspace from '@/app/features/space/components/CreateSpaceInWorkspace'
-
+import type { Space } from '@/app/features/space/types/space'
 interface SpaceListProps {
 	workspaceId: string
 }
@@ -238,6 +238,10 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 		},
 	})
 
+	const handleSpaceSelect = (spaceId: string) => {
+		handleSpaceClick(spaceId)
+	}
+
 	if (workspaceSpaces.error)
 		return <div className="text-zinc-50">{workspaceSpaces.error}</div>
 
@@ -291,28 +295,6 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 					</GridListItem>
 				)}
 			</GridList>
-
-			{/* Space List Overlay */}
-			<div className="fixed inset-0 z-50 bg-[#292f3d]/10 hidden">
-				<div className="h-full bg-[#292f3d]/10">
-					<div className="flex items-center justify-center h-full">
-						<div
-							className="flex flex-col justify-center items-center min-w-[320px] bg-zinc-50 text-zinc-800 border border-zinc-50 rounded-xl p-2 shadow-md"
-							aria-label="Space List Overlay"
-						>
-							<div className="w-full h-10 inline-flex items-center hover:bg-gray-700 hover:bg-opacity-75 group transition duration-200 rounded-md px-2">
-								Space1
-							</div>
-							<div className="w-full h-10 inline-flex items-center hover:bg-gray-700 hover:bg-opacity-75 group transition duration-200 rounded-md px-2">
-								Space2
-							</div>
-							<div className="w-full h-10 inline-flex items-center hover:bg-gray-700 hover:bg-opacity-75 group transition duration-200 rounded-md px-2">
-								Space3
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
 		</>
 	)
 }
