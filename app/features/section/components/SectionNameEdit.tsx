@@ -1,96 +1,91 @@
 'use client'
 
+import { Pencil } from 'lucide-react'
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { renameSection } from '@/app/features/section/sectionSlice'
 import type { AppDispatch, RootState } from '@/app/store/store'
 import type { Section } from '@/app/features/section/types/section'
-import {
-	Button,
-	Dialog,
-	DialogTrigger,
-	Form,
-	Input,
-	Modal,
-	ModalOverlay,
-	TextField,
-} from 'react-aria-components'
-import { useForm, Controller } from 'react-hook-form'
+import { Button, Form, Input, Text } from 'react-aria-components'
 
 interface SectionNameEditProps {
 	section: Section
 }
 
-interface FormData {
-	name: string
-}
-
 const SectionNameEdit = ({ section }: SectionNameEditProps) => {
 	const dispatch = useDispatch<AppDispatch>()
-	const [isOpen, setIsOpen] = useState(false)
+	const [isEditing, setIsEditing] = useState(false)
+	const [editingName, setEditingName] = useState(section.name)
 	const activeSpaceId = useSelector(
 		(state: RootState) => state.space.activeSpaceId,
 	)
-	const { control, handleSubmit, reset } = useForm<FormData>({
-		defaultValues: {
-			name: section.name,
-		},
-	})
 
-	const onSubmit = async (data: FormData) => {
-		if (!activeSpaceId) return
+	const handleEditStart = () => {
+		setEditingName(section.name)
+		setIsEditing(true)
+	}
+
+	const handleEditSubmit = async () => {
+		if (!activeSpaceId || !editingName.trim()) return
 
 		try {
 			await dispatch(
 				renameSection({
 					sectionId: section.id,
-					name: data.name,
+					name: editingName.trim(),
 					spaceId: activeSpaceId,
 				}),
 			).unwrap()
-			setIsOpen(false)
+			setIsEditing(false)
 		} catch (error) {
 			console.error('セクション名の変更に失敗しました:', error)
 		}
 	}
 
-	return (
-		<DialogTrigger isOpen={isOpen} onOpenChange={setIsOpen}>
-			<Button
-				aria-label="Edit"
-				className="text-[17px] outline-none px-3 py-2 hover:bg-zinc-100 rounded"
-			>
-				<span>{section.name}</span>
-			</Button>
+	const handleEditCancel = () => {
+		setIsEditing(false)
+		setEditingName(section.name)
+	}
 
-			<ModalOverlay
-				isDismissable
-				className="fixed flex top-0 left-0 w-screen h-screen z-100 bg-black/20 items-center justify-center"
-			>
-				<Modal className="flex items-center justify-center outline-none">
-					<Dialog className="outline-none">
-						<Form onSubmit={handleSubmit(onSubmit)}>
-							<TextField autoFocus>
-								<Controller
-									name="name"
-									control={control}
-									rules={{ required: true }}
-									render={({ field: { value, onChange, onBlur } }) => (
-										<Input
-											aria-label="Section name"
-											value={value}
-											onChange={onChange}
-											onBlur={onBlur}
-											className="text-xl font-semibold text-zinc-700 bg-slate-50 hover:bg-slate-50 px-2 py-1 rounded outline-none w-full"
-										/>
-									)}
-								/>
-							</TextField>
-						</Form>
-					</Dialog>
-				</Modal>
-			</ModalOverlay>
-		</DialogTrigger>
+	return (
+		<div className="flex items-center">
+			{isEditing ? (
+				<Form
+					className="flex items-center"
+					onSubmit={(e) => {
+						e.preventDefault()
+						handleEditSubmit()
+					}}
+				>
+					<Input
+						autoFocus
+						value={editingName}
+						onChange={(e) => setEditingName(e.target.value)}
+						onKeyDown={(e) => {
+							if (e.key === 'Escape') {
+								handleEditCancel()
+							}
+						}}
+						onBlur={handleEditCancel}
+						className="text-[17px] py-1 px-3 text-zinc-800 bg-transparent border-b-2 border-blue-500 outline-none"
+						onFocus={(e) => {
+							const input = e.target as HTMLInputElement
+							const length = input.value.length
+							input.setSelectionRange(length, length)
+						}}
+					/>
+				</Form>
+			) : (
+				<Button
+					className="group flex items-center gap-2 hover:bg-zinc-100 rounded px-3 py-2 outline-none"
+					onPress={handleEditStart}
+					aria-label="Section Name"
+				>
+					<Text className="text-[17px] text-zinc-800">{section.name}</Text>
+					<Pencil className="w-4 h-4 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+				</Button>
+			)}
+		</div>
 	)
 }
 
