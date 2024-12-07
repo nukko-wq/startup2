@@ -241,14 +241,14 @@ const ResourceCreateForm = ({ sectionId, onClose }: Props) => {
 								onPress={onClose}
 								className="px-4 py-2 text-sm border rounded hover:bg-gray-200 focus:outline-blue-500"
 							>
-								Cancel
+								キャンセル
 							</Button>
 							<Button
 								type="submit"
 								isDisabled={isSubmitting || !isValid}
 								className="px-4 py-2 text-sm border rounded bg-blue-500 disabled:opacity-50 text-white hover:bg-blue-600 focus:outline-blue-500"
 							>
-								{isSubmitting ? 'Saving...' : 'ADD RESOURCE'}
+								{isSubmitting ? '作成中...' : 'ADD RESOURCE'}
 							</Button>
 						</div>
 					</div>
