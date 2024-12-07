@@ -5,8 +5,12 @@ import { Controller, useForm } from 'react-hook-form'
 import { Link } from 'lucide-react'
 import { useDispatch } from 'react-redux'
 import type { AppDispatch } from '@/app/store/store'
-import { createResource } from '@/app/features/resource/resourceSlice'
+import {
+	createResource,
+	addResourceOptimistically,
+} from '@/app/features/resource/resourceSlice'
 import GoogleDriveList from '@/app/features/google-drive/components/GoogleDriveList'
+import { v4 as uuidv4 } from 'uuid'
 
 interface ResourceFormData {
 	url: string
@@ -51,23 +55,49 @@ const ResourceCreateForm = ({ sectionId, onClose }: Props) => {
 	// フォームの送信処理
 	const onSubmit = async (data: ResourceFormData) => {
 		try {
+			// 楽観的更新用の一時的なIDを生成
+			const optimisticId = uuidv4()
+
 			// faviconURLを取得
 			const faviconResponse = await fetch(
 				`/api/favicon?url=${encodeURIComponent(data.url)}`,
 			)
 			const faviconData = await faviconResponse.json()
 
+			// 楽観的に追加するリソースを作成
+			const optimisticResource = {
+				id: optimisticId,
+				title: data.title || new URL(data.url).hostname,
+				url: data.url,
+				sectionId,
+				faviconUrl: faviconData.faviconUrl,
+				order: 0,
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString(),
+			}
+
+			// 楽観的更新を実行
+			dispatch(
+				addResourceOptimistically({
+					sectionId,
+					resource: optimisticResource,
+				}),
+			)
+
+			// フォームをリセットして閉じる（楽観的更新の直後に実行）
+			reset()
+			onClose()
+
+			// 実際のAPI呼び出し（バックグラウンドで実行）
 			await dispatch(
 				createResource({
-					title: data.title || new URL(data.url).hostname,
+					title: optimisticResource.title,
 					url: data.url,
 					sectionId,
 					faviconUrl: faviconData.faviconUrl,
+					optimisticId,
 				}),
 			).unwrap()
-
-			reset()
-			onClose()
 		} catch (error) {
 			console.error('リソースの作成に失敗しました:', error)
 		}
