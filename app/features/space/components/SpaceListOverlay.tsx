@@ -58,6 +58,11 @@ const SpaceListOverlay = () => {
 				state.close()
 				break
 			}
+			case 'Escape': {
+				e.preventDefault()
+				state.close()
+				break
+			}
 		}
 	}
 
