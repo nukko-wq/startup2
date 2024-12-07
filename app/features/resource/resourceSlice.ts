@@ -73,6 +73,15 @@ const resourceSlice = createSlice({
 					)
 			}
 		},
+		updateResourceOptimistically: (state, action) => {
+			const { sectionId, updatedResource } = action.payload
+			if (state.resourcesBySection[sectionId]) {
+				state.resourcesBySection[sectionId].resources =
+					state.resourcesBySection[sectionId].resources.map((resource) =>
+						resource.id === updatedResource.id ? updatedResource : resource,
+					)
+			}
+		},
 	},
 	extraReducers: (builder) => {
 		builder
@@ -193,7 +202,10 @@ const resourceSlice = createSlice({
 	},
 })
 
-export const { addResourceOptimistically, removeResourceOptimistically } =
-	resourceSlice.actions
+export const {
+	addResourceOptimistically,
+	removeResourceOptimistically,
+	updateResourceOptimistically,
+} = resourceSlice.actions
 
 export default resourceSlice.reducer
