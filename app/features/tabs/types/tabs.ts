@@ -21,6 +21,8 @@ export type ExtensionMessageType =
 	| 'CREATE_TAB'
 	| 'REQUEST_TABS_UPDATE'
 	| 'SET_TOKEN'
+	| 'FIND_OR_CREATE_STARTUP_TAB'
+	| 'SHOW_SPACE_LIST_OVERLAY'
 
 export interface ExtensionMessage {
 	type: ExtensionMessageType
