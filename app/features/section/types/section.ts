@@ -17,6 +17,7 @@ export interface SectionState {
 
 export interface CreateSectionPayload {
 	spaceId: string
+	optimisticId?: string
 }
 
 export interface DeleteSectionPayload {
@@ -60,4 +61,8 @@ export interface ReorderSectionResponse {
 	section: Section
 	spaceId: string
 	allSections: Section[]
+}
+
+export interface OptimisticSection extends Section {
+	optimisticId?: string
 }

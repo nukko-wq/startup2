@@ -8,6 +8,7 @@ import type {
 	RenameSectionPayload,
 	ReorderSectionPayload,
 } from './types/section'
+import { v4 as uuidv4 } from 'uuid'
 
 const initialState: SectionState = {
 	sectionsBySpace: {},
@@ -22,8 +23,8 @@ export const fetchSections = createAsyncThunk(
 
 export const createSection = createAsyncThunk(
 	'section/createSection',
-	async (spaceId: string) => {
-		return await sectionApi.createSection(spaceId)
+	async (payload: CreateSectionPayload) => {
+		return await sectionApi.createSection(payload.spaceId)
 	},
 )
 
@@ -51,7 +52,28 @@ export const reorderSection = createAsyncThunk(
 const sectionSlice = createSlice({
 	name: 'section',
 	initialState,
-	reducers: {},
+	reducers: {
+		addSectionOptimistically: (state, action) => {
+			const { spaceId, section } = action.payload
+			if (state.sectionsBySpace[spaceId]) {
+				state.sectionsBySpace[spaceId].sections.push(section)
+			} else {
+				state.sectionsBySpace[spaceId] = {
+					sections: [section],
+					loading: false,
+					error: null,
+				}
+			}
+		},
+		removeSectionOptimistically: (state, action) => {
+			const { spaceId, sectionId } = action.payload
+			if (state.sectionsBySpace[spaceId]) {
+				state.sectionsBySpace[spaceId].sections = state.sectionsBySpace[
+					spaceId
+				].sections.filter((section) => section.id !== sectionId)
+			}
+		},
+	},
 	extraReducers: (builder) => {
 		builder
 			.addCase(fetchSections.pending, (state, action) => {
@@ -80,12 +102,20 @@ const sectionSlice = createSlice({
 			})
 			.addCase(createSection.fulfilled, (state, action) => {
 				const { section, spaceId } = action.payload
-				const currentSections = state.sectionsBySpace[spaceId]?.sections || []
+				const spaceState = state.sectionsBySpace[spaceId]
 
-				state.sectionsBySpace[spaceId] = {
-					sections: [...currentSections, section],
-					loading: false,
-					error: null,
+				if (spaceState) {
+					spaceState.sections = spaceState.sections.map((s) =>
+						s.id === action.meta.arg.optimisticId ? section : s,
+					)
+				}
+			})
+			.addCase(createSection.rejected, (state, action) => {
+				const { spaceId, optimisticId } = action.meta.arg
+				if (state.sectionsBySpace[spaceId]) {
+					state.sectionsBySpace[spaceId].sections = state.sectionsBySpace[
+						spaceId
+					].sections.filter((section) => section.id !== optimisticId)
 				}
 			})
 			.addCase(deleteSection.pending, (state, action) => {
@@ -145,5 +175,8 @@ const sectionSlice = createSlice({
 			})
 	},
 })
+
+export const { addSectionOptimistically, removeSectionOptimistically } =
+	sectionSlice.actions
 
 export default sectionSlice.reducer

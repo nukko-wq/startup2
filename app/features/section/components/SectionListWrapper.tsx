@@ -1,23 +1,67 @@
 'use client'
 import { useSelector, useDispatch } from 'react-redux'
 import type { RootState, AppDispatch } from '@/app/store/store'
+import { createSelector } from '@reduxjs/toolkit'
 import SectionList from './SectionList'
 import { Plus } from 'lucide-react'
 import { Button } from 'react-aria-components'
-import { createSection } from '@/app/features/section/sectionSlice'
+import {
+	addSectionOptimistically,
+	createSection,
+	removeSectionOptimistically,
+} from '@/app/features/section/sectionSlice'
+import type { OptimisticSection } from '@/app/features/section/types/section'
+import { v4 as uuidv4 } from 'uuid'
+
+const selectActiveSpaceId = (state: RootState) => state.space.activeSpaceId
+const selectSectionsBySpace = (state: RootState) =>
+	state.section.sectionsBySpace
+
+const selectExistingSections = createSelector(
+	[selectActiveSpaceId, selectSectionsBySpace],
+	(activeSpaceId, sectionsBySpace) =>
+		activeSpaceId ? sectionsBySpace[activeSpaceId]?.sections || [] : [],
+)
 
 const SectionListWrapper = () => {
 	const dispatch = useDispatch<AppDispatch>()
-	const activeSpaceId = useSelector(
-		(state: RootState) => state.space.activeSpaceId,
-	)
+	const activeSpaceId = useSelector(selectActiveSpaceId)
+	const existingSections = useSelector(selectExistingSections)
 
 	const handleCreateSection = async () => {
 		if (!activeSpaceId) return
+
+		const optimisticId = uuidv4()
+
 		try {
-			await dispatch(createSection(activeSpaceId)).unwrap()
+			const optimisticSection: OptimisticSection = {
+				id: optimisticId,
+				name: 'Resources',
+				order: existingSections.length,
+				spaceId: activeSpaceId,
+			}
+
+			dispatch(
+				addSectionOptimistically({
+					spaceId: activeSpaceId,
+					section: optimisticSection,
+				}),
+			)
+
+			await dispatch(
+				createSection({
+					spaceId: activeSpaceId,
+					optimisticId,
+				}),
+			).unwrap()
 		} catch (error) {
 			console.error('Failed to create section:', error)
+			dispatch(
+				removeSectionOptimistically({
+					spaceId: activeSpaceId,
+					sectionId: optimisticId,
+				}),
+			)
 		}
 	}
 
