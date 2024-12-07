@@ -14,6 +14,11 @@ export interface SpaceState {
 			error: string | null
 		}
 	}
+	allSpaces: {
+		spaces: Space[]
+		loading: boolean
+		error: string | null
+	}
 	activeSpaceId: string | null
 }
 

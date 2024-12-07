@@ -113,4 +113,16 @@ export const tabsApi = {
 			throw error
 		}
 	},
+
+	findOrCreateStartupTab: async (): Promise<ExtensionResponse> => {
+		return await tabsApi.sendMessageToExtension({
+			type: 'FIND_OR_CREATE_STARTUP_TAB',
+		})
+	},
+
+	showSpaceListOverlay: async (): Promise<ExtensionResponse> => {
+		return await tabsApi.sendMessageToExtension({
+			type: 'SHOW_SPACE_LIST_OVERLAY',
+		})
+	},
 }
