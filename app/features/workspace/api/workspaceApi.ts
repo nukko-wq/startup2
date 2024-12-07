@@ -5,6 +5,7 @@ import type {
 	RenameWorkspaceResponse,
 	CreateDefaultWorkspaceResponse,
 	ReorderWorkspaceResponse,
+	CreateWorkspacePayload,
 } from '@/app/features/workspace/types/workspace'
 
 export const workspaceApi = {
@@ -16,7 +17,9 @@ export const workspaceApi = {
 		return response.json()
 	},
 
-	createWorkspace: async (name: string): Promise<CreateWorkspaceResponse> => {
+	createWorkspace: async ({
+		name,
+	}: CreateWorkspacePayload): Promise<CreateWorkspaceResponse> => {
 		const response = await fetch('/api/workspaces', {
 			method: 'POST',
 			headers: {

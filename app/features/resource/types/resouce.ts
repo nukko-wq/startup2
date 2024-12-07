@@ -19,6 +19,7 @@ export interface CreateResourcePayload {
 	description?: string
 	isGoogleDrive?: boolean
 	order?: number
+	optimisticId?: string
 }
 
 export interface UpdateResourcePayload {

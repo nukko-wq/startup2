@@ -2,10 +2,16 @@
 
 import { useForm, Controller } from 'react-hook-form'
 import { Button, Form, Input, Label, TextField } from 'react-aria-components'
-import { useDispatch } from 'react-redux'
-import { createWorkspace } from '@/app/features/workspace/workspaceSlice'
-import type { AppDispatch } from '@/app/store/store'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+	createWorkspace,
+	addWorkspaceOptimistically,
+	removeWorkspaceOptimistically,
+} from '@/app/features/workspace/workspaceSlice'
+import type { AppDispatch, RootState } from '@/app/store/store'
 import { useState } from 'react'
+import { v4 as uuidv4 } from 'uuid'
+import type { Workspace } from '@/app/features/workspace/types/workspace'
 
 interface FormData {
 	name: string
@@ -14,6 +20,9 @@ interface FormData {
 const WorkspaceCreateForm = ({ onClose }: { onClose: () => void }) => {
 	const dispatch = useDispatch<AppDispatch>()
 	const [isSubmitting, setIsSubmitting] = useState(false)
+	const existingWorkspaces = useSelector(
+		(state: RootState) => state.workspace.workspaces,
+	)
 
 	const {
 		control,
@@ -28,12 +37,37 @@ const WorkspaceCreateForm = ({ onClose }: { onClose: () => void }) => {
 	})
 
 	const onSubmit = async (data: FormData) => {
+		setIsSubmitting(true)
+		const optimisticId = uuidv4()
+
+		// 楽観的に追加するワークスペースを作成
+		const optimisticWorkspace: Workspace = {
+			id: optimisticId,
+			name: data.name,
+			order: existingWorkspaces.length,
+			isDefault: false,
+			userId: '', // 仮の値
+			createdAt: new Date().toISOString(),
+			updatedAt: new Date().toISOString(),
+		}
+
 		try {
-			setIsSubmitting(true)
-			await dispatch(createWorkspace(data.name)).unwrap()
+			// 楽観的更新
+			dispatch(addWorkspaceOptimistically(optimisticWorkspace))
+
 			onClose()
+
+			// 実際のAPI呼び出し
+			await dispatch(
+				createWorkspace({
+					name: data.name,
+					optimisticId,
+				}),
+			).unwrap()
 		} catch (error) {
 			console.error('Failed to create workspace:', error)
+			// エラー時に楽観的に追加したワークスペースを削除
+			dispatch(removeWorkspaceOptimistically(optimisticId))
 		} finally {
 			setIsSubmitting(false)
 		}

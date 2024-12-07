@@ -1,4 +1,8 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import {
+	createSlice,
+	createAsyncThunk,
+	type PayloadAction,
+} from '@reduxjs/toolkit'
 import { spaceApi } from '@/app/features/space/api/spaceApi'
 import type {
 	Space,
@@ -99,7 +103,39 @@ export const fetchAllSpaces = createAsyncThunk(
 const spaceSlice = createSlice({
 	name: 'space',
 	initialState,
-	reducers: {},
+	reducers: {
+		addSpaceOptimistically: (
+			state,
+			action: PayloadAction<{
+				workspaceId: string
+				space: Space
+			}>,
+		) => {
+			const { workspaceId, space } = action.payload
+			if (!state.spacesByWorkspace[workspaceId]) {
+				state.spacesByWorkspace[workspaceId] = {
+					spaces: [],
+					loading: false,
+					error: null,
+				}
+			}
+			state.spacesByWorkspace[workspaceId].spaces.push(space)
+		},
+		removeSpaceOptimistically: (
+			state,
+			action: PayloadAction<{
+				workspaceId: string
+				spaceId: string
+			}>,
+		) => {
+			const { workspaceId, spaceId } = action.payload
+			if (state.spacesByWorkspace[workspaceId]) {
+				state.spacesByWorkspace[workspaceId].spaces = state.spacesByWorkspace[
+					workspaceId
+				].spaces.filter((space) => space.id !== spaceId)
+			}
+		},
+	},
 	extraReducers: (builder) => {
 		builder
 			.addCase(fetchSpaces.pending, (state, action) => {
@@ -150,7 +186,22 @@ const spaceSlice = createSlice({
 						error: null,
 					}
 				}
-				state.spacesByWorkspace[workspaceId].spaces.push(space)
+
+				// 楽観的に追加したスペースを実際のスペースで置き換える
+				const existingIndex = state.spacesByWorkspace[
+					workspaceId
+				].spaces.findIndex(
+					(s) => s.id === space.id || s.id === action.meta.arg.optimisticId,
+				)
+
+				if (existingIndex !== -1) {
+					// 既存のスペースを更新
+					state.spacesByWorkspace[workspaceId].spaces[existingIndex] = space
+				} else {
+					// 新しいスペースを追加（通常はここには到達しない）
+					state.spacesByWorkspace[workspaceId].spaces.push(space)
+				}
+
 				state.spacesByWorkspace[workspaceId].loading = false
 			})
 			.addCase(createSpace.rejected, (state, action) => {
@@ -280,5 +331,8 @@ const spaceSlice = createSlice({
 			})
 	},
 })
+
+export const { addSpaceOptimistically, removeSpaceOptimistically } =
+	spaceSlice.actions
 
 export default spaceSlice.reducer

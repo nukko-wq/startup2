@@ -6,6 +6,7 @@ import type { AppDispatch, RootState } from '@/app/store/store'
 import { fetchGoogleDriveFiles } from '@/app/features/google-drive/googleDriveSlice'
 import { useDebounce } from '@/app/hooks/useDebounce'
 import GoogleDriveListIcon from '@/app/components/google-drive/GoogleDriveListIcon'
+import type { GoogleDriveFile } from '@/app/features/google-drive/types/googleDrive'
 
 interface GoogleDriveListProps {
 	onSelect?: (file: {
@@ -29,11 +30,7 @@ const GoogleDriveList = ({ onSelect }: GoogleDriveListProps) => {
 		dispatch(fetchGoogleDriveFiles(debouncedQuery))
 	}, [dispatch, debouncedQuery])
 
-	const handleFileSelect = (file: {
-		name: string
-		webViewLink: string
-		mimeType: string
-	}) => {
+	const handleFileSelect = (file: GoogleDriveFile) => {
 		onSelect?.({
 			title: file.name,
 			url: file.webViewLink,

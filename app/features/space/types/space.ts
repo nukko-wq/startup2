@@ -25,6 +25,7 @@ export interface SpaceState {
 export interface CreateSpacePayload {
 	name: string
 	workspaceId: string
+	optimisticId: string
 }
 
 export interface DeleteSpacePayload {

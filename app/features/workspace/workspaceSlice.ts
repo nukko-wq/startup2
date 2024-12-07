@@ -9,6 +9,7 @@ import type {
 	WorkspaceState,
 	RenameWorkspacePayload,
 	ReorderWorkspacePayload,
+	CreateWorkspacePayload,
 } from './types/workspace'
 
 const initialState: WorkspaceState = {
@@ -28,8 +29,8 @@ export const fetchWorkspaces = createAsyncThunk(
 
 export const createWorkspace = createAsyncThunk(
 	'workspace/createWorkspace',
-	async (name: string) => {
-		return await workspaceApi.createWorkspace(name)
+	async ({ name, optimisticId }: CreateWorkspacePayload) => {
+		return await workspaceApi.createWorkspace({ name, optimisticId })
 	},
 )
 
@@ -68,6 +69,12 @@ const workspaceSlice = createSlice({
 		setActiveWorkspace: (state, action: PayloadAction<string>) => {
 			state.activeWorkspaceId = action.payload
 		},
+		addWorkspaceOptimistically: (state, action: PayloadAction<Workspace>) => {
+			state.workspaces.push(action.payload)
+		},
+		removeWorkspaceOptimistically: (state, action: PayloadAction<string>) => {
+			state.workspaces = state.workspaces.filter((w) => w.id !== action.payload)
+		},
 	},
 	extraReducers: (builder) => {
 		builder
@@ -96,7 +103,14 @@ const workspaceSlice = createSlice({
 				state.error = null
 			})
 			.addCase(createWorkspace.fulfilled, (state, action) => {
-				state.workspaces.push(action.payload)
+				const index = state.workspaces.findIndex(
+					(w) => w.id === action.meta.arg.optimisticId,
+				)
+				if (index !== -1) {
+					state.workspaces[index] = action.payload
+				} else {
+					state.workspaces.push(action.payload)
+				}
 				state.loading = false
 			})
 			.addCase(createWorkspace.rejected, (state, action) => {
@@ -195,5 +209,9 @@ const workspaceSlice = createSlice({
 	},
 })
 
-export const { setActiveWorkspace } = workspaceSlice.actions
+export const {
+	setActiveWorkspace,
+	addWorkspaceOptimistically,
+	removeWorkspaceOptimistically,
+} = workspaceSlice.actions
 export default workspaceSlice.reducer

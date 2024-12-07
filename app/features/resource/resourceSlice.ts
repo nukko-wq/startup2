@@ -57,7 +57,23 @@ export const moveResource = createAsyncThunk(
 const resourceSlice = createSlice({
 	name: 'resource',
 	initialState,
-	reducers: {},
+	reducers: {
+		addResourceOptimistically: (state, action) => {
+			const { sectionId, resource } = action.payload
+			if (state.resourcesBySection[sectionId]) {
+				state.resourcesBySection[sectionId].resources.push(resource)
+			}
+		},
+		removeResourceOptimistically: (state, action) => {
+			const { sectionId, resourceId } = action.payload
+			if (state.resourcesBySection[sectionId]) {
+				state.resourcesBySection[sectionId].resources =
+					state.resourcesBySection[sectionId].resources.filter(
+						(resource) => resource.id !== resourceId,
+					)
+			}
+		},
+	},
 	extraReducers: (builder) => {
 		builder
 			// fetchResources
@@ -86,7 +102,21 @@ const resourceSlice = createSlice({
 			.addCase(createResource.fulfilled, (state, action) => {
 				const sectionId = action.payload.sectionId
 				if (state.resourcesBySection[sectionId]) {
-					state.resourcesBySection[sectionId].resources.push(action.payload)
+					state.resourcesBySection[sectionId].resources =
+						state.resourcesBySection[sectionId].resources.map((resource) =>
+							resource.id === action.meta.arg.optimisticId
+								? action.payload
+								: resource,
+						)
+				}
+			})
+			.addCase(createResource.rejected, (state, action) => {
+				const { sectionId, optimisticId } = action.meta.arg
+				if (state.resourcesBySection[sectionId]) {
+					state.resourcesBySection[sectionId].resources =
+						state.resourcesBySection[sectionId].resources.filter(
+							(resource) => resource.id !== optimisticId,
+						)
 				}
 			})
 			// deleteResource
@@ -162,5 +192,8 @@ const resourceSlice = createSlice({
 			})
 	},
 })
+
+export const { addResourceOptimistically, removeResourceOptimistically } =
+	resourceSlice.actions
 
 export default resourceSlice.reducer
