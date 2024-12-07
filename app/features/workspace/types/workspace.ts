@@ -40,3 +40,8 @@ export interface RenameWorkspaceResponse extends Workspace {}
 export interface ReorderWorkspaceResponse extends Workspace {}
 
 export interface CreateDefaultWorkspaceResponse extends Workspace {}
+
+export interface CreateWorkspacePayload {
+	name: string
+	optimisticId: string
+}

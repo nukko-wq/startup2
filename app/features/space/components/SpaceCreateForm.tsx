@@ -1,10 +1,17 @@
 import React, { useState } from 'react'
 import { Button, Form, Input, Label, TextField } from 'react-aria-components'
 import { Controller, useForm } from 'react-hook-form'
-import { useDispatch } from 'react-redux'
-import type { AppDispatch } from '@/app/store/store'
-import { createSpace, setActiveSpace } from '@/app/features/space/spaceSlice'
+import { useDispatch, useSelector } from 'react-redux'
+import type { AppDispatch, RootState } from '@/app/store/store'
+import {
+	createSpace,
+	setActiveSpace,
+	addSpaceOptimistically,
+	removeSpaceOptimistically,
+} from '@/app/features/space/spaceSlice'
 import { createSection } from '@/app/features/section/sectionSlice'
+import { v4 as uuidv4 } from 'uuid'
+import type { Space } from '@/app/features/space/types/space'
 
 interface SpaceCreateFormProps {
 	onClose: () => void
@@ -19,6 +26,11 @@ const SpaceCreateForm = ({ onClose, workspaceId }: SpaceCreateFormProps) => {
 	const dispatch = useDispatch<AppDispatch>()
 	const [isSubmitting, setIsSubmitting] = useState(false)
 
+	const existingSpaces = useSelector(
+		(state: RootState) =>
+			state.space.spacesByWorkspace[workspaceId]?.spaces || [],
+	)
+
 	const {
 		control,
 		handleSubmit,
@@ -32,29 +44,63 @@ const SpaceCreateForm = ({ onClose, workspaceId }: SpaceCreateFormProps) => {
 
 	const onSubmit = async (data: FormData) => {
 		setIsSubmitting(true)
+		const optimisticId = uuidv4()
+
+		// 楽観的に追加するスペースを作成
+		const optimisticSpace: Space = {
+			id: optimisticId,
+			name: data.name,
+			order: existingSpaces.length,
+			workspaceId,
+			isLastActive: false,
+		}
+
 		try {
+			// 楽観的更新
+			dispatch(
+				addSpaceOptimistically({
+					workspaceId,
+					space: optimisticSpace,
+				}),
+			)
+
+			onClose()
+			// 実際のAPI呼び出し
 			const result = await dispatch(
 				createSpace({
 					name: data.name,
 					workspaceId,
+					optimisticId: optimisticId,
 				}),
 			).unwrap()
 
+			// セクションの作成
 			try {
-				await dispatch(createSection(result.space.id)).unwrap()
+				await dispatch(
+					createSection({
+						spaceId: result.space.id,
+						optimisticId: uuidv4(),
+					}),
+				).unwrap()
 
 				try {
 					await dispatch(setActiveSpace(result.space.id)).unwrap()
 					onClose()
 				} catch (activeError) {
 					console.error('Failed to set active space:', activeError)
-					onClose()
 				}
 			} catch (sectionError) {
 				console.error('Failed to create section:', sectionError)
 			}
 		} catch (spaceError) {
 			console.error('Failed to create space:', spaceError)
+			// エラー時に楽観的に追加したスペースを削除
+			dispatch(
+				removeSpaceOptimistically({
+					workspaceId,
+					spaceId: optimisticId,
+				}),
+			)
 		} finally {
 			setIsSubmitting(false)
 		}
