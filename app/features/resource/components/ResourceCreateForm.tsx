@@ -111,6 +111,35 @@ const ResourceCreateForm = ({ sectionId, onClose }: Props) => {
 		isGoogleDrive: boolean
 	}) => {
 		try {
+			// 楽観的更新用の一時的なIDを生成
+			const optimisticId = uuidv4()
+
+			// 楽観的に追加するリソースを作成
+			const optimisticResource = {
+				id: optimisticId,
+				title: file.title,
+				url: file.url,
+				sectionId,
+				mimeType: file.mimeType,
+				description: file.description,
+				isGoogleDrive: true,
+				order: 0,
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString(),
+			}
+
+			// 楽観的更新を実行
+			dispatch(
+				addResourceOptimistically({
+					sectionId,
+					resource: optimisticResource,
+				}),
+			)
+
+			// フォームを閉じる（楽観的更新の直後に実行）
+			onClose()
+
+			// 実際のAPI呼び出し（バックグラウンドで実行）
 			await dispatch(
 				createResource({
 					title: file.title,
@@ -119,9 +148,9 @@ const ResourceCreateForm = ({ sectionId, onClose }: Props) => {
 					mimeType: file.mimeType,
 					description: file.description,
 					isGoogleDrive: true,
+					optimisticId,
 				}),
 			).unwrap()
-			onClose()
 		} catch (error) {
 			console.error('リソースの作成に失敗しました:', error)
 		}
