@@ -35,20 +35,41 @@ const SpaceListOverlay = () => {
 
 	useEffect(() => {
 		dispatch(fetchAllSpaces())
+	}, [dispatch])
 
-		const handleKeyDown = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') {
-				dispatch(hideSpaceList())
+	useEffect(() => {
+		if (ref.current && spaces.length > 0) {
+			const firstItem = ref.current.querySelector('[role="gridcell"]')
+			if (firstItem instanceof HTMLElement) {
+				setTimeout(() => {
+					firstItem.focus()
+					if (spaces[0]) {
+						const list = ref.current?.querySelector('[role="grid"]')
+						if (list instanceof HTMLElement) {
+							list.setAttribute('aria-selected', 'true')
+							list.setAttribute('aria-activedescendant', spaces[0].id)
+						}
+					}
+				}, 0)
 			}
 		}
+	}, [spaces])
+
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') {
+				state.close()
+			}
+		}
+
 		document.addEventListener('keydown', handleKeyDown)
 		return () => document.removeEventListener('keydown', handleKeyDown)
-	}, [dispatch])
+	}, [state])
 
 	const handleSpaceSelect = (spaceId: Key) => {
 		if (typeof spaceId === 'string') {
 			dispatch(setActiveSpace(spaceId))
-			dispatch(hideSpaceList())
+			state.close()
 		}
 	}
 
@@ -71,17 +92,18 @@ const SpaceListOverlay = () => {
 							className="flex flex-col justify-center w-[320px]"
 							selectionMode="single"
 							onAction={handleSpaceSelect}
-							autoFocus="first"
+							selectedKeys={spaces.length > 0 ? [spaces[0].id] : undefined}
+							disallowEmptySelection
 						>
 							{(space) => (
 								<GridListItem
 									key={space.id}
 									id={space.id}
-									className={({ isFocused }) => `
+									className={({ isFocused, isSelected }) => `
 										flex items-center h-10 outline-none cursor-pointer 
 										hover:text-white hover:bg-slate-700 
 										first:rounded-t-lg last:rounded-b-lg
-										${isFocused ? 'bg-slate-700 text-white' : ''}
+										${isFocused || isSelected ? 'bg-slate-700 text-white' : ''}
 									`}
 									textValue={space.name}
 								>
