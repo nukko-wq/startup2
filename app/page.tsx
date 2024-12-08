@@ -53,18 +53,9 @@ export default function Home() {
 					.then(() => {
 						lastFetchTime.current[activeSpaceId] = Date.now()
 					})
-					.catch((error) => {
-						console.error('データの取得に失敗しました:', error)
-					})
 			}
 		}
 	}, [dispatch, activeSpaceId])
-
-	useEffect(() => {
-		if (activeSectionId) {
-			dispatch(fetchResources(activeSectionId))
-		}
-	}, [dispatch, activeSectionId])
 
 	useEffect(() => {
 		const handleMessage = (event: MessageEvent) => {

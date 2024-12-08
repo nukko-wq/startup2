@@ -54,10 +54,7 @@ export const fetchSectionsWithResources = createAsyncThunk(
 	'section/fetchSectionsWithResources',
 	async (spaceId: string, { dispatch }) => {
 		const data = await sectionApi.fetchSectionsWithResources(spaceId)
-
-		// リソースデータを別のスライスに保存
 		dispatch(setResourcesBySection(data.resources))
-
 		return {
 			sections: data.sections,
 			spaceId,
