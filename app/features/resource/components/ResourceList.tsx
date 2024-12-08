@@ -1,5 +1,5 @@
 import { GripVertical } from 'lucide-react'
-import React, { useEffect, memo } from 'react'
+import React, { useEffect, memo, useCallback, useMemo } from 'react'
 import {
 	Button,
 	DropIndicator,
@@ -54,33 +54,68 @@ const ResourceList = memo(({ sectionId }: ResourceListProps) => {
 		}
 	}, [sectionId, resources.length, loading, error, lastFetched, dispatch])
 
-	const { dragAndDropHooks } = useDragAndDrop({
-		getItems(keys) {
-			const resource = resources.find((r) => r.id === Array.from(keys)[0])
-			if (!resource) return []
-			return [
-				{
-					'resource-item': JSON.stringify({
-						...resource,
-						sectionId,
-					}),
-					'text/plain': resource.title,
-				},
-			]
+	const handleResourceClick = useCallback(async (resource: Resource) => {
+		try {
+			const response = await sendMessageToExtension({
+				type: 'FIND_TAB',
+				url: resource.url,
+			})
+
+			if (response?.tabId) {
+				const switchResponse = await sendMessageToExtension({
+					type: 'SWITCH_TO_TAB',
+					tabId: response.tabId,
+				})
+
+				if (switchResponse?.success) {
+					return
+				}
+			}
+
+			window.open(resource.url, '_blank')
+		} catch (error) {
+			console.error('Failed to handle resource click:', error)
+
+			window.open(resource.url, '_blank')
+		}
+	}, [])
+
+	const getResourceDescription = useMemo(
+		() => (resource: Resource) => {
+			if (resource.description) return resource.description
+			const url = new URL(resource.url)
+			const hostname = url.hostname
+			const pathname = url.pathname
+
+			if (hostname === 'mail.google.com') {
+				return 'Gmail'
+			}
+			if (hostname === 'github.com') {
+				return 'GitHub'
+			}
+
+			if (hostname === 'docs.google.com') {
+				if (pathname.startsWith('/forms/')) {
+					return 'Google Form'
+				}
+				if (pathname.startsWith('/spreadsheets/')) {
+					return 'Google Sheet'
+				}
+				if (pathname.startsWith('/drive/')) {
+					return 'Google Drive'
+				}
+				if (pathname.startsWith('/document/')) {
+					return 'Google Document'
+				}
+			}
+
+			return 'Webpage'
 		},
-		acceptedDragTypes: ['resource-item', 'tab-item'],
-		getDropOperation: () => 'move',
-		renderDropIndicator(target) {
-			return (
-				<DropIndicator
-					target={target}
-					className={({ isDropTarget }) =>
-						`drop-indicator ${isDropTarget ? 'active' : ''}`
-					}
-				/>
-			)
-		},
-		onReorder: async (e: DroppableCollectionReorderEvent) => {
+		[],
+	)
+
+	const handleReorder = useCallback(
+		async (e: DroppableCollectionReorderEvent) => {
 			try {
 				const draggedResourceId = Array.from(e.keys)[0]
 				const targetResourceId = e.target.key
@@ -105,7 +140,6 @@ const ResourceList = memo(({ sectionId }: ResourceListProps) => {
 					(r) => r.id === targetResourceId,
 				)
 
-				// 同じ位置の場合は何もしない
 				if (draggedIndex === targetIndex) {
 					console.log('Same position, no reordering needed')
 					return
@@ -145,22 +179,23 @@ const ResourceList = memo(({ sectionId }: ResourceListProps) => {
 				console.error('Failed to reorder resource:', error)
 			}
 		},
-		onInsert: async (e: DroppableCollectionInsertDropEvent) => {
+		[resources, dispatch, sectionId],
+	)
+
+	const handleInsert = useCallback(
+		async (e: DroppableCollectionInsertDropEvent) => {
 			const item = e.items[0] as TextDropItem
 
 			try {
 				if (item.types.has('resource-item')) {
-					// 既存のリソース移動ロジック
 					const resourceData = JSON.parse(await item.getText('resource-item'))
 					const targetIndex = e.target.key
 						? resources.findIndex((r) => r.id === e.target.key) +
 							(e.target.dropPosition === 'after' ? 1 : 0)
 						: resources.length
 
-					// 同じセクション内での移動は無視
 					if (resourceData.sectionId === sectionId) return
 
-					// リソースの移動を実行
 					await dispatch(
 						moveResource({
 							resourceId: resourceData.id,
@@ -169,7 +204,6 @@ const ResourceList = memo(({ sectionId }: ResourceListProps) => {
 						}),
 					).unwrap()
 
-					// 両方のセクションのリソースを再取得
 					await Promise.all([
 						dispatch(fetchResources(sectionId)),
 						dispatch(fetchResources(resourceData.sectionId)),
@@ -177,12 +211,10 @@ const ResourceList = memo(({ sectionId }: ResourceListProps) => {
 				} else if (item.types.has('tab-item')) {
 					const tabData = JSON.parse(await item.getText('tab-item'))
 
-					// 既存のリソースをorderでソート
 					const orderedResources = [...resources].sort(
 						(a, b) => a.order - b.order,
 					)
 
-					// ドロップ先のリソースを特定
 					const targetResource = e.target.key
 						? resources.find((r) => r.id === e.target.key)
 						: null
@@ -190,7 +222,6 @@ const ResourceList = memo(({ sectionId }: ResourceListProps) => {
 					let newOrder: number
 
 					if (!targetResource) {
-						// セクションが空または最後に追加する場合
 						newOrder =
 							orderedResources.length > 0
 								? orderedResources[orderedResources.length - 1].order + 1
@@ -199,12 +230,10 @@ const ResourceList = memo(({ sectionId }: ResourceListProps) => {
 						if (e.target.dropPosition === 'before') {
 							newOrder = targetResource.order
 						} else {
-							// 'after'
 							newOrder = targetResource.order + 1
 						}
 					}
 
-					// リソースを作成
 					await dispatch(
 						createResource({
 							title: tabData.title,
@@ -218,13 +247,43 @@ const ResourceList = memo(({ sectionId }: ResourceListProps) => {
 						}),
 					).unwrap()
 
-					// リソースリストを再取得して更新
 					await dispatch(fetchResources(sectionId))
 				}
 			} catch (error) {
 				console.error('Failed to handle drop:', error)
 			}
 		},
+		[resources, dispatch, sectionId],
+	)
+
+	const { dragAndDropHooks } = useDragAndDrop({
+		getItems(keys) {
+			const resource = resources.find((r) => r.id === Array.from(keys)[0])
+			if (!resource) return []
+			return [
+				{
+					'resource-item': JSON.stringify({
+						...resource,
+						sectionId,
+					}),
+					'text/plain': resource.title,
+				},
+			]
+		},
+		acceptedDragTypes: ['resource-item', 'tab-item'],
+		getDropOperation: () => 'move',
+		renderDropIndicator(target) {
+			return (
+				<DropIndicator
+					target={target}
+					className={({ isDropTarget }) =>
+						`drop-indicator ${isDropTarget ? 'active' : ''}`
+					}
+				/>
+			)
+		},
+		onReorder: handleReorder,
+		onInsert: handleInsert,
 		onRootDrop: async (e) => {
 			const item = e.items[0] as TextDropItem
 			if (!item.types.has('resource-item')) return
@@ -233,10 +292,8 @@ const ResourceList = memo(({ sectionId }: ResourceListProps) => {
 				const resourceData = JSON.parse(await item.getText('resource-item'))
 				const targetIndex = resources.length
 
-				// 同じセクション内での移動は無視
 				if (resourceData.sectionId === sectionId) return
 
-				// リソースの移動を実行
 				await dispatch(
 					moveResource({
 						resourceId: resourceData.id,
@@ -245,7 +302,6 @@ const ResourceList = memo(({ sectionId }: ResourceListProps) => {
 					}),
 				).unwrap()
 
-				// 両方のセクションのリソースを再取得
 				await Promise.all([
 					dispatch(fetchResources(sectionId)),
 					dispatch(fetchResources(resourceData.sectionId)),
@@ -255,69 +311,6 @@ const ResourceList = memo(({ sectionId }: ResourceListProps) => {
 			}
 		},
 	})
-
-	const handleResourceClick = async (resource: Resource) => {
-		try {
-			// まず現在のウィンドウの既存のタブを探す
-			const response = await sendMessageToExtension({
-				type: 'FIND_TAB',
-				url: resource.url,
-			})
-
-			if (response?.tabId) {
-				// タブが見つかった場合は、そのタブに切り替え
-				const switchResponse = await sendMessageToExtension({
-					type: 'SWITCH_TO_TAB',
-					tabId: response.tabId,
-				})
-
-				if (switchResponse?.success) {
-					return
-				}
-			}
-
-			// タブが見つからない場合は新しいタブを開く
-			window.open(resource.url, '_blank')
-		} catch (error) {
-			console.error('Failed to handle resource click:', error)
-			// エラーの場合も新しいタブで開く
-			window.open(resource.url, '_blank')
-		}
-	}
-
-	const getResourceDescription = (resource: Resource) => {
-		if (resource.description) {
-			return resource.description
-		}
-
-		const url = new URL(resource.url)
-		const hostname = url.hostname
-		const pathname = url.pathname
-
-		if (hostname === 'mail.google.com') {
-			return 'Gmail'
-		}
-		if (hostname === 'github.com') {
-			return 'GitHub'
-		}
-
-		if (hostname === 'docs.google.com') {
-			if (pathname.startsWith('/forms/')) {
-				return 'Google Form'
-			}
-			if (pathname.startsWith('/spreadsheets/')) {
-				return 'Google Sheet'
-			}
-			if (pathname.startsWith('/drive/')) {
-				return 'Google Drive'
-			}
-			if (pathname.startsWith('/document/')) {
-				return 'Google Document'
-			}
-		}
-
-		return 'Webpage'
-	}
 
 	if (error) {
 		return <div>エラー: {error}</div>

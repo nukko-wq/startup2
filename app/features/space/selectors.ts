@@ -1,14 +1,15 @@
 import { createSelector } from '@reduxjs/toolkit'
 import type { RootState } from '@/app/store/store'
 
+// メモ化されたセレクター
+const selectSpaceState = (state: RootState) => state.space
+const selectSectionState = (state: RootState) => state.section
+
 export const selectActiveSpace = createSelector(
-	[
-		(state: RootState) => state.space.activeSpaceId,
-		(state: RootState) => state.space.spacesByWorkspace,
-	],
-	(activeSpaceId, spacesByWorkspace) => {
+	[selectSpaceState, (state: RootState) => state.space.activeSpaceId],
+	(spaceState, activeSpaceId) => {
 		if (!activeSpaceId) return null
-		for (const workspace of Object.values(spacesByWorkspace)) {
+		for (const workspace of Object.values(spaceState.spacesByWorkspace)) {
 			const space = workspace.spaces.find((s) => s.id === activeSpaceId)
 			if (space) return space
 		}
@@ -17,12 +18,9 @@ export const selectActiveSpace = createSelector(
 )
 
 export const selectCurrentSections = createSelector(
-	[
-		(state: RootState) => state.space.activeSpaceId,
-		(state: RootState) => state.section.sectionsBySpace,
-	],
-	(activeSpaceId, sectionsBySpace) => {
+	[selectSectionState, (state: RootState) => state.space.activeSpaceId],
+	(sectionState, activeSpaceId) => {
 		if (!activeSpaceId) return []
-		return sectionsBySpace[activeSpaceId]?.sections || []
+		return sectionState.sectionsBySpace[activeSpaceId]?.sections || []
 	},
 )
