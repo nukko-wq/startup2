@@ -36,10 +36,14 @@ const WorkspaceList = () => {
 	}, [dispatch, status])
 
 	useEffect(() => {
-		if (status === 'authenticated' && !loading && !defaultWorkspace) {
+		if (
+			status === 'authenticated' &&
+			workspaces.length === 0 &&
+			!defaultWorkspace
+		) {
 			dispatch(createDefaultWorkspace())
 		}
-	}, [dispatch, status, loading, defaultWorkspace])
+	}, [dispatch, status, workspaces.length, defaultWorkspace])
 
 	useEffect(() => {
 		if (workspaces.length > 0 && !activeWorkspaceId) {
@@ -130,7 +134,7 @@ const WorkspaceList = () => {
 	return (
 		<div className="">
 			{/* デフォルトワークスペース */}
-			{defaultWorkspace && (
+			{defaultWorkspace?.id && (
 				<div className="">
 					<div className="flex items-center">
 						<div className="flex flex-col flex-grow justify-between">
