@@ -80,3 +80,13 @@ export interface MoveSpaceResponse {
 	sourceWorkspaceId: string
 	targetWorkspaceId: string
 }
+
+export interface NormalizedSpaceState {
+	entities: {
+		[id: string]: Space
+	}
+	idsByWorkspace: {
+		[workspaceId: string]: string[]
+	}
+	activeSpaceId: string | null
+}
