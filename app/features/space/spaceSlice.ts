@@ -135,11 +135,15 @@ export const fetchAllSpaces = createAsyncThunk(
 		const state = getState() as RootState
 		const allSpaces = state.space.allSpaces
 
-		// キャッシュチェックを強化
+		// loading中の場合は新しいリクエストを防ぐ
+		if (allSpaces.loading) {
+			throw new Error('Already loading')
+		}
+
+		// キャッシュチェック
 		if (
 			allSpaces.spaces.length > 0 &&
-			!allSpaces.loading && // ローディング中でない
-			!allSpaces.error && // エラーがない
+			!allSpaces.error &&
 			allSpaces.lastFetched &&
 			Date.now() - allSpaces.lastFetched < 5 * 60 * 1000
 		) {
@@ -152,6 +156,13 @@ export const fetchAllSpaces = createAsyncThunk(
 
 		const response = await spaceApi.fetchAllSpaces()
 		return response
+	},
+	{
+		// エラーの場合でもpendingステートをクリアする
+		condition: (_, { getState }) => {
+			const state = getState() as RootState
+			return !state.space.allSpaces.loading
+		},
 	},
 )
 

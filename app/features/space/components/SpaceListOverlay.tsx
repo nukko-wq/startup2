@@ -11,7 +11,7 @@ import type { Selection } from '@react-types/shared'
 
 const SpaceListOverlay = () => {
 	const dispatch = useDispatch<AppDispatch>()
-	const { spaces, loading, error } = useSelector(
+	const { spaces, loading, error, lastFetched } = useSelector(
 		(state: RootState) => state.space.allSpaces,
 	)
 	const ref = useRef<HTMLDivElement>(null)
@@ -66,11 +66,20 @@ const SpaceListOverlay = () => {
 		}
 	}
 
+	// キャッシュ時間の設定
+	const CACHE_DURATION = 5 * 60 * 1000 // 5分
+
 	useEffect(() => {
-		if (spaces.length === 0) {
+		// キャッシュチェックを追加
+		const shouldFetch =
+			spaces.length === 0 ||
+			!lastFetched ||
+			Date.now() - lastFetched > CACHE_DURATION
+
+		if (shouldFetch) {
 			dispatch(fetchAllSpaces())
 		}
-	}, [dispatch, spaces.length])
+	}, [dispatch, spaces.length, lastFetched])
 
 	useEffect(() => {
 		if (spaces.length > 0) {
