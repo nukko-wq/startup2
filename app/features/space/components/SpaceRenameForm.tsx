@@ -2,7 +2,11 @@ import { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useForm, Controller } from 'react-hook-form'
 import { Button, Form, Input, Label, TextField } from 'react-aria-components'
-import { renameSpace } from '@/app/features/space/spaceSlice'
+import {
+	renameSpace,
+	renameSpaceOptimistically,
+	fetchSpaces,
+} from '@/app/features/space/spaceSlice'
 import type { AppDispatch } from '@/app/store/store'
 
 interface SpaceRenameFormProps {
@@ -32,14 +36,33 @@ const SpaceRenameForm = ({
 	})
 
 	const onSubmit = async (data: FormData) => {
+		if (!data.name.trim()) return
+
 		setIsSubmitting(true)
 		try {
-			await dispatch(
-				renameSpace({ spaceId, name: data.name, workspaceId }),
-			).unwrap()
+			// 楽観的更新を適用
+			dispatch(
+				renameSpaceOptimistically({
+					workspaceId,
+					spaceId,
+					name: data.name.trim(),
+				}),
+			)
+
 			onClose()
+
+			// APIリクエストを実行
+			await dispatch(
+				renameSpace({
+					spaceId,
+					name: data.name.trim(),
+					workspaceId,
+				}),
+			).unwrap()
 		} catch (error) {
-			console.error('Failed to rename space:', error)
+			console.error('スペース名の変更に失敗しました:', error)
+			// エラー時は状態を同期
+			dispatch(fetchSpaces(workspaceId))
 		} finally {
 			setIsSubmitting(false)
 		}
