@@ -52,12 +52,19 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 		(state: RootState) => state.space.activeSpaceId,
 	)
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		if (
 			workspaceId &&
 			(!workspaceSpaces.lastFetched || workspaceSpaces.spaces.length === 0)
 		) {
 			dispatch(fetchSpaces(workspaceId))
+				.unwrap()
+				.then(() => {
+					for (const space of workspaceSpaces.spaces) {
+						dispatch(fetchSectionsWithResources(space.id))
+					}
+				})
 		}
 	}, [
 		dispatch,

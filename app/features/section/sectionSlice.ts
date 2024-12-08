@@ -60,7 +60,8 @@ export const fetchSectionsWithResources = createAsyncThunk(
 		// キャッシュチェック
 		if (
 			sectionState?.lastFetched &&
-			Date.now() - sectionState.lastFetched < 2 * 60 * 1000 // 2分
+			Date.now() - sectionState.lastFetched < 2 * 60 * 1000 && // 2分
+			sectionState.sections.length > 0
 		) {
 			return {
 				sections: sectionState.sections,
@@ -81,10 +82,7 @@ export const fetchSectionsWithResources = createAsyncThunk(
 			const sectionState = state.section.sectionsBySpace[spaceId]
 
 			// loading中の場合は新しいリクエストを防ぐ
-			if (sectionState?.loading) {
-				return false
-			}
-			return true
+			return !sectionState?.loading
 		},
 	},
 )
