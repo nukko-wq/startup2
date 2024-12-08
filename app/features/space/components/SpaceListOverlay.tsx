@@ -67,8 +67,10 @@ const SpaceListOverlay = () => {
 	}
 
 	useEffect(() => {
-		dispatch(fetchAllSpaces())
-	}, [dispatch])
+		if (spaces.length === 0) {
+			dispatch(fetchAllSpaces())
+		}
+	}, [dispatch, spaces.length])
 
 	useEffect(() => {
 		if (spaces.length > 0) {

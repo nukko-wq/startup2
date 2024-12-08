@@ -131,7 +131,23 @@ export const moveSpace = createAsyncThunk(
 
 export const fetchAllSpaces = createAsyncThunk(
 	'space/fetchAllSpaces',
-	async () => {
+	async (_, { getState }) => {
+		const state = getState() as RootState
+		const allSpaces = state.space.allSpaces
+
+		// キャッシュが有効な場合は既存のデータを返す
+		if (
+			allSpaces.spaces.length > 0 &&
+			allSpaces.lastFetched &&
+			Date.now() - allSpaces.lastFetched < 5 * 60 * 1000 // 5分
+		) {
+			return {
+				spaces: allSpaces.spaces,
+				activeSpaceId: state.space.activeSpaceId,
+				workspaceId: allSpaces.spaces[0]?.workspaceId || '',
+			}
+		}
+
 		const response = await spaceApi.fetchAllSpaces()
 		return response
 	},
