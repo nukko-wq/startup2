@@ -11,6 +11,7 @@ import type {
 	ReorderWorkspacePayload,
 	CreateWorkspacePayload,
 } from './types/workspace'
+import type { RootState } from '@/app/store/store'
 
 const initialState: WorkspaceState = {
 	workspaces: [],
@@ -22,7 +23,14 @@ const initialState: WorkspaceState = {
 
 export const fetchWorkspaces = createAsyncThunk(
 	'workspace/fetchWorkspaces',
-	async () => {
+	async (_, { getState }) => {
+		const state = getState() as RootState
+		if (
+			state.workspace.lastFetched &&
+			Date.now() - state.workspace.lastFetched < 5 * 60 * 1000
+		) {
+			return state.workspace.workspaces
+		}
 		return await workspaceApi.fetchWorkspaces()
 	},
 )
@@ -109,6 +117,7 @@ const workspaceSlice = createSlice({
 				state.defaultWorkspace = defaultWorkspace || null
 				state.workspaces = normalWorkspaces
 				state.loading = false
+				state.lastFetched = Date.now()
 			})
 			.addCase(fetchWorkspaces.rejected, (state, action) => {
 				state.loading = false
