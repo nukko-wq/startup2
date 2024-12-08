@@ -22,6 +22,7 @@ import {
 	useDragAndDrop,
 } from 'react-aria-components'
 import SpaceList from '@/app/features/space/components/SpaceList'
+import { fetchSpaces } from '@/app/features/space/spaceSlice'
 
 const WorkspaceList = () => {
 	const dispatch = useDispatch<AppDispatch>()
@@ -51,6 +52,14 @@ const WorkspaceList = () => {
 			dispatch(setActiveWorkspace(workspaces[0].id))
 		}
 	}, [workspaces, activeWorkspaceId, dispatch])
+
+	useEffect(() => {
+		if (status === 'authenticated' && !loading) {
+			if (defaultWorkspace) {
+				dispatch(fetchSpaces(defaultWorkspace.id))
+			}
+		}
+	}, [dispatch, status, defaultWorkspace, loading])
 
 	const { dragAndDropHooks } = useDragAndDrop({
 		getItems: (keys) => {

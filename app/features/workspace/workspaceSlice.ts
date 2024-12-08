@@ -115,11 +115,11 @@ const workspaceSlice = createSlice({
 				)
 
 				state.defaultWorkspace = defaultWorkspace || null
-				state.workspaces = normalWorkspaces
+				state.workspaces = action.payload
 				state.loading = false
 				state.lastFetched = Date.now()
 
-				if (defaultWorkspace) {
+				if (defaultWorkspace && !state.activeWorkspaceId) {
 					state.activeWorkspaceId = defaultWorkspace.id
 				}
 			})
