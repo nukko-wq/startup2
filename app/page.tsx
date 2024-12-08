@@ -23,11 +23,6 @@ export default function Home() {
 	const activeSpaceId = useSelector(
 		(state: RootState) => state.space.activeSpaceId,
 	)
-	const activeSectionId = useSelector((state: RootState) => {
-		if (!activeSpaceId) return null
-		const spaceState = state.section.sectionsBySpace[activeSpaceId]
-		return spaceState?.sections?.[0]?.id || null
-	})
 
 	// キャッシュ時間の管理
 	const lastFetchTime = useRef<{ [spaceId: string]: number }>({})
