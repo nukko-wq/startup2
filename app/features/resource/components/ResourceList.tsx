@@ -1,5 +1,5 @@
 import { GripVertical } from 'lucide-react'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, memo } from 'react'
 import {
 	Button,
 	DropIndicator,
@@ -30,7 +30,7 @@ interface ResourceListProps {
 	sectionId: string
 }
 
-const ResourceList = ({ sectionId }: ResourceListProps) => {
+const ResourceList = memo(({ sectionId }: ResourceListProps) => {
 	const dispatch = useDispatch<AppDispatch>()
 	const { resources, loading, error, lastFetched } = useSelector(
 		(state: RootState) =>
@@ -379,6 +379,6 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 			)}
 		</GridList>
 	)
-}
+})
 
 export default ResourceList
