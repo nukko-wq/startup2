@@ -23,6 +23,8 @@ import {
 } from 'react-aria-components'
 import SpaceMenu from '@/app/features/space/components/SpaceMenu'
 import CreateSpaceInWorkspace from '@/app/features/space/components/CreateSpaceInWorkspace'
+import { fetchSections } from '@/app/features/section/sectionSlice'
+import { fetchResources } from '@/app/features/resource/resourceSlice'
 import type { Space } from '@/app/features/space/types/space'
 interface SpaceListProps {
 	workspaceId: string
@@ -30,14 +32,22 @@ interface SpaceListProps {
 
 const SpaceList = ({ workspaceId }: SpaceListProps) => {
 	const dispatch = useDispatch<AppDispatch>()
-	const workspaceSpaces = useSelector(
-		(state: RootState) =>
-			state.space.spacesByWorkspace[workspaceId] ?? {
+	const workspaceSpaces = useSelector((state: RootState) => {
+		if (!workspaceId) {
+			return {
 				spaces: [],
 				loading: false,
-				error: null,
-			},
-	)
+				error: 'ワークスペースIDが指定されていません',
+			}
+		}
+
+		const spaceState = state.space.spacesByWorkspace[workspaceId]
+		return {
+			spaces: spaceState?.spaces || [],
+			loading: spaceState?.loading || false,
+			error: spaceState?.error || null,
+		}
+	})
 	const activeSpaceId = useSelector(
 		(state: RootState) => state.space.activeSpaceId,
 	)
@@ -45,8 +55,23 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 	useEffect(() => {
 		if (workspaceId) {
 			dispatch(fetchSpaces(workspaceId))
+
+			setTimeout(() => {
+				dispatch(fetchSections(workspaceId))
+				dispatch(fetchResources(workspaceId))
+			}, 100)
 		}
 	}, [dispatch, workspaceId])
+
+	useEffect(() => {
+		console.log('SpaceList mounted with workspaceId:', workspaceId)
+		console.log('State structure:', {
+			workspaceId,
+			spaces: workspaceSpaces.spaces,
+			loading: workspaceSpaces.loading,
+			error: workspaceSpaces.error,
+		})
+	}, [workspaceId, workspaceSpaces])
 
 	const handleSpaceClick = (spaceId: string) => {
 		dispatch(setActiveSpace(spaceId))

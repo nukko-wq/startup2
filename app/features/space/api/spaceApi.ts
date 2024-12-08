@@ -9,7 +9,11 @@ import type {
 
 export const spaceApi = {
 	fetchSpaces: async (workspaceId: string): Promise<SpaceApiResponse> => {
-		const response = await fetch(`/api/workspaces/${workspaceId}/spaces`)
+		const response = await fetch(`/api/workspaces/${workspaceId}/spaces`, {
+			headers: {
+				'Cache-Control': 'max-age=300',
+			},
+		})
 		if (!response.ok) {
 			throw new Error('スペースの取得に失敗しました')
 		}
