@@ -14,8 +14,6 @@ export async function GET(
 			return new NextResponse('Unauthorized', { status: 401 })
 		}
 
-		console.log('Fetching spaces for workspace:', workspaceId)
-
 		const spaces = await prisma.space.findMany({
 			where: {
 				workspaceId,
