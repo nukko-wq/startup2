@@ -73,6 +73,16 @@ const sectionSlice = createSlice({
 				].sections.filter((section) => section.id !== sectionId)
 			}
 		},
+		renameSectionOptimistically: (state, action) => {
+			const { spaceId, sectionId, name } = action.payload
+			const spaceState = state.sectionsBySpace[spaceId]
+
+			if (spaceState) {
+				spaceState.sections = spaceState.sections.map((section) =>
+					section.id === sectionId ? { ...section, name } : section,
+				)
+			}
+		},
 	},
 	extraReducers: (builder) => {
 		builder
@@ -176,7 +186,10 @@ const sectionSlice = createSlice({
 	},
 })
 
-export const { addSectionOptimistically, removeSectionOptimistically } =
-	sectionSlice.actions
+export const {
+	addSectionOptimistically,
+	removeSectionOptimistically,
+	renameSectionOptimistically,
+} = sectionSlice.actions
 
 export default sectionSlice.reducer

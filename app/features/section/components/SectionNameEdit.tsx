@@ -3,7 +3,11 @@
 import { Pencil } from 'lucide-react'
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { renameSection } from '@/app/features/section/sectionSlice'
+import {
+	renameSection,
+	renameSectionOptimistically,
+	fetchSections,
+} from '@/app/features/section/sectionSlice'
 import type { AppDispatch, RootState } from '@/app/store/store'
 import type { Section } from '@/app/features/section/types/section'
 import { Button, Form, Input, Text } from 'react-aria-components'
@@ -29,6 +33,15 @@ const SectionNameEdit = ({ section }: SectionNameEditProps) => {
 		if (!activeSpaceId || !editingName.trim()) return
 
 		try {
+			dispatch(
+				renameSectionOptimistically({
+					spaceId: activeSpaceId,
+					sectionId: section.id,
+					name: editingName.trim(),
+				}),
+			)
+			setIsEditing(false)
+
 			await dispatch(
 				renameSection({
 					sectionId: section.id,
@@ -36,9 +49,9 @@ const SectionNameEdit = ({ section }: SectionNameEditProps) => {
 					spaceId: activeSpaceId,
 				}),
 			).unwrap()
-			setIsEditing(false)
 		} catch (error) {
 			console.error('セクション名の変更に失敗しました:', error)
+			dispatch(fetchSections(activeSpaceId))
 		}
 	}
 
