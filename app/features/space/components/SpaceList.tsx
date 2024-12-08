@@ -23,12 +23,7 @@ import {
 } from 'react-aria-components'
 import SpaceMenu from '@/app/features/space/components/SpaceMenu'
 import CreateSpaceInWorkspace from '@/app/features/space/components/CreateSpaceInWorkspace'
-import {
-	fetchSections,
-	fetchSectionsWithResources,
-} from '@/app/features/section/sectionSlice'
-import { fetchResources } from '@/app/features/resource/resourceSlice'
-import type { Space } from '@/app/features/space/types/space'
+import { fetchSectionsWithResources } from '@/app/features/section/sectionSlice'
 interface SpaceListProps {
 	workspaceId: string
 }

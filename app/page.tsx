@@ -13,7 +13,6 @@ import SpaceListOverlay from '@/app/features/space/components/SpaceListOverlay'
 import { showSpaceList } from '@/app/features/overlay/overlaySlice'
 import type { RootState } from '@/app/store/store'
 import { fetchSectionsWithResources } from '@/app/features/section/sectionSlice'
-import { fetchResources } from '@/app/features/resource/resourceSlice'
 
 export default function Home() {
 	const dispatch = useDispatch<AppDispatch>()

@@ -12,6 +12,7 @@ import type {
 	ReorderResourcePayload,
 	MoveResourcePayload,
 } from '@/app/features/resource/types/resouce'
+import type { RootState } from '@/app/store/store'
 
 const initialState: ResourceState = {
 	resourcesBySection: {},
@@ -19,7 +20,17 @@ const initialState: ResourceState = {
 
 export const fetchResources = createAsyncThunk(
 	'resource/fetchResources',
-	async (sectionId: string) => {
+	async (sectionId: string, { getState }) => {
+		const state = getState() as RootState
+		const sectionResources = state.resource.resourcesBySection[sectionId]
+
+		if (
+			sectionResources?.lastFetched &&
+			Date.now() - sectionResources.lastFetched < 5 * 60 * 1000
+		) {
+			return sectionResources.resources
+		}
+
 		return await resourceApi.fetchResources(sectionId)
 	},
 )
@@ -104,22 +115,26 @@ const resourceSlice = createSlice({
 		builder
 			// fetchResources
 			.addCase(fetchResources.pending, (state, action) => {
-				state.resourcesBySection[action.meta.arg] = {
-					resources: [],
+				const sectionId = action.meta.arg
+				state.resourcesBySection[sectionId] = {
+					...state.resourcesBySection[sectionId],
 					loading: true,
 					error: null,
 				}
 			})
 			.addCase(fetchResources.fulfilled, (state, action) => {
-				state.resourcesBySection[action.meta.arg] = {
+				const sectionId = action.meta.arg
+				state.resourcesBySection[sectionId] = {
 					resources: action.payload,
 					loading: false,
 					error: null,
+					lastFetched: Date.now(),
 				}
 			})
 			.addCase(fetchResources.rejected, (state, action) => {
-				state.resourcesBySection[action.meta.arg] = {
-					resources: [],
+				const sectionId = action.meta.arg
+				state.resourcesBySection[sectionId] = {
+					...state.resourcesBySection[sectionId],
 					loading: false,
 					error: action.error.message || 'エラーが発生しました',
 				}

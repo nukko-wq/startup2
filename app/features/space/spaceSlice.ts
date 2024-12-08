@@ -13,8 +13,7 @@ import type {
 	ReorderSpacePayload,
 	MoveSpacePayload,
 } from './types/space'
-import { fetchSections } from '@/app/features/section/sectionSlice'
-import { fetchResources } from '@/app/features/resource/resourceSlice'
+import { fetchSectionsWithResources } from '@/app/features/section/sectionSlice'
 
 const initialState: SpaceState = {
 	spacesByWorkspace: {},
@@ -50,16 +49,10 @@ export const deleteSpace = createAsyncThunk(
 export const setActiveSpace = createAsyncThunk(
 	'space/setActiveSpace',
 	async (spaceId: string, { dispatch }) => {
-		const [activeSpaceResult, sectionsResult] = await Promise.all([
+		const [activeSpaceResult, sectionsWithResources] = await Promise.all([
 			spaceApi.setActiveSpace(spaceId),
-			dispatch(fetchSections(spaceId)).unwrap(),
+			dispatch(fetchSectionsWithResources(spaceId)).unwrap(),
 		])
-
-		if (sectionsResult.length > 0) {
-			await Promise.all(
-				sectionsResult.map((section) => dispatch(fetchResources(section.id))),
-			)
-		}
 
 		return activeSpaceResult
 	},
