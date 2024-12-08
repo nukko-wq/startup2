@@ -1,4 +1,5 @@
 'use client'
+import { memo, useCallback } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import type { RootState, AppDispatch } from '@/app/store/store'
 import { createSelector } from '@reduxjs/toolkit'
@@ -12,23 +13,16 @@ import {
 } from '@/app/features/section/sectionSlice'
 import type { OptimisticSection } from '@/app/features/section/types/section'
 import { v4 as uuidv4 } from 'uuid'
+import { selectCurrentSections } from '@/app/features/space/selectors'
 
 const selectActiveSpaceId = (state: RootState) => state.space.activeSpaceId
-const selectSectionsBySpace = (state: RootState) =>
-	state.section.sectionsBySpace
 
-const selectExistingSections = createSelector(
-	[selectActiveSpaceId, selectSectionsBySpace],
-	(activeSpaceId, sectionsBySpace) =>
-		activeSpaceId ? sectionsBySpace[activeSpaceId]?.sections || [] : [],
-)
-
-const SectionListWrapper = () => {
+const SectionListWrapper = memo(() => {
 	const dispatch = useDispatch<AppDispatch>()
 	const activeSpaceId = useSelector(selectActiveSpaceId)
-	const existingSections = useSelector(selectExistingSections)
+	const existingSections = useSelector(selectCurrentSections)
 
-	const handleCreateSection = async () => {
+	const handleCreateSection = useCallback(async () => {
 		if (!activeSpaceId) return
 
 		const optimisticId = uuidv4()
@@ -63,7 +57,7 @@ const SectionListWrapper = () => {
 				}),
 			)
 		}
-	}
+	}, [activeSpaceId, dispatch, existingSections.length])
 
 	if (!activeSpaceId) {
 		return <div>No active space</div>
@@ -85,6 +79,8 @@ const SectionListWrapper = () => {
 			</div>
 		</div>
 	)
-}
+})
+
+SectionListWrapper.displayName = 'SectionListWrapper'
 
 export default SectionListWrapper

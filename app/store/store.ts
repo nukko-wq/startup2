@@ -18,6 +18,7 @@ import googleDriveReducer from '@/app/features/google-drive/googleDriveSlice'
 import tabsReducer from '@/app/features/tabs/tabsSlice'
 import overlayReducer from '@/app/features/overlay/overlaySlice'
 import { combineReducers } from '@reduxjs/toolkit'
+import { normalize, schema } from 'normalizr'
 
 const persistConfig = {
 	key: 'root',
@@ -59,3 +60,16 @@ export const persistor = persistStore(store)
 
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
+
+const resourceSchema = new schema.Entity('resources')
+const sectionSchema = new schema.Entity('sections', {
+	resources: [resourceSchema],
+})
+
+const normalizedInitialState = {
+	entities: {
+		resources: {},
+		sections: {},
+	},
+	result: [],
+}
