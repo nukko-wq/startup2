@@ -16,7 +16,7 @@ import { fetchSectionsWithResources } from '@/app/features/section/sectionSlice'
 
 export default function Home() {
 	const dispatch = useDispatch<AppDispatch>()
-	const [isClient, setIsClient] = useState(false)
+	const [initialLoaded, setInitialLoaded] = useState(false)
 	const isSpaceListVisible = useSelector(
 		(state: RootState) => state.overlay.isSpaceListVisible,
 	)
@@ -29,11 +29,11 @@ export default function Home() {
 	const CACHE_DURATION = 5 * 60 * 1000 // 5分
 
 	useEffect(() => {
-		if (!isClient) {
-			setIsClient(true)
+		if (!initialLoaded) {
+			setInitialLoaded(true)
 			Promise.all([dispatch(fetchWorkspaces()), dispatch(fetchAllSpaces())])
 		}
-	}, [dispatch, isClient])
+	}, [dispatch, initialLoaded])
 
 	useEffect(() => {
 		if (activeSpaceId) {
@@ -66,7 +66,7 @@ export default function Home() {
 	}, [dispatch])
 
 	// サーバーサイドレンダリング時は最小限のレイアウトを返す
-	if (!isClient) {
+	if (!initialLoaded) {
 		return (
 			<div className="flex w-full h-full">
 				<div className="flex flex-col w-full h-full">

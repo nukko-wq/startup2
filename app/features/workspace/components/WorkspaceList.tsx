@@ -30,20 +30,21 @@ const WorkspaceList = () => {
 		useSelector((state: RootState) => state.workspace)
 
 	useEffect(() => {
-		if (status === 'authenticated') {
+		if (status === 'authenticated' && !workspaces.length) {
 			dispatch(fetchWorkspaces())
 		}
-	}, [dispatch, status])
+	}, [dispatch, status, workspaces.length])
 
 	useEffect(() => {
 		if (
 			status === 'authenticated' &&
 			workspaces.length === 0 &&
-			!defaultWorkspace
+			!defaultWorkspace &&
+			!loading
 		) {
 			dispatch(createDefaultWorkspace())
 		}
-	}, [dispatch, status, workspaces.length, defaultWorkspace])
+	}, [dispatch, status, workspaces.length, defaultWorkspace, loading])
 
 	useEffect(() => {
 		if (workspaces.length > 0 && !activeWorkspaceId) {
@@ -133,7 +134,7 @@ const WorkspaceList = () => {
 
 	return (
 		<div className="">
-			{/* デフォルトワークスペース */}
+			{/* デフォルトワ���クスペース */}
 			{defaultWorkspace?.id && (
 				<div className="">
 					<div className="flex items-center">

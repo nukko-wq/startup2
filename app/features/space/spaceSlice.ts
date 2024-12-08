@@ -135,11 +135,13 @@ export const fetchAllSpaces = createAsyncThunk(
 		const state = getState() as RootState
 		const allSpaces = state.space.allSpaces
 
-		// キャッシュが有効な場合は既存のデータを返す
+		// キャッシュチェックを強化
 		if (
 			allSpaces.spaces.length > 0 &&
+			!allSpaces.loading && // ローディング中でない
+			!allSpaces.error && // エラーがない
 			allSpaces.lastFetched &&
-			Date.now() - allSpaces.lastFetched < 5 * 60 * 1000 // 5分
+			Date.now() - allSpaces.lastFetched < 5 * 60 * 1000
 		) {
 			return {
 				spaces: allSpaces.spaces,
