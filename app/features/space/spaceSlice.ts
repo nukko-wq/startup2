@@ -63,7 +63,22 @@ export const deleteSpace = createAsyncThunk(
 
 export const setActiveSpace = createAsyncThunk(
 	'space/setActiveSpace',
-	async (spaceId: string, { dispatch }) => {
+	async (spaceId: string, { dispatch, getState }) => {
+		const state = getState() as RootState
+		const sectionState = state.section.sectionsBySpace[spaceId]
+
+		// キャッシュチェック
+		if (
+			sectionState?.sections.length > 0 &&
+			!sectionState.loading &&
+			!sectionState.error
+		) {
+			// セクションが既に存在する場合は、APIコールをスキップ
+			const activeSpaceResult = await spaceApi.setActiveSpace(spaceId)
+			return activeSpaceResult
+		}
+
+		// セクションがない場合は両方のAPIを呼び出す
 		const [activeSpaceResult, sectionsWithResources] = await Promise.all([
 			spaceApi.setActiveSpace(spaceId),
 			dispatch(fetchSectionsWithResources(spaceId)).unwrap(),
