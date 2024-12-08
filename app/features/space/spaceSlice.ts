@@ -135,6 +135,26 @@ const spaceSlice = createSlice({
 				].spaces.filter((space) => space.id !== spaceId)
 			}
 		},
+		renameSpaceOptimistically: (
+			state,
+			action: PayloadAction<{
+				workspaceId: string
+				spaceId: string
+				name: string
+			}>,
+		) => {
+			const { workspaceId, spaceId, name } = action.payload
+			const workspaceState = state.spacesByWorkspace[workspaceId]
+			if (workspaceState) {
+				const index = workspaceState.spaces.findIndex((s) => s.id === spaceId)
+				if (index !== -1) {
+					workspaceState.spaces[index] = {
+						...workspaceState.spaces[index],
+						name,
+					}
+				}
+			}
+		},
 	},
 	extraReducers: (builder) => {
 		builder
@@ -332,7 +352,10 @@ const spaceSlice = createSlice({
 	},
 })
 
-export const { addSpaceOptimistically, removeSpaceOptimistically } =
-	spaceSlice.actions
+export const {
+	addSpaceOptimistically,
+	removeSpaceOptimistically,
+	renameSpaceOptimistically,
+} = spaceSlice.actions
 
 export default spaceSlice.reducer

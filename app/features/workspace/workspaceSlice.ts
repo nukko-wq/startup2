@@ -75,6 +75,22 @@ const workspaceSlice = createSlice({
 		removeWorkspaceOptimistically: (state, action: PayloadAction<string>) => {
 			state.workspaces = state.workspaces.filter((w) => w.id !== action.payload)
 		},
+		renameWorkspaceOptimistically: (
+			state,
+			action: PayloadAction<{
+				workspaceId: string
+				name: string
+			}>,
+		) => {
+			const { workspaceId, name } = action.payload
+			const index = state.workspaces.findIndex((w) => w.id === workspaceId)
+			if (index !== -1) {
+				state.workspaces[index] = {
+					...state.workspaces[index],
+					name,
+				}
+			}
+		},
 	},
 	extraReducers: (builder) => {
 		builder
@@ -213,5 +229,6 @@ export const {
 	setActiveWorkspace,
 	addWorkspaceOptimistically,
 	removeWorkspaceOptimistically,
+	renameWorkspaceOptimistically,
 } = workspaceSlice.actions
 export default workspaceSlice.reducer

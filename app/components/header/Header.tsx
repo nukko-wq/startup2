@@ -5,21 +5,23 @@ import { useState } from 'react'
 import { Button, Form, Input, Text } from 'react-aria-components'
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from '@/app/store/store'
-import { renameSpace } from '@/app/features/space/spaceSlice'
-import HeaderMenu from './HeaderMenu'
+import {
+	renameSpace,
+	renameSpaceOptimistically,
+	fetchSpaces,
+} from '@/app/features/space/spaceSlice'
+import HeaderMenu from '@/app/components/header/HeaderMenu'
 
 const Header = () => {
 	const dispatch = useDispatch<AppDispatch>()
 	const [isEditing, setIsEditing] = useState(false)
 	const [editingName, setEditingName] = useState('')
 
-	// 現在のアクティブなスペースの情報を取得
 	const activeSpaceId = useSelector(
 		(state: RootState) => state.space.activeSpaceId,
 	)
 	const activeSpace = useSelector((state: RootState) => {
 		if (!activeSpaceId) return null
-		// すべてのワークスペースのスペースから検索
 		for (const workspace of Object.values(state.space.spacesByWorkspace)) {
 			const space = workspace.spaces.find((s) => s.id === activeSpaceId)
 			if (space) return space
@@ -38,6 +40,17 @@ const Header = () => {
 		if (!activeSpace || !editingName.trim()) return
 
 		try {
+			// 楽観的更新を適用
+			dispatch(
+				renameSpaceOptimistically({
+					workspaceId: activeSpace.workspaceId,
+					spaceId: activeSpace.id,
+					name: editingName.trim(),
+				}),
+			)
+
+			setIsEditing(false)
+			// APIリクエストを実行
 			await dispatch(
 				renameSpace({
 					spaceId: activeSpace.id,
@@ -45,9 +58,10 @@ const Header = () => {
 					workspaceId: activeSpace.workspaceId,
 				}),
 			).unwrap()
-			setIsEditing(false)
 		} catch (error) {
-			console.error('Failed to rename space:', error)
+			console.error('スペース名の変更に失敗しました:', error)
+			// エラー時は状態を同期
+			dispatch(fetchSpaces(activeSpace.workspaceId))
 		}
 	}
 

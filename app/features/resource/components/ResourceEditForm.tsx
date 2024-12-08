@@ -4,7 +4,11 @@ import { Button, Form, Input, Label, TextField } from 'react-aria-components'
 import { Controller, useForm } from 'react-hook-form'
 import { useDispatch } from 'react-redux'
 import type { AppDispatch } from '@/app/store/store'
-import { updateResource } from '@/app/features/resource/resourceSlice'
+import {
+	updateResource,
+	updateResourceOptimistically,
+	fetchResources,
+} from '@/app/features/resource/resourceSlice'
 import type { Resource } from '@prisma/client'
 
 interface ResourceEditFormProps {
@@ -36,6 +40,23 @@ const ResourceEditForm = ({ resource, onClose }: ResourceEditFormProps) => {
 	const onSubmit = async (data: ResourceFormData) => {
 		try {
 			setIsSubmitting(true)
+
+			// 楽観的更新を適用
+			const optimisticUpdate = {
+				...resource,
+				title: data.title,
+				url: data.url,
+				description: data.description,
+			}
+			dispatch(
+				updateResourceOptimistically({
+					sectionId: resource.sectionId,
+					updatedResource: optimisticUpdate,
+				}),
+			)
+			onClose()
+
+			// APIリクエストを実行
 			await dispatch(
 				updateResource({
 					id: resource.id,
@@ -44,9 +65,10 @@ const ResourceEditForm = ({ resource, onClose }: ResourceEditFormProps) => {
 					description: data.description,
 				}),
 			).unwrap()
-			onClose()
 		} catch (error) {
 			console.error('リソースの更新に失敗しました:', error)
+			// エラーが発生した場合、fetchResourcesを呼び出して状態を同期
+			dispatch(fetchResources(resource.sectionId))
 		} finally {
 			setIsSubmitting(false)
 		}
