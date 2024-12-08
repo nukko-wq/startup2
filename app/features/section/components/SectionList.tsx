@@ -4,8 +4,8 @@ import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from '@/app/store/store'
 import {
-	fetchSections,
 	reorderSection,
+	fetchSectionsWithResources,
 } from '@/app/features/section/sectionSlice'
 import {
 	DropIndicator,
@@ -80,7 +80,7 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 
 	useEffect(() => {
 		if (spaceId) {
-			dispatch(fetchSections(spaceId))
+			dispatch(fetchSectionsWithResources(spaceId))
 		}
 	}, [dispatch, spaceId])
 
