@@ -27,7 +27,7 @@ const WorkspaceRenameDialog = ({
 						{({ close }) => (
 							<WorkspaceRenameForm
 								workspaceId={workspaceId}
-								currentName={currentName}
+								initialName={currentName}
 								onClose={close}
 							/>
 						)}
