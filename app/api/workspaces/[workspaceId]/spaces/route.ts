@@ -26,8 +26,6 @@ export async function GET(
 			},
 		})
 
-		console.log('Found spaces:', spaces)
-
 		return NextResponse.json(spaces)
 	} catch (error) {
 		console.error('Error fetching spaces:', error)
