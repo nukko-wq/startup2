@@ -107,6 +107,7 @@ const resourceSlice = createSlice({
 					resources,
 					loading: false,
 					error: null,
+					lastFetched: Date.now(),
 				}
 			}
 		},
