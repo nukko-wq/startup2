@@ -36,22 +36,6 @@ export default function Home() {
 	}, [dispatch, initialLoaded])
 
 	useEffect(() => {
-		if (activeSpaceId) {
-			const shouldFetch =
-				!lastFetchTime.current[activeSpaceId] ||
-				Date.now() - lastFetchTime.current[activeSpaceId] > CACHE_DURATION
-
-			if (shouldFetch) {
-				dispatch(fetchSectionsWithResources(activeSpaceId))
-					.unwrap()
-					.then(() => {
-						lastFetchTime.current[activeSpaceId] = Date.now()
-					})
-			}
-		}
-	}, [dispatch, activeSpaceId])
-
-	useEffect(() => {
 		const handleMessage = (event: MessageEvent) => {
 			if (
 				event.data.source === 'startup-extension' &&

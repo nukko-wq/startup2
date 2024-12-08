@@ -66,22 +66,21 @@ export const setActiveSpace = createAsyncThunk(
 	async (spaceId: string, { dispatch, getState }) => {
 		const state = getState() as RootState
 		const sectionState = state.section.sectionsBySpace[spaceId]
+		const lastFetched = sectionState?.lastFetched
+		const CACHE_DURATION = 5 * 60 * 1000 // 5分
 
-		// キャッシュチェック
-		if (
-			sectionState?.sections.length > 0 &&
-			!sectionState.loading &&
-			!sectionState.error
-		) {
-			// セクションが既に存在する場合は、APIコールをスキップ
-			const activeSpaceResult = await spaceApi.setActiveSpace(spaceId)
-			return activeSpaceResult
-		}
+		// キャッシュチェックを強化
+		const shouldFetchSections =
+			!sectionState?.sections.length ||
+			!lastFetched ||
+			Date.now() - lastFetched > CACHE_DURATION
 
-		// セクションがない場合は両方のAPIを呼び出す
-		const [activeSpaceResult, sectionsWithResources] = await Promise.all([
+		// セクションのフェッチとアクティブスペースの設定を並列で実行
+		const [activeSpaceResult] = await Promise.all([
 			spaceApi.setActiveSpace(spaceId),
-			dispatch(fetchSectionsWithResources(spaceId)).unwrap(),
+			shouldFetchSections
+				? dispatch(fetchSectionsWithResources(spaceId)).unwrap()
+				: Promise.resolve(),
 		])
 
 		return activeSpaceResult
