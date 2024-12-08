@@ -30,14 +30,14 @@ export const fetchSpaces = createAsyncThunk(
 	'space/fetchSpaces',
 	async (workspaceId: string, { getState }) => {
 		const state = getState() as RootState
-		const sectionResources = state.space.spacesByWorkspace[workspaceId]
+		const spaceState = state.space.spacesByWorkspace[workspaceId]
 
 		if (
-			sectionResources?.lastFetched &&
-			Date.now() - sectionResources.lastFetched < 5 * 60 * 1000
+			spaceState?.lastFetched &&
+			Date.now() - spaceState.lastFetched < 10 * 60 * 1000
 		) {
 			return {
-				spaces: sectionResources.spaces,
+				spaces: spaceState.spaces,
 				activeSpaceId: state.space.activeSpaceId,
 				workspaceId,
 			}

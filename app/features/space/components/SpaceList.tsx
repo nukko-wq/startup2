@@ -36,6 +36,7 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 				spaces: [],
 				loading: false,
 				error: 'ワークスペースIDが指定されていません',
+				lastFetched: null,
 			}
 		}
 
@@ -44,6 +45,7 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 			spaces: spaceState?.spaces || [],
 			loading: spaceState?.loading || false,
 			error: spaceState?.error || null,
+			lastFetched: spaceState?.lastFetched || null,
 		}
 	})
 	const activeSpaceId = useSelector(
@@ -51,10 +53,18 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 	)
 
 	useEffect(() => {
-		if (workspaceId) {
+		if (
+			workspaceId &&
+			(!workspaceSpaces.lastFetched || workspaceSpaces.spaces.length === 0)
+		) {
 			dispatch(fetchSpaces(workspaceId))
 		}
-	}, [dispatch, workspaceId])
+	}, [
+		dispatch,
+		workspaceId,
+		workspaceSpaces.lastFetched,
+		workspaceSpaces.spaces.length,
+	])
 
 	useEffect(() => {
 		console.log('SpaceList mounted with workspaceId:', workspaceId)
