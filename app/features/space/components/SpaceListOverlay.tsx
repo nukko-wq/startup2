@@ -7,7 +7,7 @@ import { fetchAllSpaces, setActiveSpace } from '@/app/features/space/spaceSlice'
 import { hideSpaceList } from '@/app/features/overlay/overlaySlice'
 import { Overlay, useModalOverlay } from 'react-aria'
 import { useOverlayTriggerState } from 'react-stately'
-import type { Key, Selection } from '@react-types/shared'
+import type { Selection } from '@react-types/shared'
 
 const SpaceListOverlay = () => {
 	const dispatch = useDispatch<AppDispatch>()

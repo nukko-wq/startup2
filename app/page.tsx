@@ -13,7 +13,6 @@ import SpaceListOverlay from '@/app/features/space/components/SpaceListOverlay'
 import { showSpaceList } from '@/app/features/overlay/overlaySlice'
 import type { RootState } from '@/app/store/store'
 import { fetchSectionsWithResources } from '@/app/features/section/sectionSlice'
-import { fetchResources } from '@/app/features/resource/resourceSlice'
 
 export default function Home() {
 	const dispatch = useDispatch<AppDispatch>()
@@ -24,11 +23,6 @@ export default function Home() {
 	const activeSpaceId = useSelector(
 		(state: RootState) => state.space.activeSpaceId,
 	)
-	const activeSectionId = useSelector((state: RootState) => {
-		if (!activeSpaceId) return null
-		const spaceState = state.section.sectionsBySpace[activeSpaceId]
-		return spaceState?.sections?.[0]?.id || null
-	})
 
 	// キャッシュ時間の管理
 	const lastFetchTime = useRef<{ [spaceId: string]: number }>({})

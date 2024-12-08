@@ -23,12 +23,7 @@ import {
 } from 'react-aria-components'
 import SpaceMenu from '@/app/features/space/components/SpaceMenu'
 import CreateSpaceInWorkspace from '@/app/features/space/components/CreateSpaceInWorkspace'
-import {
-	fetchSections,
-	fetchSectionsWithResources,
-} from '@/app/features/section/sectionSlice'
-import { fetchResources } from '@/app/features/resource/resourceSlice'
-import type { Space } from '@/app/features/space/types/space'
+import { fetchSectionsWithResources } from '@/app/features/section/sectionSlice'
 interface SpaceListProps {
 	workspaceId: string
 }
@@ -41,6 +36,7 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 				spaces: [],
 				loading: false,
 				error: 'ワークスペースIDが指定されていません',
+				lastFetched: null,
 			}
 		}
 
@@ -49,6 +45,7 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 			spaces: spaceState?.spaces || [],
 			loading: spaceState?.loading || false,
 			error: spaceState?.error || null,
+			lastFetched: spaceState?.lastFetched || null,
 		}
 	})
 	const activeSpaceId = useSelector(
@@ -56,10 +53,18 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 	)
 
 	useEffect(() => {
-		if (workspaceId) {
+		if (
+			workspaceId &&
+			(!workspaceSpaces.lastFetched || workspaceSpaces.spaces.length === 0)
+		) {
 			dispatch(fetchSpaces(workspaceId))
 		}
-	}, [dispatch, workspaceId])
+	}, [
+		dispatch,
+		workspaceId,
+		workspaceSpaces.lastFetched,
+		workspaceSpaces.spaces.length,
+	])
 
 	useEffect(() => {
 		console.log('SpaceList mounted with workspaceId:', workspaceId)

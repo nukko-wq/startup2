@@ -1,5 +1,5 @@
 import { GripVertical } from 'lucide-react'
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import {
 	Button,
 	DropIndicator,
@@ -32,37 +32,27 @@ interface ResourceListProps {
 
 const ResourceList = ({ sectionId }: ResourceListProps) => {
 	const dispatch = useDispatch<AppDispatch>()
-	const { resources, loading, error } = useSelector(
+	const { resources, loading, error, lastFetched } = useSelector(
 		(state: RootState) =>
 			state.resource.resourcesBySection[sectionId] || {
 				resources: [],
 				loading: false,
 				error: null,
+				lastFetched: undefined,
 			},
 	)
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
-		const shouldFetch = !resources.length && !loading && !error
-		let mounted = true
+		const shouldFetch =
+			!resources.length &&
+			!loading &&
+			!error &&
+			(!lastFetched || Date.now() - lastFetched > 5 * 60 * 1000)
 
 		if (shouldFetch) {
-			const loadResources = async () => {
-				try {
-					if (mounted) {
-						await dispatch(fetchResources(sectionId)).unwrap()
-					}
-				} catch (error) {
-					console.error('Failed to fetch resources:', error)
-				}
-			}
-			loadResources()
+			dispatch(fetchResources(sectionId))
 		}
-
-		return () => {
-			mounted = false
-		}
-	}, [sectionId])
+	}, [sectionId, resources.length, loading, error, lastFetched, dispatch])
 
 	const { dragAndDropHooks } = useDragAndDrop({
 		getItems(keys) {
@@ -328,12 +318,6 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 
 		return 'Webpage'
 	}
-
-	/*
-	if (loading) {
-		return <div>読み込み中...</div>
-	}
-	*/
 
 	if (error) {
 		return <div>エラー: {error}</div>

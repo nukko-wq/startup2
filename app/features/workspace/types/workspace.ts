@@ -14,6 +14,7 @@ export interface WorkspaceState {
 	defaultWorkspace: Workspace | null
 	loading: boolean
 	error: string | null
+	lastFetched?: number
 }
 
 export interface RenameWorkspacePayload {

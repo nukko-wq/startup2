@@ -12,12 +12,14 @@ export interface SpaceState {
 			spaces: Space[]
 			loading: boolean
 			error: string | null
+			lastFetched?: number
 		}
 	}
 	allSpaces: {
 		spaces: Space[]
 		loading: boolean
 		error: string | null
+		lastFetched?: number
 	}
 	activeSpaceId: string | null
 }

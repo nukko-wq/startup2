@@ -6,6 +6,7 @@ export interface ResourceState {
 			resources: Resource[]
 			loading: boolean
 			error: string | null
+			lastFetched?: number
 		}
 	}
 }

@@ -13,8 +13,8 @@ import type {
 	ReorderSpacePayload,
 	MoveSpacePayload,
 } from './types/space'
-import { fetchSections } from '@/app/features/section/sectionSlice'
-import { fetchResources } from '@/app/features/resource/resourceSlice'
+import { fetchSectionsWithResources } from '@/app/features/section/sectionSlice'
+import type { RootState } from '@/app/store/store'
 
 const initialState: SpaceState = {
 	spacesByWorkspace: {},
@@ -28,7 +28,21 @@ const initialState: SpaceState = {
 
 export const fetchSpaces = createAsyncThunk(
 	'space/fetchSpaces',
-	async (workspaceId: string) => {
+	async (workspaceId: string, { getState }) => {
+		const state = getState() as RootState
+		const spaceState = state.space.spacesByWorkspace[workspaceId]
+
+		if (
+			spaceState?.lastFetched &&
+			Date.now() - spaceState.lastFetched < 10 * 60 * 1000
+		) {
+			return {
+				spaces: spaceState.spaces,
+				activeSpaceId: state.space.activeSpaceId,
+				workspaceId,
+			}
+		}
+
 		return await spaceApi.fetchSpaces(workspaceId)
 	},
 )
@@ -49,17 +63,26 @@ export const deleteSpace = createAsyncThunk(
 
 export const setActiveSpace = createAsyncThunk(
 	'space/setActiveSpace',
-	async (spaceId: string, { dispatch }) => {
-		const [activeSpaceResult, sectionsResult] = await Promise.all([
-			spaceApi.setActiveSpace(spaceId),
-			dispatch(fetchSections(spaceId)).unwrap(),
-		])
+	async (spaceId: string, { dispatch, getState }) => {
+		const state = getState() as RootState
+		const sectionState = state.section.sectionsBySpace[spaceId]
 
-		if (sectionsResult.length > 0) {
-			await Promise.all(
-				sectionsResult.map((section) => dispatch(fetchResources(section.id))),
-			)
+		// キャッシュチェック
+		if (
+			sectionState?.sections.length > 0 &&
+			!sectionState.loading &&
+			!sectionState.error
+		) {
+			// セクションが既に存在する場合は、APIコールをスキップ
+			const activeSpaceResult = await spaceApi.setActiveSpace(spaceId)
+			return activeSpaceResult
 		}
+
+		// セクションがない場合は両方のAPIを呼び出す
+		const [activeSpaceResult, sectionsWithResources] = await Promise.all([
+			spaceApi.setActiveSpace(spaceId),
+			dispatch(fetchSectionsWithResources(spaceId)).unwrap(),
+		])
 
 		return activeSpaceResult
 	},
@@ -109,7 +132,8 @@ export const moveSpace = createAsyncThunk(
 export const fetchAllSpaces = createAsyncThunk(
 	'space/fetchAllSpaces',
 	async () => {
-		return await spaceApi.fetchAllSpaces()
+		const response = await spaceApi.fetchAllSpaces()
+		return response
 	},
 )
 
@@ -185,6 +209,7 @@ const spaceSlice = createSlice({
 					spaces,
 					loading: false,
 					error: null,
+					lastFetched: Date.now(),
 				}
 				if (activeSpaceId) {
 					state.activeSpaceId = activeSpaceId
@@ -349,10 +374,15 @@ const spaceSlice = createSlice({
 				}
 			})
 			.addCase(fetchAllSpaces.fulfilled, (state, action) => {
+				const { spaces, activeSpaceId, workspaceId } = action.payload
 				state.allSpaces = {
-					spaces: action.payload,
+					spaces,
 					loading: false,
 					error: null,
+					lastFetched: Date.now(),
+				}
+				if (activeSpaceId) {
+					state.activeSpaceId = activeSpaceId
 				}
 			})
 			.addCase(fetchAllSpaces.rejected, (state, action) => {

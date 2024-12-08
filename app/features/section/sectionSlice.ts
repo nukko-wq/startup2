@@ -10,6 +10,7 @@ import type {
 } from './types/section'
 import { v4 as uuidv4 } from 'uuid'
 import { setResourcesBySection } from '@/app/features/resource/resourceSlice'
+import type { RootState } from '@/app/store/store'
 
 const initialState: SectionState = {
 	sectionsBySpace: {},
@@ -52,7 +53,21 @@ export const reorderSection = createAsyncThunk(
 
 export const fetchSectionsWithResources = createAsyncThunk(
 	'section/fetchSectionsWithResources',
-	async (spaceId: string, { dispatch }) => {
+	async (spaceId: string, { dispatch, getState }) => {
+		const state = getState() as RootState
+		const sectionState = state.section.sectionsBySpace[spaceId]
+
+		// キャッシュチェック
+		if (
+			sectionState?.lastFetched &&
+			Date.now() - sectionState.lastFetched < 5 * 60 * 1000 // 5分
+		) {
+			return {
+				sections: sectionState.sections,
+				spaceId,
+			}
+		}
+
 		const data = await sectionApi.fetchSectionsWithResources(spaceId)
 		dispatch(setResourcesBySection(data.resources))
 		return {

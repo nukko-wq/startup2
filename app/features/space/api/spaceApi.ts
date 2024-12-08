@@ -7,6 +7,12 @@ import type {
 	MoveSpaceResponse,
 } from '@/app/features/space/types/space'
 
+export interface FetchAllSpacesResponse {
+	spaces: Space[]
+	activeSpaceId: string | null
+	workspaceId: string
+}
+
 export const spaceApi = {
 	fetchSpaces: async (workspaceId: string): Promise<SpaceApiResponse> => {
 		const response = await fetch(`/api/workspaces/${workspaceId}/spaces`, {
@@ -17,9 +23,13 @@ export const spaceApi = {
 		if (!response.ok) {
 			throw new Error('スペースの取得に失敗しました')
 		}
-		const data = await response.json()
+		const data: Space[] = await response.json()
 		const activeSpace = data.find((space: Space) => space.isLastActive)
-		return { spaces: data, activeSpaceId: activeSpace?.id || null, workspaceId }
+		return {
+			spaces: data,
+			activeSpaceId: activeSpace?.id || null,
+			workspaceId,
+		}
 	},
 
 	createSpace: async (
@@ -141,11 +151,17 @@ export const spaceApi = {
 		return response.json()
 	},
 
-	fetchAllSpaces: async () => {
+	fetchAllSpaces: async (): Promise<FetchAllSpacesResponse> => {
 		const response = await fetch('/api/spaces')
 		if (!response.ok) {
 			throw new Error('全スペースの取得に失敗しました')
 		}
-		return await response.json()
+		const data = await response.json()
+		const activeSpace = data.find((space: Space) => space.isLastActive)
+		return {
+			spaces: data,
+			activeSpaceId: activeSpace?.id || null,
+			workspaceId: data[0]?.workspaceId || '',
+		}
 	},
 }
