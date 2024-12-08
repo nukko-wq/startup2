@@ -1,3 +1,5 @@
+import type { Resource } from '@prisma/client'
+
 export interface Section {
 	id: string
 	name: string
@@ -65,4 +67,11 @@ export interface ReorderSectionResponse {
 
 export interface OptimisticSection extends Section {
 	optimisticId?: string
+}
+
+export interface SectionsWithResourcesResponse {
+	sections: Section[]
+	resources: {
+		[sectionId: string]: Resource[]
+	}
 }

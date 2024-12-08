@@ -1,5 +1,10 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import {
+	createSlice,
+	createAsyncThunk,
+	type PayloadAction,
+} from '@reduxjs/toolkit'
 import { resourceApi } from '@/app/features/resource/api/resouceApi'
+import type { Resource } from '@prisma/client'
 import type {
 	ResourceState,
 	CreateResourcePayload,
@@ -80,6 +85,18 @@ const resourceSlice = createSlice({
 					state.resourcesBySection[sectionId].resources.map((resource) =>
 						resource.id === updatedResource.id ? updatedResource : resource,
 					)
+			}
+		},
+		setResourcesBySection: (
+			state,
+			action: PayloadAction<{ [sectionId: string]: Resource[] }>,
+		) => {
+			for (const [sectionId, resources] of Object.entries(action.payload)) {
+				state.resourcesBySection[sectionId] = {
+					resources,
+					loading: false,
+					error: null,
+				}
 			}
 		},
 	},
@@ -206,6 +223,7 @@ export const {
 	addResourceOptimistically,
 	removeResourceOptimistically,
 	updateResourceOptimistically,
+	setResourcesBySection,
 } = resourceSlice.actions
 
 export default resourceSlice.reducer

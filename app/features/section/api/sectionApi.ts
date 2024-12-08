@@ -5,6 +5,7 @@ import type {
 	DeleteSectionResponse,
 	RenameSectionResponse,
 	ReorderSectionResponse,
+	SectionsWithResourcesResponse,
 } from '@/app/features/section/types/section'
 
 export const sectionApi = {
@@ -88,7 +89,28 @@ export const sectionApi = {
 			throw new Error('セクションの並び替えに失敗しました')
 		}
 
-		const { section, allSections } = await response.json()
-		return { section, spaceId, allSections }
+		const responseData = await response.json()
+		return {
+			section: responseData.updatedSection,
+			spaceId,
+			allSections: responseData.allSections,
+		}
+	},
+
+	fetchSectionsWithResources: async (
+		spaceId: string,
+	): Promise<SectionsWithResourcesResponse> => {
+		const response = await fetch(
+			`/api/spaces/${spaceId}/sections/with-resources`,
+			{
+				headers: {
+					'Cache-Control': 'max-age=300', // 5分間キャッシュ
+				},
+			},
+		)
+		if (!response.ok) {
+			throw new Error('セクションとリソースの取得に失敗しました')
+		}
+		return response.json()
 	},
 }

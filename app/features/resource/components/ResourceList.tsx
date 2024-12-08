@@ -41,9 +41,28 @@ const ResourceList = ({ sectionId }: ResourceListProps) => {
 			},
 	)
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
-		dispatch(fetchResources(sectionId))
-	}, [dispatch, sectionId])
+		const shouldFetch = !resources.length && !loading && !error
+		let mounted = true
+
+		if (shouldFetch) {
+			const loadResources = async () => {
+				try {
+					if (mounted) {
+						await dispatch(fetchResources(sectionId)).unwrap()
+					}
+				} catch (error) {
+					console.error('Failed to fetch resources:', error)
+				}
+			}
+			loadResources()
+		}
+
+		return () => {
+			mounted = false
+		}
+	}, [sectionId])
 
 	const { dragAndDropHooks } = useDragAndDrop({
 		getItems(keys) {

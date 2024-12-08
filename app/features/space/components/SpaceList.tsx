@@ -23,7 +23,10 @@ import {
 } from 'react-aria-components'
 import SpaceMenu from '@/app/features/space/components/SpaceMenu'
 import CreateSpaceInWorkspace from '@/app/features/space/components/CreateSpaceInWorkspace'
-import { fetchSections } from '@/app/features/section/sectionSlice'
+import {
+	fetchSections,
+	fetchSectionsWithResources,
+} from '@/app/features/section/sectionSlice'
 import { fetchResources } from '@/app/features/resource/resourceSlice'
 import type { Space } from '@/app/features/space/types/space'
 interface SpaceListProps {
@@ -55,11 +58,6 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 	useEffect(() => {
 		if (workspaceId) {
 			dispatch(fetchSpaces(workspaceId))
-
-			setTimeout(() => {
-				dispatch(fetchSections(workspaceId))
-				dispatch(fetchResources(workspaceId))
-			}, 100)
 		}
 	}, [dispatch, workspaceId])
 
@@ -73,8 +71,9 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 		})
 	}, [workspaceId, workspaceSpaces])
 
-	const handleSpaceClick = (spaceId: string) => {
+	const handleSpaceClick = async (spaceId: string) => {
 		dispatch(setActiveSpace(spaceId))
+		dispatch(fetchSectionsWithResources(spaceId))
 	}
 
 	const { dragAndDropHooks } = useDragAndDrop({
