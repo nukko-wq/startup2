@@ -12,6 +12,8 @@ import Header from '@/app/components/header/Header'
 import SpaceListOverlay from '@/app/features/space/components/SpaceListOverlay'
 import { showSpaceList } from '@/app/features/overlay/overlaySlice'
 import type { RootState } from '@/app/store/store'
+import { fetchSections } from '@/app/features/section/sectionSlice'
+import { fetchResources } from '@/app/features/resource/resourceSlice'
 
 export default function Home() {
 	const dispatch = useDispatch<AppDispatch>()
@@ -19,12 +21,34 @@ export default function Home() {
 	const isSpaceListVisible = useSelector(
 		(state: RootState) => state.overlay.isSpaceListVisible,
 	)
+	const activeSpaceId = useSelector(
+		(state: RootState) => state.space.activeSpaceId,
+	)
+	const activeSectionId = useSelector((state: RootState) => {
+		if (!activeSpaceId) return null
+		const spaceState = state.section.sectionsBySpace[activeSpaceId]
+		return spaceState?.sections?.[0]?.id || null
+	})
 
 	useEffect(() => {
-		setIsClient(true)
-		// アプリ起動時に重要なデータを一括で取得
-		Promise.all([dispatch(fetchWorkspaces()), dispatch(fetchAllSpaces())])
-	}, [dispatch])
+		if (!isClient) {
+			setIsClient(true)
+			// 初回のみ実行
+			Promise.all([dispatch(fetchWorkspaces()), dispatch(fetchAllSpaces())])
+		}
+	}, [dispatch, isClient])
+
+	useEffect(() => {
+		if (activeSpaceId) {
+			dispatch(fetchSections(activeSpaceId))
+		}
+	}, [dispatch, activeSpaceId])
+
+	useEffect(() => {
+		if (activeSectionId) {
+			dispatch(fetchResources(activeSectionId))
+		}
+	}, [dispatch, activeSectionId])
 
 	useEffect(() => {
 		const handleMessage = (event: MessageEvent) => {
