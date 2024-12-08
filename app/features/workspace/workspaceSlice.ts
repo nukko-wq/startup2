@@ -118,6 +118,10 @@ const workspaceSlice = createSlice({
 				state.workspaces = normalWorkspaces
 				state.loading = false
 				state.lastFetched = Date.now()
+
+				if (defaultWorkspace) {
+					state.activeWorkspaceId = defaultWorkspace.id
+				}
 			})
 			.addCase(fetchWorkspaces.rejected, (state, action) => {
 				state.loading = false

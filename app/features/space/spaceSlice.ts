@@ -31,10 +31,13 @@ export const fetchSpaces = createAsyncThunk(
 	async (workspaceId: string, { getState }) => {
 		const state = getState() as RootState
 		const spaceState = state.space.spacesByWorkspace[workspaceId]
+		const isDefaultWorkspace =
+			state.workspace.defaultWorkspace?.id === workspaceId
 
 		if (
 			spaceState?.lastFetched &&
-			Date.now() - spaceState.lastFetched < 10 * 60 * 1000
+			Date.now() - spaceState.lastFetched < 10 * 60 * 1000 &&
+			!isDefaultWorkspace
 		) {
 			return {
 				spaces: spaceState.spaces,

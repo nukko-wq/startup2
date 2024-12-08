@@ -134,7 +134,8 @@ const WorkspaceList = () => {
 
 	return (
 		<div className="">
-			{defaultWorkspace?.id && (
+			{/* デフォルトワークスペース */}
+			{defaultWorkspace && (
 				<div className="">
 					<div className="flex items-center">
 						<div className="flex flex-col flex-grow justify-between">
