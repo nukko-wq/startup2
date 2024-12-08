@@ -9,6 +9,7 @@ import type {
 	ReorderSectionPayload,
 } from './types/section'
 import { v4 as uuidv4 } from 'uuid'
+import { setResourcesBySection } from '@/app/features/resource/resourceSlice'
 
 const initialState: SectionState = {
 	sectionsBySpace: {},
@@ -46,6 +47,21 @@ export const reorderSection = createAsyncThunk(
 	'section/reorderSection',
 	async ({ sectionId, newOrder, spaceId }: ReorderSectionPayload) => {
 		return await sectionApi.reorderSection(sectionId, newOrder, spaceId)
+	},
+)
+
+export const fetchSectionsWithResources = createAsyncThunk(
+	'section/fetchSectionsWithResources',
+	async (spaceId: string, { dispatch }) => {
+		const data = await sectionApi.fetchSectionsWithResources(spaceId)
+
+		// リソースデータを別のスライスに保存
+		dispatch(setResourcesBySection(data.resources))
+
+		return {
+			sections: data.sections,
+			spaceId,
+		}
 	},
 )
 
@@ -181,6 +197,30 @@ const sectionSlice = createSlice({
 				if (spaceState) {
 					// APIから返された正規化された順序で更新
 					spaceState.sections = allSections
+				}
+			})
+			.addCase(fetchSectionsWithResources.pending, (state, action) => {
+				const spaceId = action.meta.arg
+				state.sectionsBySpace[spaceId] = {
+					sections: [],
+					loading: true,
+					error: null,
+				}
+			})
+			.addCase(fetchSectionsWithResources.fulfilled, (state, action) => {
+				const { sections, spaceId } = action.payload
+				state.sectionsBySpace[spaceId] = {
+					sections,
+					loading: false,
+					error: null,
+				}
+			})
+			.addCase(fetchSectionsWithResources.rejected, (state, action) => {
+				const spaceId = action.meta.arg
+				state.sectionsBySpace[spaceId] = {
+					sections: [],
+					loading: false,
+					error: action.error.message || 'エラーが発生しました',
 				}
 			})
 	},

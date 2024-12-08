@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchWorkspaces } from '@/app/features/workspace/workspaceSlice'
 import { fetchAllSpaces } from '@/app/features/space/spaceSlice'
@@ -12,7 +12,7 @@ import Header from '@/app/components/header/Header'
 import SpaceListOverlay from '@/app/features/space/components/SpaceListOverlay'
 import { showSpaceList } from '@/app/features/overlay/overlaySlice'
 import type { RootState } from '@/app/store/store'
-import { fetchSections } from '@/app/features/section/sectionSlice'
+import { fetchSectionsWithResources } from '@/app/features/section/sectionSlice'
 import { fetchResources } from '@/app/features/resource/resourceSlice'
 
 export default function Home() {
@@ -30,17 +30,33 @@ export default function Home() {
 		return spaceState?.sections?.[0]?.id || null
 	})
 
+	// キャッシュ時間の管理
+	const lastFetchTime = useRef<{ [spaceId: string]: number }>({})
+	const CACHE_DURATION = 5 * 60 * 1000 // 5分
+
 	useEffect(() => {
 		if (!isClient) {
 			setIsClient(true)
-			// 初回のみ実行
 			Promise.all([dispatch(fetchWorkspaces()), dispatch(fetchAllSpaces())])
 		}
 	}, [dispatch, isClient])
 
 	useEffect(() => {
 		if (activeSpaceId) {
-			dispatch(fetchSections(activeSpaceId))
+			const shouldFetch =
+				!lastFetchTime.current[activeSpaceId] ||
+				Date.now() - lastFetchTime.current[activeSpaceId] > CACHE_DURATION
+
+			if (shouldFetch) {
+				dispatch(fetchSectionsWithResources(activeSpaceId))
+					.unwrap()
+					.then(() => {
+						lastFetchTime.current[activeSpaceId] = Date.now()
+					})
+					.catch((error) => {
+						console.error('データの取得に失敗しました:', error)
+					})
+			}
 		}
 	}, [dispatch, activeSpaceId])
 
