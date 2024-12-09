@@ -64,9 +64,9 @@ const SectionListWrapper = memo(() => {
 		}
 	}, [activeSpaceId, dispatch, sections.length])
 
-	if (!activeSpaceId) {
-		return <div>No active space</div>
-	}
+	// if (!activeSpaceId) {
+	// 	return <div>No active space</div>
+	// }
 
 	return (
 		<div className="flex flex-col flex-grow w-full max-w-[920px]">
