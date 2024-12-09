@@ -89,29 +89,34 @@ export default function Home() {
 	}, [dispatch])
 
 	useEffect(() => {
-		// アクティブなスペースのデータを先に取得
 		if (activeSpaceId) {
+			// アクティブなスペースのデータを即時取得
 			dispatch(fetchSectionsWithResources(activeSpaceId))
-		}
 
-		// 関連するスペースのデータを非同期でプリフェッチ
-		const prefetchRelatedSpaces = async () => {
-			const state = store.getState()
-			const currentWorkspace = state.workspace.workspaces.find((workspace) =>
-				workspace?.spaces?.some?.((space) => space.id === activeSpaceId),
-			)
+			// 関連するスペースのデータを優先度付きでプリフェッチ
+			const prefetchRelatedSpaces = async () => {
+				const state = store.getState()
+				const currentWorkspace = state.workspace.workspaces.find((workspace) =>
+					workspace?.spaces?.some?.((space) => space.id === activeSpaceId),
+				)
 
-			// 安全にスペースを取得
-			const relatedSpaces = currentWorkspace?.spaces?.slice(0, 3) || []
+				// 最近アクセスしたスペースを優先的にプリフェッチ
+				const recentSpaces = state.space.recentSpaces || []
+				const relatedSpaces = [
+					...new Set([...recentSpaces, ...(currentWorkspace?.spaces || [])]),
+				].slice(0, 5)
 
-			for (const space of relatedSpaces) {
-				if (space.id !== activeSpaceId) {
-					dispatch(fetchSectionsWithResources(space.id))
+				// 優先度の高いスペースから順にフェッチ
+				for (const space of relatedSpaces) {
+					if (space.id !== activeSpaceId) {
+						await dispatch(fetchSectionsWithResources(space.id))
+						await new Promise((resolve) => setTimeout(resolve, 100)) // レート制限回避
+					}
 				}
 			}
-		}
 
-		prefetchRelatedSpaces()
+			prefetchRelatedSpaces()
+		}
 	}, [activeSpaceId, dispatch])
 
 	useEffect(() => {
