@@ -17,10 +17,18 @@ export const selectActiveSpace = createSelector(
 	},
 )
 
-export const selectCurrentSections = createSelector(
+const selectActiveSectionState = createSelector(
 	[selectSectionState, (state: RootState) => state.space.activeSpaceId],
-	(sectionState, activeSpaceId) => {
-		if (!activeSpaceId) return []
-		return sectionState.sectionsBySpace[activeSpaceId]?.sections || []
-	},
+	(sectionState, activeSpaceId) =>
+		activeSpaceId ? sectionState.sectionsBySpace[activeSpaceId] : null,
+)
+
+export const selectCurrentSections = createSelector(
+	[selectActiveSectionState],
+	(sectionState) => sectionState?.sections || [],
+)
+
+export const selectSectionsLoading = createSelector(
+	[selectActiveSectionState],
+	(sectionState) => sectionState?.loading || false,
 )
