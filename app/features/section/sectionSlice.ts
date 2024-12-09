@@ -54,26 +54,27 @@ export const reorderSection = createAsyncThunk(
 export const fetchSectionsWithResources = createAsyncThunk(
 	'section/fetchSectionsWithResources',
 	async (spaceId: string, { dispatch, getState }) => {
+		console.log('Starting fetchSectionsWithResources:', spaceId)
 		const state = getState() as RootState
 		const sectionState = state.section.sectionsBySpace[spaceId]
 
-		// キャッシュチェック
-		if (
-			sectionState?.lastFetched &&
-			Date.now() - sectionState.lastFetched < 2 * 60 * 1000 && // 2分
-			sectionState.sections.length > 0
-		) {
-			return {
-				sections: sectionState.sections,
-				spaceId,
-			}
-		}
+		try {
+			console.log('Fetching from API for spaceId:', spaceId)
+			const data = await sectionApi.fetchSectionsWithResources(spaceId)
+			console.log('API response received:', data)
 
-		const data = await sectionApi.fetchSectionsWithResources(spaceId)
-		dispatch(setResourcesBySection(data.resources))
-		return {
-			sections: data.sections,
-			spaceId,
+			if (data.resources) {
+				dispatch(setResourcesBySection(data.resources))
+			}
+
+			return {
+				sections: data.sections || [],
+				spaceId,
+				lastFetched: Date.now(),
+			}
+		} catch (error) {
+			console.error('Error fetching sections:', error)
+			throw error
 		}
 	},
 	{
@@ -81,8 +82,21 @@ export const fetchSectionsWithResources = createAsyncThunk(
 			const state = getState() as RootState
 			const sectionState = state.section.sectionsBySpace[spaceId]
 
-			// loading中の場合は新しいリクエストを防ぐ
-			return !sectionState?.loading
+			if (sectionState?.loading) {
+				console.log('Skipping fetch - already loading:', spaceId)
+				return false
+			}
+
+			const cacheAge = sectionState?.lastFetched
+				? Date.now() - sectionState.lastFetched
+				: Number.POSITIVE_INFINITY
+
+			if (sectionState?.sections?.length > 0 && cacheAge < 5 * 60 * 1000) {
+				console.log('Using cached data for spaceId:', spaceId)
+				return false
+			}
+
+			return true
 		},
 	},
 )
@@ -224,17 +238,24 @@ const sectionSlice = createSlice({
 			.addCase(fetchSectionsWithResources.pending, (state, action) => {
 				const spaceId = action.meta.arg
 				state.sectionsBySpace[spaceId] = {
-					sections: [],
+					sections: state.sectionsBySpace[spaceId]?.sections || [],
 					loading: true,
 					error: null,
+					lastFetched: state.sectionsBySpace[spaceId]?.lastFetched || undefined,
 				}
 			})
 			.addCase(fetchSectionsWithResources.fulfilled, (state, action) => {
-				const { sections, spaceId } = action.payload
+				const { sections, spaceId, lastFetched } = action.payload
+				console.log('Updating sections state:', {
+					sections,
+					spaceId,
+					lastFetched,
+				})
 				state.sectionsBySpace[spaceId] = {
 					sections,
 					loading: false,
 					error: null,
+					lastFetched: lastFetched || Date.now(),
 				}
 			})
 			.addCase(fetchSectionsWithResources.rejected, (state, action) => {
@@ -243,6 +264,7 @@ const sectionSlice = createSlice({
 					sections: [],
 					loading: false,
 					error: action.error.message || 'エラーが発生しました',
+					lastFetched: undefined,
 				}
 			})
 	},

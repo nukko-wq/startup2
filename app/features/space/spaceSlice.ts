@@ -66,27 +66,21 @@ export const deleteSpace = createAsyncThunk(
 
 export const setActiveSpace = createAsyncThunk(
 	'space/setActiveSpace',
-	async (spaceId: string, { dispatch, getState }) => {
+	async (spaceId: string, { getState, dispatch }) => {
 		const state = getState() as RootState
-		const sectionState = state.section.sectionsBySpace[spaceId]
-		const lastFetched = sectionState?.lastFetched
-		const CACHE_DURATION = 5 * 60 * 1000 // 5分
+		const currentActiveSpaceId = state.space.activeSpaceId
 
-		// キャッシュチェックを強化
-		const shouldFetchSections =
-			!sectionState?.sections.length ||
-			!lastFetched ||
-			Date.now() - lastFetched > CACHE_DURATION
+		// 同じスペースが選択された場合は処理をスキップ
+		if (currentActiveSpaceId === spaceId) {
+			return currentActiveSpaceId
+		}
 
-		// セクションのフェッチとアクティブスペースの設定を並列で実行
-		const [activeSpaceResult] = await Promise.all([
-			spaceApi.setActiveSpace(spaceId),
-			shouldFetchSections
-				? dispatch(fetchSectionsWithResources(spaceId)).unwrap()
-				: Promise.resolve(),
-		])
+		const result = await spaceApi.setActiveSpace(spaceId)
 
-		return activeSpaceResult
+		// セクションとリソースを取得
+		await dispatch(fetchSectionsWithResources(spaceId))
+
+		return result
 	},
 )
 
@@ -133,11 +127,10 @@ export const moveSpace = createAsyncThunk(
 
 export const fetchAllSpaces = createAsyncThunk(
 	'space/fetchAllSpaces',
-	async (_, { getState }) => {
+	async (_, { getState, dispatch }) => {
 		const state = getState() as RootState
 		const allSpaces = state.space.allSpaces
 
-		// loading中の場合は新しいリクエストを防ぐ
 		if (allSpaces.loading) {
 			throw new Error('Already loading')
 		}
@@ -149,6 +142,10 @@ export const fetchAllSpaces = createAsyncThunk(
 			allSpaces.lastFetched &&
 			Date.now() - allSpaces.lastFetched < 5 * 60 * 1000
 		) {
+			// キャッシュが有効な場合でも、activeSpaceIdがあればセクションを取得
+			if (state.space.activeSpaceId) {
+				dispatch(fetchSectionsWithResources(state.space.activeSpaceId))
+			}
 			return {
 				spaces: allSpaces.spaces,
 				activeSpaceId: state.space.activeSpaceId,
@@ -157,14 +154,11 @@ export const fetchAllSpaces = createAsyncThunk(
 		}
 
 		const response = await spaceApi.fetchAllSpaces()
+		// レスポンス後にもセクションを取得
+		if (response.activeSpaceId) {
+			dispatch(fetchSectionsWithResources(response.activeSpaceId))
+		}
 		return response
-	},
-	{
-		// エラーの場合でもpendingステートをクリアする
-		condition: (_, { getState }) => {
-			const state = getState() as RootState
-			return !state.space.allSpaces.loading
-		},
 	},
 )
 
@@ -348,6 +342,11 @@ const spaceSlice = createSlice({
 				// オプション: ローディング状態の管理が必要な場合
 			})
 			.addCase(setActiveSpace.fulfilled, (state, action) => {
+				// 現在のactiveSpaceIdと同じ場合は更新しない
+				if (state.activeSpaceId === action.payload) {
+					return
+				}
+
 				state.activeSpaceId = action.payload
 				// 全てのスペースのisLastActiveをfalseに設定
 				for (const workspace of Object.values(state.spacesByWorkspace)) {

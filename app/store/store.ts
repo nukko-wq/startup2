@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit'
-import storage from 'redux-persist/lib/storage'
+import createWebStorage from 'redux-persist/lib/storage/createWebStorage'
 import {
 	persistReducer,
 	persistStore,
@@ -20,6 +20,31 @@ import overlayReducer from '@/app/features/overlay/overlaySlice'
 import { combineReducers } from '@reduxjs/toolkit'
 import { normalize, schema } from 'normalizr'
 
+interface StorageInterface {
+	getItem(key: string): Promise<string | null>
+	setItem(key: string, value: string): Promise<void>
+	removeItem(key: string): Promise<void>
+}
+
+const createNoopStorage = (): StorageInterface => {
+	return {
+		getItem(_key) {
+			return Promise.resolve(null)
+		},
+		setItem(_key, _value) {
+			return Promise.resolve()
+		},
+		removeItem(_key) {
+			return Promise.resolve()
+		},
+	}
+}
+
+const storage =
+	typeof window !== 'undefined'
+		? createWebStorage('local')
+		: createNoopStorage()
+
 const persistConfig = {
 	key: 'root',
 	storage,
@@ -31,20 +56,20 @@ const persistConfig = {
 		'googleDrive',
 		'tabs',
 	],
+	debug: process.env.NODE_ENV === 'development',
 }
 
-const persistedReducer = persistReducer(
-	persistConfig,
-	combineReducers({
-		workspace: workspaceReducer,
-		space: spaceReducer,
-		section: sectionReducer,
-		resource: resourceReducer,
-		googleDrive: googleDriveReducer,
-		tabs: tabsReducer,
-		overlay: overlayReducer,
-	}),
-)
+const rootReducer = combineReducers({
+	workspace: workspaceReducer,
+	space: spaceReducer,
+	section: sectionReducer,
+	resource: resourceReducer,
+	googleDrive: googleDriveReducer,
+	tabs: tabsReducer,
+	overlay: overlayReducer,
+})
+
+const persistedReducer = persistReducer(persistConfig, rootReducer)
 
 export const store = configureStore({
 	reducer: persistedReducer,
@@ -54,9 +79,11 @@ export const store = configureStore({
 				ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
 			},
 		}),
+	devTools: process.env.NODE_ENV !== 'production',
 })
 
-export const persistor = persistStore(store)
+export const persistor =
+	typeof window !== 'undefined' ? persistStore(store) : null
 
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch

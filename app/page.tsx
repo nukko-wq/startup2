@@ -13,6 +13,7 @@ import SpaceListOverlay from '@/app/features/space/components/SpaceListOverlay'
 import { showSpaceList } from '@/app/features/overlay/overlaySlice'
 import type { RootState } from '@/app/store/store'
 import { fetchSectionsWithResources } from '@/app/features/section/sectionSlice'
+import { store } from '@/app/store/store'
 
 export default function Home() {
 	const dispatch = useDispatch<AppDispatch>()
@@ -31,7 +32,30 @@ export default function Home() {
 	useEffect(() => {
 		if (!initialLoaded) {
 			setInitialLoaded(true)
-			Promise.all([dispatch(fetchWorkspaces()), dispatch(fetchAllSpaces())])
+			console.log('Initial loading started')
+			// 順序を保証するため、直列で実行
+			dispatch(fetchWorkspaces())
+				.unwrap()
+				.then(() => {
+					console.log('Workspaces fetched')
+					return dispatch(fetchAllSpaces())
+				})
+				.then(() => {
+					console.log('All spaces fetched')
+					// activeSpaceIdが存在する場合、セクションを取得
+					const state = store.getState() as RootState
+					const currentActiveSpaceId = state.space.activeSpaceId
+					if (currentActiveSpaceId) {
+						console.log(
+							'Fetching sections for active space:',
+							currentActiveSpaceId,
+						)
+						return dispatch(fetchSectionsWithResources(currentActiveSpaceId))
+					}
+				})
+				.catch((error) => {
+					console.error('Error during initial load:', error)
+				})
 		}
 	}, [dispatch, initialLoaded])
 

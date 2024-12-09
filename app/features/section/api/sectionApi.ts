@@ -100,17 +100,42 @@ export const sectionApi = {
 	fetchSectionsWithResources: async (
 		spaceId: string,
 	): Promise<SectionsWithResourcesResponse> => {
-		const response = await fetch(
-			`/api/spaces/${spaceId}/sections/with-resources`,
-			{
-				headers: {
-					'Cache-Control': 'max-age=300', // 5分間キャッシュ
+		console.log('API call started for spaceId:', spaceId)
+		try {
+			const response = await fetch(
+				`/api/spaces/${spaceId}/sections/with-resources`,
+				{
+					headers: {
+						'Cache-Control': 'max-age=300',
+					},
+					credentials: 'include',
 				},
-			},
-		)
-		if (!response.ok) {
-			throw new Error('セクションとリソースの取得に失敗しました')
+			)
+
+			console.log('API response status:', response.status)
+
+			if (!response.ok) {
+				const errorText = await response.text()
+				console.error('API error response:', {
+					status: response.status,
+					statusText: response.statusText,
+					error: errorText,
+					spaceId,
+				})
+				throw new Error(`Failed to fetch sections: ${errorText}`)
+			}
+
+			const data = await response.json()
+			console.log('API success response for spaceId:', spaceId, data)
+
+			if (!data.sections) {
+				console.warn('No sections in response for spaceId:', spaceId)
+			}
+
+			return data
+		} catch (error) {
+			console.error('API call failed for spaceId:', spaceId, error)
+			throw error
 		}
-		return response.json()
 	},
 }

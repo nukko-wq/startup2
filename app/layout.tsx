@@ -1,6 +1,6 @@
-import { Providers } from '@/app/providers'
 import type { Metadata } from 'next'
 import './globals.css'
+import { Providers } from '@/app/providers'
 
 export const metadata: Metadata = {
 	title: 'StartUp',

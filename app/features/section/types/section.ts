@@ -13,7 +13,7 @@ export interface SectionState {
 			sections: Section[]
 			loading: boolean
 			error: string | null
-			lastFetched?: number
+			lastFetched?: number | null
 		}
 	}
 }

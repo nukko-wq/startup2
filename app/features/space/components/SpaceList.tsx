@@ -52,27 +52,17 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 		(state: RootState) => state.space.activeSpaceId,
 	)
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		if (
 			workspaceId &&
 			(!workspaceSpaces.lastFetched || workspaceSpaces.spaces.length === 0)
 		) {
-			if (workspaceSpaces.spaces.length > 0) {
-				for (const space of workspaceSpaces.spaces) {
-					dispatch(fetchSectionsWithResources(space.id))
-				}
-			} else {
-				dispatch(fetchSpaces(workspaceId))
-					.unwrap()
-					.then((result) => {
-						if (result.spaces.length > 0) {
-							for (const space of result.spaces) {
-								dispatch(fetchSectionsWithResources(space.id))
-							}
-						}
-					})
-			}
+			dispatch(fetchSpaces(workspaceId))
+				.unwrap()
+				.then((result) => {
+					if (result.spaces.length > 0) {
+					}
+				})
 		}
 	}, [
 		dispatch,
@@ -82,17 +72,27 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 	])
 
 	useEffect(() => {
-		console.log('SpaceList mounted with workspaceId:', workspaceId)
-		console.log('State structure:', {
-			workspaceId,
-			spaces: workspaceSpaces.spaces,
-			loading: workspaceSpaces.loading,
-			error: workspaceSpaces.error,
-		})
+		if (process.env.NODE_ENV === 'development') {
+			console.log('SpaceList mounted with workspaceId:', workspaceId)
+			console.log('State structure:', {
+				workspaceId,
+				spaces: workspaceSpaces.spaces,
+				loading: workspaceSpaces.loading,
+				error: workspaceSpaces.error,
+			})
+		}
 	}, [workspaceId, workspaceSpaces])
 
 	const handleSpaceClick = async (spaceId: string) => {
-		dispatch(setActiveSpace(spaceId))
+		if (activeSpaceId === spaceId) {
+			return
+		}
+
+		try {
+			await dispatch(setActiveSpace(spaceId)).unwrap()
+		} catch (error) {
+			console.error('Failed to set active space:', error)
+		}
 	}
 
 	const { dragAndDropHooks } = useDragAndDrop({
