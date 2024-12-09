@@ -14,6 +14,7 @@ import { showSpaceList } from '@/app/features/overlay/overlaySlice'
 import type { RootState } from '@/app/store/store'
 import { fetchSectionsWithResources } from '@/app/features/section/sectionSlice'
 import { store } from '@/app/store/store'
+import { persistor } from '@/app/store/store'
 
 export default function Home() {
 	const dispatch = useDispatch<AppDispatch>()
@@ -71,6 +72,52 @@ export default function Home() {
 
 		window.addEventListener('message', handleMessage)
 		return () => window.removeEventListener('message', handleMessage)
+	}, [dispatch])
+
+	useEffect(() => {
+		// アクティブなスペースのデータを先に取得
+		if (activeSpaceId) {
+			dispatch(fetchSectionsWithResources(activeSpaceId))
+		}
+
+		// 関連するスペースのデータを非同期でプリフェッチ
+		const prefetchRelatedSpaces = async () => {
+			const state = store.getState()
+			const currentWorkspace = state.workspace.workspaces.find((workspace) =>
+				workspace?.spaces?.some?.((space) => space.id === activeSpaceId),
+			)
+
+			// 安全にスペースを取得
+			const relatedSpaces = currentWorkspace?.spaces?.slice(0, 3) || []
+
+			for (const space of relatedSpaces) {
+				if (space.id !== activeSpaceId) {
+					dispatch(fetchSectionsWithResources(space.id))
+				}
+			}
+		}
+
+		prefetchRelatedSpaces()
+	}, [activeSpaceId, dispatch])
+
+	useEffect(() => {
+		if (process.env.NODE_ENV === 'development') {
+			const handleKeyPress = (e: KeyboardEvent) => {
+				// Ctrl + Shift + Q でキャッシュクリア
+				if (e.ctrlKey && e.shiftKey && e.key === 'Q') {
+					persistor?.purge()
+					console.log('Redux cache cleared')
+				}
+				// Ctrl + Shift + R でデータ再取得
+				if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+					dispatch(fetchWorkspaces())
+					console.log('Data refreshed')
+				}
+			}
+
+			window.addEventListener('keydown', handleKeyPress)
+			return () => window.removeEventListener('keydown', handleKeyPress)
+		}
 	}, [dispatch])
 
 	// サーバーサイドレンダリング時は最小限のレイアウトを返す

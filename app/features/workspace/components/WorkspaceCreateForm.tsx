@@ -49,6 +49,7 @@ const WorkspaceCreateForm = ({ onClose }: { onClose: () => void }) => {
 			userId: '', // 仮の値
 			createdAt: new Date().toISOString(),
 			updatedAt: new Date().toISOString(),
+			spaces: [], // 追加: 新規ワークスペースは空の配列で初期化
 		}
 
 		try {

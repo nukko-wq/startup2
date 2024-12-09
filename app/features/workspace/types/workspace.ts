@@ -1,3 +1,5 @@
+import type { Space } from '@/app/features/space/types/space'
+
 export interface Workspace {
 	id: string
 	name: string
@@ -6,6 +8,7 @@ export interface Workspace {
 	userId: string
 	createdAt: string
 	updatedAt: string
+	spaces: Space[]
 }
 
 export interface WorkspaceState {

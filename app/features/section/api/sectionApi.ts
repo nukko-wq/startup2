@@ -106,7 +106,7 @@ export const sectionApi = {
 				`/api/spaces/${spaceId}/sections/with-resources`,
 				{
 					headers: {
-						'Cache-Control': 'max-age=300',
+						'Cache-Control': 'max-age=300, stale-while-revalidate=600',
 					},
 					credentials: 'include',
 				},

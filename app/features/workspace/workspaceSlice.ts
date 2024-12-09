@@ -107,15 +107,20 @@ const workspaceSlice = createSlice({
 				state.error = null
 			})
 			.addCase(fetchWorkspaces.fulfilled, (state, action) => {
-				const defaultWorkspace = action.payload.find(
+				const workspacesWithSpaces = action.payload.map((workspace) => ({
+					...workspace,
+					spaces: workspace.spaces || [],
+				}))
+
+				const defaultWorkspace = workspacesWithSpaces.find(
 					(w: Workspace) => w.isDefault && w.order === 0,
 				)
-				const normalWorkspaces = action.payload.filter(
+				const normalWorkspaces = workspacesWithSpaces.filter(
 					(w: Workspace) => !w.isDefault,
 				)
 
 				state.defaultWorkspace = defaultWorkspace || null
-				state.workspaces = action.payload
+				state.workspaces = workspacesWithSpaces
 				state.loading = false
 				state.lastFetched = Date.now()
 

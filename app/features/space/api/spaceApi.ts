@@ -74,23 +74,31 @@ export const spaceApi = {
 					'Content-Type': 'application/json',
 				},
 				credentials: 'include',
+				body: JSON.stringify({
+					updatedAt: new Date().toISOString(),
+				}),
 			})
 
 			if (!response.ok) {
-				const errorText = await response.text()
+				const errorData = await response.json().catch(() => null)
 				console.error('Active space update failed:', {
 					status: response.status,
 					statusText: response.statusText,
-					error: errorText,
+					error: errorData,
 					spaceId,
 				})
-				throw new Error(errorText || 'アクティブスペースの設定に失敗しました')
+				throw new Error(
+					errorData?.message || 'アクティブスペースの設定に失敗しました',
+				)
 			}
 
-			return spaceId
+			const data = await response.json()
+			return data.id || spaceId
 		} catch (error) {
 			console.error('setActiveSpace error:', error)
-			throw error
+			throw error instanceof Error
+				? error
+				: new Error('アクティブスペースの設定に失敗しました')
 		}
 	},
 
@@ -132,7 +140,7 @@ export const spaceApi = {
 			},
 		)
 		if (!response.ok) {
-			throw new Error('スペースの並び替えに失敗しました')
+			throw new Error('スペースの並び替えに���敗しました')
 		}
 		const data = await response.json()
 		return {

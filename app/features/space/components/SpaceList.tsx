@@ -26,6 +26,8 @@ import {
 import SpaceMenu from '@/app/features/space/components/SpaceMenu'
 import CreateSpaceInWorkspace from '@/app/features/space/components/CreateSpaceInWorkspace'
 import { fetchSectionsWithResources } from '@/app/features/section/sectionSlice'
+import { persistor } from '@/app/store/store'
+
 interface SpaceListProps {
 	workspaceId: string
 }
@@ -109,6 +111,10 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 			await dispatch(setActiveSpace(spaceId)).unwrap()
 		} catch (error) {
 			console.error('Failed to set active space:', error)
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: 'スペースの切り替えに失敗しました'
 		}
 	}
 
