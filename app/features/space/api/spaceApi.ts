@@ -3,8 +3,6 @@ import type {
 	SpaceApiResponse,
 	CreateSpaceResponse,
 	DeleteSpaceResponse,
-	ReorderSpaceResponse,
-	MoveSpaceResponse,
 } from '@/app/features/space/types/space'
 
 export interface FetchAllSpacesResponse {

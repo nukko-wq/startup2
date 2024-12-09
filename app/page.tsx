@@ -26,10 +26,6 @@ export default function Home() {
 		(state: RootState) => state.space.activeSpaceId,
 	)
 
-	// キャッシュ時間の管理
-	const lastFetchTime = useRef<{ [spaceId: string]: number }>({})
-	const CACHE_DURATION = 5 * 60 * 1000 // 5分
-
 	useEffect(() => {
 		if (!initialLoaded) {
 			setInitialLoaded(true)
