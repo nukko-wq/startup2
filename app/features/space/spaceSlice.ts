@@ -90,37 +90,36 @@ export const setActiveSpace = createAsyncThunk(
 			const state = getState() as RootState
 			const currentActiveSpaceId = state.space.activeSpaceId
 
+			// 同じスペースの場合は早期リターン
 			if (currentActiveSpaceId === spaceId) {
 				return spaceId
 			}
 
-			// 先にセクションのフェッチを開始
-			const fetchPromise = dispatch(fetchSectionsWithResources(spaceId))
+			// セクションのキャッシュをチェック
+			const sectionState = state.section.sectionsBySpace[spaceId]
+			const CACHE_DURATION = 5 * 60 * 1000 // 5分
+
+			let fetchSectionsPromise: Promise<unknown> | undefined
+			if (
+				!sectionState?.sections ||
+				!sectionState.lastFetched ||
+				Date.now() - sectionState.lastFetched > CACHE_DURATION
+			) {
+				fetchSectionsPromise = dispatch(fetchSectionsWithResources(spaceId))
+			}
 
 			// APIコールを並列実行
-			const [result] = await Promise.all([
-				spaceApi.setActiveSpace(spaceId),
-				fetchPromise,
-			])
+			const promises: Promise<unknown>[] = [spaceApi.setActiveSpace(spaceId)]
+			if (fetchSectionsPromise) {
+				promises.push(fetchSectionsPromise)
+			}
 
-			return result
+			const [result] = await Promise.all(promises)
+			return result as string
 		} catch (error) {
 			console.error('setActiveSpace error:', error)
-			throw error instanceof Error
-				? error
-				: new Error('アクティブスペースの設定に失敗しました')
+			throw error
 		}
-	},
-	{
-		// 条件チェックを削除または修正
-		condition: (spaceId, { getState }) => {
-			const state = getState() as RootState
-			// スペースが存在するかチェック
-			const spaceExists = Object.values(state.space.spacesByWorkspace).some(
-				(workspace) => workspace.spaces.some((space) => space.id === spaceId),
-			)
-			return spaceExists
-		},
 	},
 )
 
