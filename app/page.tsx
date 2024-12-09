@@ -26,15 +26,28 @@ export default function Home() {
 		(state: RootState) => state.space.activeSpaceId,
 	)
 
-	// キャッシュ時間の管理
-	const lastFetchTime = useRef<{ [spaceId: string]: number }>({})
-	const CACHE_DURATION = 5 * 60 * 1000 // 5分
-
 	useEffect(() => {
 		if (!initialLoaded) {
 			setInitialLoaded(true)
 			console.log('Initial loading started')
-			// 順序を保証するため、直列で実行
+			// キャッシュチェックを追加
+			const state = store.getState() as RootState
+			const hasValidCache =
+				state.workspace.lastFetched &&
+				Date.now() - state.workspace.lastFetched < 5 * 60 * 1000
+
+			if (hasValidCache) {
+				console.log('Using cached workspaces')
+				dispatch(fetchAllSpaces()).then(() => {
+					const currentActiveSpaceId = state.space.activeSpaceId
+					if (currentActiveSpaceId) {
+						return dispatch(fetchSectionsWithResources(currentActiveSpaceId))
+					}
+				})
+				return
+			}
+
+			// キャッシュがない場合は通常のフローを実行
 			dispatch(fetchWorkspaces())
 				.unwrap()
 				.then(() => {

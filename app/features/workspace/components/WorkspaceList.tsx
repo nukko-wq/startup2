@@ -22,7 +22,6 @@ import {
 	useDragAndDrop,
 } from 'react-aria-components'
 import SpaceList from '@/app/features/space/components/SpaceList'
-import { fetchSpaces } from '@/app/features/space/spaceSlice'
 
 const WorkspaceList = () => {
 	const dispatch = useDispatch<AppDispatch>()
