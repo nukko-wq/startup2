@@ -69,19 +69,21 @@ export const setActiveSpace = createAsyncThunk(
 	'space/setActiveSpace',
 	async (spaceId: string, { getState, dispatch }) => {
 		try {
-			// 現在のステートを取得
 			const state = getState() as RootState
 			const currentActiveSpaceId = state.space.activeSpaceId
 
-			// 同じスペースが選択された場合は早期リターン
 			if (currentActiveSpaceId === spaceId) {
 				return spaceId
 			}
 
-			const result = await spaceApi.setActiveSpace(spaceId)
+			// 先にセクションのフェッチを開始
+			const fetchPromise = dispatch(fetchSectionsWithResources(spaceId))
 
-			// セクションの取得
-			await dispatch(fetchSectionsWithResources(spaceId))
+			// APIコールを並列実行
+			const [result] = await Promise.all([
+				spaceApi.setActiveSpace(spaceId),
+				fetchPromise,
+			])
 
 			return result
 		} catch (error) {
