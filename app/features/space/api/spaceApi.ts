@@ -66,7 +66,7 @@ export const spaceApi = {
 		return response.json()
 	},
 
-	setActiveSpace: async (spaceId: string) => {
+	setActiveSpace: async (spaceId: string): Promise<string> => {
 		try {
 			const response = await fetch(`/api/spaces/${spaceId}/active`, {
 				method: 'PUT',
@@ -92,7 +92,7 @@ export const spaceApi = {
 				)
 			}
 
-			const data = await response.json()
+			await response.json()
 			return spaceId
 		} catch (error) {
 			console.error('setActiveSpace error:', error)
