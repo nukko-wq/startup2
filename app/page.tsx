@@ -91,16 +91,22 @@ export default function Home() {
 	}, [activeSpaceId, dispatch])
 
 	useEffect(() => {
-		const handleKeyPress = (e: KeyboardEvent) => {
-			// Ctrl + Shift + Q でキャッシュクリア
-			if (e.ctrlKey && e.shiftKey && e.key === 'Q') {
-				persistor?.purge()
-				console.log('Redux cache cleared')
-			}
-			// Ctrl + Shift + R でデータ再取得
-			if (e.ctrlKey && e.shiftKey && e.key === 'R') {
-				dispatch(fetchWorkspaces())
-				console.log('Data refreshed')
+		const handleKeyPress = async (e: KeyboardEvent) => {
+			try {
+				// Ctrl + Shift + Q でキャッシュクリア
+				if (e.ctrlKey && e.shiftKey && e.key === 'Q') {
+					await persistor?.purge()
+					console.log('Redux cache cleared')
+					// キャッシュクリア後に再フェッチ
+					await dispatch(fetchAllSpaces()).unwrap()
+				}
+				// Ctrl + Shift + R でデータ再取得
+				if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+					await dispatch(fetchWorkspaces()).unwrap()
+					console.log('Data refreshed')
+				}
+			} catch (error) {
+				console.error('Error during key handler:', error)
 			}
 		}
 

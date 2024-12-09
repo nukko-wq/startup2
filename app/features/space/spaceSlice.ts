@@ -34,7 +34,6 @@ export const fetchSpaces = createAsyncThunk(
 		const spaceState = state.space.spacesByWorkspace[workspaceId]
 		const CACHE_DURATION = 5 * 60 * 1000 // 5分
 
-		// キャッシュチェックを強化
 		if (
 			spaceState?.spaces.length > 0 &&
 			spaceState?.lastFetched &&
@@ -52,11 +51,11 @@ export const fetchSpaces = createAsyncThunk(
 		return await spaceApi.fetchSpaces(workspaceId)
 	},
 	{
-		// 同時実行を防ぐ条件を追加
 		condition: (workspaceId, { getState }) => {
 			const state = getState() as RootState
 			const spaceState = state.space.spacesByWorkspace[workspaceId]
 
+			// 既に読み込み中の場合はスキップ
 			if (spaceState?.loading) {
 				console.log(
 					'Skip fetching - already loading spaces for workspace:',
@@ -64,8 +63,23 @@ export const fetchSpaces = createAsyncThunk(
 				)
 				return false
 			}
+
+			// 最近フェッチした場合はスキップ
+			const THROTTLE_DURATION = 2000 // 2秒
+			if (
+				spaceState?.lastFetched &&
+				Date.now() - spaceState.lastFetched < THROTTLE_DURATION
+			) {
+				console.log(
+					'Skip fetching - recently fetched spaces for workspace:',
+					workspaceId,
+				)
+				return false
+			}
+
 			return true
 		},
+		dispatchConditionRejection: true,
 	},
 )
 
@@ -167,37 +181,60 @@ export const moveSpace = createAsyncThunk(
 export const fetchAllSpaces = createAsyncThunk(
 	'space/fetchAllSpaces',
 	async (_, { getState, dispatch }) => {
-		const state = getState() as RootState
-		const allSpaces = state.space.allSpaces
+		try {
+			const state = getState() as RootState
+			const allSpaces = state.space.allSpaces
 
-		if (allSpaces.loading) {
-			throw new Error('Already loading')
-		}
-
-		// キャッシュチェック
-		if (
-			allSpaces.spaces.length > 0 &&
-			!allSpaces.error &&
-			allSpaces.lastFetched &&
-			Date.now() - allSpaces.lastFetched < 5 * 60 * 1000
-		) {
-			// キャッシュが有効な場合でも、activeSpaceIdがあればセクションを取得
-			if (state.space.activeSpaceId) {
-				dispatch(fetchSectionsWithResources(state.space.activeSpaceId))
+			// ローディング中のチェックを修正
+			if (allSpaces.loading) {
+				console.log('Skip fetching - already loading all spaces')
+				return {
+					spaces: allSpaces.spaces,
+					activeSpaceId: state.space.activeSpaceId,
+					workspaceId: allSpaces.spaces[0]?.workspaceId || '',
+				}
 			}
-			return {
-				spaces: allSpaces.spaces,
-				activeSpaceId: state.space.activeSpaceId,
-				workspaceId: allSpaces.spaces[0]?.workspaceId || '',
-			}
-		}
 
-		const response = await spaceApi.fetchAllSpaces()
-		// レスポンス後にもセクションを取得
-		if (response.activeSpaceId) {
-			dispatch(fetchSectionsWithResources(response.activeSpaceId))
+			// キャッシュチェック
+			const CACHE_DURATION = 5 * 60 * 1000 // 5分
+			if (
+				allSpaces.spaces.length > 0 &&
+				!allSpaces.error &&
+				allSpaces.lastFetched &&
+				Date.now() - allSpaces.lastFetched < CACHE_DURATION
+			) {
+				console.log('Using cached all spaces')
+				if (state.space.activeSpaceId) {
+					dispatch(fetchSectionsWithResources(state.space.activeSpaceId))
+				}
+				return {
+					spaces: allSpaces.spaces,
+					activeSpaceId: state.space.activeSpaceId,
+					workspaceId: allSpaces.spaces[0]?.workspaceId || '',
+				}
+			}
+
+			const response = await spaceApi.fetchAllSpaces()
+
+			if (response.activeSpaceId) {
+				await dispatch(
+					fetchSectionsWithResources(response.activeSpaceId),
+				).unwrap()
+			}
+
+			return response
+		} catch (error) {
+			console.error('fetchAllSpaces error:', error)
+			throw error instanceof Error
+				? error
+				: new Error('全スペースの取得に失敗しました')
 		}
-		return response
+	},
+	{
+		condition: (_, { getState }) => {
+			const state = getState() as RootState
+			return !state.space.allSpaces.loading
+		},
 	},
 )
 
@@ -394,7 +431,7 @@ const spaceSlice = createSlice({
 				state.activeSpaceId = action.payload
 				state.error = null
 
-				// 全てのスペースのisLastActiveをfalseに設定
+				// 全てのスペースのisLastActiveをfalseに���定
 				for (const workspace of Object.values(state.spacesByWorkspace)) {
 					for (const space of workspace.spaces) {
 						space.isLastActive = space.id === action.payload

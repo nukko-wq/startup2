@@ -13,22 +13,38 @@ export interface FetchAllSpacesResponse {
 
 export const spaceApi = {
 	fetchSpaces: async (workspaceId: string): Promise<SpaceApiResponse> => {
-		const response = await fetch(`/api/workspaces/${workspaceId}/spaces`, {
-			headers: {
-				'Cache-Control': 'max-age=300',
-				Pragma: 'no-cache',
-				'If-None-Match': '*',
-			},
-		})
-		if (!response.ok) {
-			throw new Error('スペースの取得に失敗しました')
-		}
-		const data: Space[] = await response.json()
-		const activeSpace = data.find((space: Space) => space.isLastActive)
-		return {
-			spaces: data,
-			activeSpaceId: activeSpace?.id || null,
-			workspaceId,
+		try {
+			const response = await fetch(`/api/workspaces/${workspaceId}/spaces`, {
+				headers: {
+					'Cache-Control': 'max-age=300',
+					Pragma: 'no-cache',
+					'If-None-Match': '*',
+				},
+			})
+
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => null)
+				console.error('Fetch spaces failed:', {
+					status: response.status,
+					statusText: response.statusText,
+					error: errorData,
+					workspaceId,
+				})
+				throw new Error(errorData?.message || 'スペースの取得に失敗しました')
+			}
+
+			const data: Space[] = await response.json()
+			const activeSpace = data.find((space: Space) => space.isLastActive)
+			return {
+				spaces: data,
+				activeSpaceId: activeSpace?.id || null,
+				workspaceId,
+			}
+		} catch (error) {
+			console.error('fetchSpaces error:', error)
+			throw error instanceof Error
+				? error
+				: new Error('スペースの取得に失敗しました')
 		}
 	},
 
@@ -175,16 +191,36 @@ export const spaceApi = {
 	},
 
 	fetchAllSpaces: async (): Promise<FetchAllSpacesResponse> => {
-		const response = await fetch('/api/spaces')
-		if (!response.ok) {
-			throw new Error('全スペースの取得に失敗しました')
-		}
-		const data = await response.json()
-		const activeSpace = data.find((space: Space) => space.isLastActive)
-		return {
-			spaces: data,
-			activeSpaceId: activeSpace?.id || null,
-			workspaceId: data[0]?.workspaceId || '',
+		try {
+			const response = await fetch('/api/spaces', {
+				headers: {
+					'Cache-Control': 'no-cache',
+					Pragma: 'no-cache',
+				},
+			})
+
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => null)
+				console.error('Fetch all spaces failed:', {
+					status: response.status,
+					statusText: response.statusText,
+					error: errorData,
+				})
+				throw new Error(errorData?.message || '全スペースの取得に失敗しました')
+			}
+
+			const data = await response.json()
+			const activeSpace = data.find((space: Space) => space.isLastActive)
+			return {
+				spaces: data,
+				activeSpaceId: activeSpace?.id || null,
+				workspaceId: data[0]?.workspaceId || '',
+			}
+		} catch (error) {
+			console.error('fetchAllSpaces error:', error)
+			throw error instanceof Error
+				? error
+				: new Error('全スペースの取得に失敗しました')
 		}
 	},
 }
