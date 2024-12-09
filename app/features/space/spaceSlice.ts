@@ -32,14 +32,16 @@ export const fetchSpaces = createAsyncThunk(
 	async (workspaceId: string, { getState }) => {
 		const state = getState() as RootState
 		const spaceState = state.space.spacesByWorkspace[workspaceId]
-		const isDefaultWorkspace =
-			state.workspace.defaultWorkspace?.id === workspaceId
+		const CACHE_DURATION = 5 * 60 * 1000 // 5分
 
+		// キャッシュチェックを強化
 		if (
-			!isDefaultWorkspace &&
+			spaceState?.spaces.length > 0 &&
 			spaceState?.lastFetched &&
-			Date.now() - spaceState.lastFetched < 5 * 60 * 1000
+			Date.now() - spaceState.lastFetched < CACHE_DURATION &&
+			!spaceState.loading
 		) {
+			console.log('Using cached spaces for workspace:', workspaceId)
 			return {
 				spaces: spaceState.spaces,
 				activeSpaceId: state.space.activeSpaceId,
@@ -48,6 +50,22 @@ export const fetchSpaces = createAsyncThunk(
 		}
 
 		return await spaceApi.fetchSpaces(workspaceId)
+	},
+	{
+		// 同時実行を防ぐ条件を追加
+		condition: (workspaceId, { getState }) => {
+			const state = getState() as RootState
+			const spaceState = state.space.spacesByWorkspace[workspaceId]
+
+			if (spaceState?.loading) {
+				console.log(
+					'Skip fetching - already loading spaces for workspace:',
+					workspaceId,
+				)
+				return false
+			}
+			return true
+		},
 	},
 )
 

@@ -34,16 +34,10 @@ export default function Home() {
 		if (!initialLoaded) {
 			setInitialLoaded(true)
 			console.log('Initial loading started')
-			// 順序を保証するため、直列で実行
-			dispatch(fetchWorkspaces())
-				.unwrap()
-				.then(() => {
-					console.log('Workspaces fetched')
-					return dispatch(fetchAllSpaces())
-				})
+			// workspacesのフェッチはWorkspaceListに任せる
+			dispatch(fetchAllSpaces())
 				.then(() => {
 					console.log('All spaces fetched')
-					// activeSpaceIdが存在する場合、セクションを取得
 					const state = store.getState() as RootState
 					const currentActiveSpaceId = state.space.activeSpaceId
 					if (currentActiveSpaceId) {
@@ -58,7 +52,7 @@ export default function Home() {
 					console.error('Error during initial load:', error)
 				})
 		}
-	}, [dispatch, initialLoaded])
+	}, [initialLoaded, dispatch])
 
 	useEffect(() => {
 		const handleMessage = (event: MessageEvent) => {

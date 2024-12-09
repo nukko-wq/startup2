@@ -18,6 +18,8 @@ export const spaceApi = {
 		const response = await fetch(`/api/workspaces/${workspaceId}/spaces`, {
 			headers: {
 				'Cache-Control': 'max-age=300',
+				Pragma: 'no-cache',
+				'If-None-Match': '*',
 			},
 		})
 		if (!response.ok) {
@@ -93,7 +95,7 @@ export const spaceApi = {
 			}
 
 			const data = await response.json()
-			return data.id || spaceId
+			return spaceId
 		} catch (error) {
 			console.error('setActiveSpace error:', error)
 			throw error instanceof Error
@@ -140,7 +142,7 @@ export const spaceApi = {
 			},
 		)
 		if (!response.ok) {
-			throw new Error('スペースの並び替えに���敗しました')
+			throw new Error('スペースの並び替えに失敗しました')
 		}
 		const data = await response.json()
 		return {

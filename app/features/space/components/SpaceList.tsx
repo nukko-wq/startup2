@@ -59,20 +59,21 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 	useEffect(() => {
 		if (
 			workspaceId &&
-			(!workspaceSpaces.lastFetched || workspaceSpaces.spaces.length === 0)
+			(!workspaceSpaces.lastFetched || workspaceSpaces.spaces.length === 0) &&
+			!workspaceSpaces.loading
 		) {
 			dispatch(fetchSpaces(workspaceId))
 				.unwrap()
-				.then((result) => {
-					if (result.spaces.length > 0) {
-					}
+				.catch((error) => {
+					console.error('Failed to fetch spaces:', error)
 				})
 		}
 	}, [
-		dispatch,
 		workspaceId,
 		workspaceSpaces.lastFetched,
 		workspaceSpaces.spaces.length,
+		workspaceSpaces.loading,
+		dispatch,
 	])
 
 	useEffect(() => {

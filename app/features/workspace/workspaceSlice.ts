@@ -25,13 +25,29 @@ export const fetchWorkspaces = createAsyncThunk(
 	'workspace/fetchWorkspaces',
 	async (_, { getState }) => {
 		const state = getState() as RootState
+		const CACHE_DURATION = 10 * 60 * 1000 // 10分
+
 		if (
 			state.workspace.lastFetched &&
-			Date.now() - state.workspace.lastFetched < 5 * 60 * 1000
+			Date.now() - state.workspace.lastFetched < CACHE_DURATION &&
+			state.workspace.workspaces.length > 0
 		) {
+			console.log('Using cached workspaces')
 			return state.workspace.workspaces
 		}
+
+		console.log('Fetching workspaces from API')
 		return await workspaceApi.fetchWorkspaces()
+	},
+	{
+		condition: (_, { getState }) => {
+			const state = getState() as RootState
+			if (state.workspace.loading) {
+				console.log('Skip fetching - already loading')
+				return false
+			}
+			return true
+		},
 	},
 )
 
