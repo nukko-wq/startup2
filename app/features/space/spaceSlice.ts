@@ -88,12 +88,16 @@ export const setActiveSpace = createAsyncThunk(
 		try {
 			const result = await spaceApi.setActiveSpace(spaceId)
 
-			// セクションとリソースを取得
-			await dispatch(fetchSectionsWithResources(spaceId))
-				.unwrap()
-				.catch((error) => {
-					console.error('Failed to fetch sections:', error)
-				})
+			try {
+				// セクションとリソースを取得
+				await dispatch(fetchSectionsWithResources(spaceId)).unwrap()
+			} catch (sectionError) {
+				console.warn(
+					'Failed to fetch sections, but space was activated:',
+					sectionError,
+				)
+				// セクションの取得に失敗しても、スペースのアクティブ化は続行
+			}
 
 			return result
 		} catch (error) {
@@ -362,7 +366,7 @@ const spaceSlice = createSlice({
 				}
 			})
 			.addCase(setActiveSpace.pending, (state) => {
-				// オプション: ローディング状態の管理が必要な場合
+				state.error = null // エラー状態をリセット
 			})
 			.addCase(setActiveSpace.fulfilled, (state, action) => {
 				// 現在のactiveSpaceIdと同じ場合は更新しない
@@ -371,6 +375,8 @@ const spaceSlice = createSlice({
 				}
 
 				state.activeSpaceId = action.payload
+				state.error = null
+
 				// 全てのスペースのisLastActiveをfalseに設定
 				for (const workspace of Object.values(state.spacesByWorkspace)) {
 					for (const space of workspace.spaces) {
@@ -380,12 +386,9 @@ const spaceSlice = createSlice({
 			})
 			.addCase(setActiveSpace.rejected, (state, action) => {
 				console.error('setActiveSpace rejected:', action.payload)
-				// エラーメッセージを保存
 				state.error =
 					(action.payload as string) || 'アクティブスペースの設定に失敗しました'
-
-				// オプション: 以前のアクティブスペースを維持
-				// state.activeSpaceIdは変更しない
+				// エラー時は現在のactiveSpaceIdを維持
 			})
 			.addCase(renameSpace.fulfilled, (state, action) => {
 				const { space, workspaceId } = action.payload
