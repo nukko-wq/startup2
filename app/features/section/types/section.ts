@@ -5,6 +5,7 @@ export interface Section {
 	name: string
 	order: number
 	spaceId: string
+	resources?: Resource[]
 }
 
 export interface SectionState {

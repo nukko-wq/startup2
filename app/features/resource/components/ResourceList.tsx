@@ -27,12 +27,13 @@ import type { Resource } from '@prisma/client'
 import { sendMessageToExtension } from '@/app/features/tabs/tabsSlice'
 
 interface ResourceListProps {
+	resources: Resource[]
 	sectionId: string
 }
 
-const ResourceList = memo(({ sectionId }: ResourceListProps) => {
+const ResourceList = memo(({ resources, sectionId }: ResourceListProps) => {
 	const dispatch = useDispatch<AppDispatch>()
-	const { resources, loading, error, lastFetched } = useSelector(
+	const { loading, error, lastFetched } = useSelector(
 		(state: RootState) =>
 			state.resource.resourcesBySection[sectionId] || {
 				resources: [],
