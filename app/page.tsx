@@ -101,24 +101,42 @@ export default function Home() {
 	}, [activeSpaceId, dispatch])
 
 	useEffect(() => {
-		if (process.env.NODE_ENV === 'development') {
-			const handleKeyPress = (e: KeyboardEvent) => {
-				// Ctrl + Shift + Q でキャッシュクリア
-				if (e.ctrlKey && e.shiftKey && e.key === 'Q') {
-					persistor?.purge()
-					console.log('Redux cache cleared')
-				}
-				// Ctrl + Shift + R でデータ再取得
-				if (e.ctrlKey && e.shiftKey && e.key === 'R') {
-					dispatch(fetchWorkspaces())
-					console.log('Data refreshed')
-				}
+		const handleKeyPress = (e: KeyboardEvent) => {
+			// Ctrl + Shift + Q でキャッシュクリア
+			if (e.ctrlKey && e.shiftKey && e.key === 'Q') {
+				persistor?.purge()
+				console.log('Redux cache cleared')
 			}
-
-			window.addEventListener('keydown', handleKeyPress)
-			return () => window.removeEventListener('keydown', handleKeyPress)
+			// Ctrl + Shift + R でデータ再取得
+			if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+				dispatch(fetchWorkspaces())
+				console.log('Data refreshed')
+			}
 		}
+
+		window.addEventListener('keydown', handleKeyPress)
+		return () => window.removeEventListener('keydown', handleKeyPress)
 	}, [dispatch])
+
+	// useEffect(() => {
+	// 	if (process.env.NODE_ENV === 'development') {
+	// 		const handleKeyPress = (e: KeyboardEvent) => {
+	// 			// Ctrl + Shift + Q でキャッシュクリア
+	// 			if (e.ctrlKey && e.shiftKey && e.key === 'Q') {
+	// 				persistor?.purge()
+	// 				console.log('Redux cache cleared')
+	// 			}
+	// 			// Ctrl + Shift + R でデータ再取得
+	// 			if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+	// 				dispatch(fetchWorkspaces())
+	// 				console.log('Data refreshed')
+	// 			}
+	// 		}
+
+	// 		window.addEventListener('keydown', handleKeyPress)
+	// 		return () => window.removeEventListener('keydown', handleKeyPress)
+	// 	}
+	// }, [dispatch])
 
 	// サーバーサイドレンダリング時は最小限のレイアウトを返す
 	if (!initialLoaded) {
