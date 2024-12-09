@@ -132,9 +132,9 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 		}
 	}, [spaceId, sectionState])
 
-	if (!spaceId) {
-		return <div>スペースが選択されていません</div>
-	}
+	// if (!spaceId) {
+	// 	return <div>スペースが選択されていません</div>
+	// }
 
 	// if (loading) {
 	// 	console.log('Loading state:', { spaceId, loading })
