@@ -79,6 +79,7 @@ export default function Home() {
 				event.data.source === 'startup-extension' &&
 				event.data.type === 'SHOW_SPACE_LIST_OVERLAY'
 			) {
+				console.log('Received SHOW_SPACE_LIST_OVERLAY message')
 				dispatch(showSpaceList())
 			}
 		}
