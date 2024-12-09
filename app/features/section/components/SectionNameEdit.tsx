@@ -90,12 +90,12 @@ const SectionNameEdit = ({ section }: SectionNameEditProps) => {
 				</Form>
 			) : (
 				<Button
-					className="group flex items-center gap-2 hover:bg-zinc-100 rounded px-3 py-2 outline-none"
+					className="group/section-name section-name flex items-center gap-2 hover:bg-zinc-100 rounded px-3 py-2 outline-none"
 					onPress={handleEditStart}
 					aria-label="Section Name"
 				>
 					<Text className="text-[17px] text-zinc-800">{section.name}</Text>
-					<Pencil className="w-4 h-4 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+					<Pencil className="w-4 h-4 text-zinc-400 opacity-0 group-hover/section-name:opacity-100 transition-opacity" />
 				</Button>
 			)}
 		</div>
