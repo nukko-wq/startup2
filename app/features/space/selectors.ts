@@ -18,9 +18,30 @@ export const selectActiveSpace = createSelector(
 )
 
 export const selectCurrentSections = createSelector(
-	[selectSectionState, (state: RootState) => state.space.activeSpaceId],
-	(sectionState, activeSpaceId) => {
+	[
+		selectSectionState,
+		(state: RootState) => state.space.activeSpaceId,
+		(state: RootState) => state.section.sectionsBySpace,
+	],
+	(sectionState, activeSpaceId, sectionsBySpace) => {
 		if (!activeSpaceId) return []
-		return sectionState.sectionsBySpace[activeSpaceId]?.sections || []
+		const spaceData = sectionsBySpace[activeSpaceId]
+		return spaceData?.sections || []
+	},
+)
+
+export const selectSectionLoadingState = createSelector(
+	[
+		(state: RootState) => state.space.activeSpaceId,
+		(state: RootState) => state.section.sectionsBySpace,
+	],
+	(activeSpaceId, sectionsBySpace) => {
+		if (!activeSpaceId) return { loading: false, error: null }
+		const spaceData = sectionsBySpace[activeSpaceId]
+		return {
+			loading: spaceData?.loading || false,
+			error: spaceData?.error || null,
+			lastFetched: spaceData?.lastFetched,
+		}
 	},
 )
