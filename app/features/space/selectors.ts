@@ -1,5 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit'
 import type { RootState } from '@/app/store/store'
+import type { Section } from '@/app/features/section/types/section'
 
 // メモ化されたセレクター
 const selectSpaceState = (state: RootState) => state.space
@@ -26,7 +27,20 @@ export const selectCurrentSections = createSelector(
 	(sectionState, activeSpaceId, sectionsBySpace) => {
 		if (!activeSpaceId) return []
 		const spaceData = sectionsBySpace[activeSpaceId]
-		return spaceData?.sections || []
+		// メモ化されたソート処理
+		return (
+			spaceData?.sections
+				?.slice()
+				?.sort((a: Section, b: Section) => a.order - b.order) || []
+		)
+	},
+	{
+		// セレクターの等価性チェックをカスタマイズ
+		memoizeOptions: {
+			resultEqualityCheck: (a: Section[], b: Section[]) =>
+				a.length === b.length &&
+				a.every((section, i) => section.id === b[i].id),
+		},
 	},
 )
 
