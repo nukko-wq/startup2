@@ -67,16 +67,31 @@ export const spaceApi = {
 	},
 
 	setActiveSpace: async (spaceId: string) => {
-		const response = await fetch(`/api/spaces/${spaceId}/active`, {
-			method: 'PUT',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		})
-		if (!response.ok) {
-			throw new Error('アクティブスペースの設定に失敗しました')
+		try {
+			const response = await fetch(`/api/spaces/${spaceId}/active`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				credentials: 'include',
+			})
+
+			if (!response.ok) {
+				const errorText = await response.text()
+				console.error('Active space update failed:', {
+					status: response.status,
+					statusText: response.statusText,
+					error: errorText,
+					spaceId,
+				})
+				throw new Error(errorText || 'アクティブスペースの設定に失敗しました')
+			}
+
+			return spaceId
+		} catch (error) {
+			console.error('setActiveSpace error:', error)
+			throw error
 		}
-		return spaceId
 	},
 
 	renameSpace: async (spaceId: string, name: string, workspaceId: string) => {

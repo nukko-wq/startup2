@@ -22,6 +22,7 @@ export interface SpaceState {
 		lastFetched?: number
 	}
 	activeSpaceId: string | null
+	error: string | null
 }
 
 export interface CreateSpacePayload {

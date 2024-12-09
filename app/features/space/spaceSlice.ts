@@ -24,6 +24,7 @@ const initialState: SpaceState = {
 		loading: false,
 		error: null,
 	},
+	error: null,
 }
 
 export const fetchSpaces = createAsyncThunk(
@@ -66,21 +67,43 @@ export const deleteSpace = createAsyncThunk(
 
 export const setActiveSpace = createAsyncThunk(
 	'space/setActiveSpace',
-	async (spaceId: string, { getState, dispatch }) => {
+	async (spaceId: string, { getState, dispatch, rejectWithValue }) => {
 		const state = getState() as RootState
 		const currentActiveSpaceId = state.space.activeSpaceId
+
+		// スペースの存在確認
+		const spaceExists = Object.values(state.space.spacesByWorkspace).some(
+			(workspace) => workspace.spaces.some((space) => space.id === spaceId),
+		)
+
+		if (!spaceExists) {
+			return rejectWithValue('指定されたスペースが見つかりません')
+		}
 
 		// 同じスペースが選択された場合は処理をスキップ
 		if (currentActiveSpaceId === spaceId) {
 			return currentActiveSpaceId
 		}
 
-		const result = await spaceApi.setActiveSpace(spaceId)
+		try {
+			const result = await spaceApi.setActiveSpace(spaceId)
 
-		// セクションとリソースを取得
-		await dispatch(fetchSectionsWithResources(spaceId))
+			// セクションとリソースを取得
+			await dispatch(fetchSectionsWithResources(spaceId))
+				.unwrap()
+				.catch((error) => {
+					console.error('Failed to fetch sections:', error)
+				})
 
-		return result
+			return result
+		} catch (error) {
+			console.error('Failed to set active space:', error)
+			return rejectWithValue(
+				error instanceof Error
+					? error.message
+					: 'アクティブスペースの設定に失敗しました',
+			)
+		}
 	},
 )
 
@@ -356,7 +379,13 @@ const spaceSlice = createSlice({
 				}
 			})
 			.addCase(setActiveSpace.rejected, (state, action) => {
-				// エラー処理が必要な場合
+				console.error('setActiveSpace rejected:', action.payload)
+				// エラーメッセージを保存
+				state.error =
+					(action.payload as string) || 'アクティブスペースの設定に失敗しました'
+
+				// オプション: 以前のアクティブスペースを維持
+				// state.activeSpaceIdは変更しない
 			})
 			.addCase(renameSpace.fulfilled, (state, action) => {
 				const { space, workspaceId } = action.payload
