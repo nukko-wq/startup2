@@ -17,10 +17,15 @@ import { selectCurrentSections } from '@/app/features/space/selectors'
 
 const selectActiveSpaceId = (state: RootState) => state.space.activeSpaceId
 
+const selectSectionsForActiveSpace = createSelector(
+	[selectCurrentSections],
+	(sections) => sections,
+)
+
 const SectionListWrapper = memo(() => {
 	const dispatch = useDispatch<AppDispatch>()
 	const activeSpaceId = useSelector(selectActiveSpaceId)
-	const existingSections = useSelector(selectCurrentSections)
+	const sections = useSelector(selectSectionsForActiveSpace)
 
 	const handleCreateSection = useCallback(async () => {
 		if (!activeSpaceId) return
@@ -31,7 +36,7 @@ const SectionListWrapper = memo(() => {
 			const optimisticSection: OptimisticSection = {
 				id: optimisticId,
 				name: 'Resources',
-				order: existingSections.length,
+				order: sections.length,
 				spaceId: activeSpaceId,
 			}
 
@@ -57,7 +62,7 @@ const SectionListWrapper = memo(() => {
 				}),
 			)
 		}
-	}, [activeSpaceId, dispatch, existingSections.length])
+	}, [activeSpaceId, dispatch, sections.length])
 
 	if (!activeSpaceId) {
 		return <div>No active space</div>
