@@ -10,6 +10,8 @@ import {
 import { createResource } from '@/app/features/resource/resourceSlice'
 import type { TabAction } from '@/app/features/tabs/types/tabs'
 import type { AppDispatch, RootState } from '@/app/store/store'
+import { addResourceOptimistically } from '@/app/features/resource/resourceSlice'
+import { fetchResources } from '@/app/features/resource/resourceSlice'
 
 interface TabSaveButtonProps extends TabAction {
 	title: string
@@ -48,6 +50,7 @@ const TabSaveButton = ({
 		}
 
 		try {
+			// リソースを作成
 			await dispatch(
 				createResource({
 					title,
@@ -56,6 +59,9 @@ const TabSaveButton = ({
 					faviconUrl,
 				}),
 			).unwrap()
+
+			// 作成成功後にリソースを再取得
+			await dispatch(fetchResources(firstSection.id)).unwrap()
 		} catch (error) {
 			console.error('Failed to save tab:', error)
 		}
