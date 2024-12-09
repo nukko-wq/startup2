@@ -9,22 +9,21 @@ const createSectionResourceSelector = (sectionId: string) =>
 	createSelector(
 		[
 			(state: RootState) => state.section.sectionsBySpace[sectionId],
-			(state: RootState) => state.resource.resourcesBySection[sectionId],
+			(state: RootState) =>
+				state.resource.resourcesBySection[sectionId]?.resources,
+			(state: RootState) =>
+				state.resource.resourcesBySection[sectionId]?.loading,
+			(state: RootState) => state.resource.resourcesBySection[sectionId]?.error,
 		],
-		(section, resources) => {
-			// メモ化されたオブジェクトを返す
-			const result = {
-				section,
-				resources: resources?.resources || [],
-				loading: section?.loading || resources?.loading,
-				error: section?.error || resources?.error,
-			}
-
-			return result
-		},
+		(section, resources, resourceLoading, resourceError) => ({
+			section,
+			resources: resources || [],
+			loading: section?.loading || resourceLoading,
+			error: section?.error || resourceError,
+		}),
 	)
 
-const CACHE_DURATION = 5 * 60 * 1000 // 5分
+const CACHE_DURATION = 2 * 60 * 1000 // 2分に短縮
 
 export const useSectionResources = (sectionId: string) => {
 	const selectSectionResources = useMemo(
@@ -36,18 +35,20 @@ export const useSectionResources = (sectionId: string) => {
 	const dispatch = useDispatch<AppDispatch>()
 
 	useEffect(() => {
-		const lastFetched = result.section?.lastFetched
-		const hasValidCache =
-			lastFetched && Date.now() - lastFetched <= CACHE_DURATION
-		const hasData = result.section && result.resources.length > 0
-
-		// キャッシュが有効か、データが既に存在する場合はスキップ
-		if (hasValidCache || hasData) {
+		// データがない場合は即時フェッチ
+		if (!result.section) {
+			dispatch(fetchSectionsWithResources(sectionId))
 			return
 		}
 
-		dispatch(fetchSectionsWithResources(sectionId))
-	}, [sectionId, result.section, result.resources.length, dispatch])
+		const lastFetched = result.section?.lastFetched
+		const hasValidCache =
+			lastFetched && Date.now() - lastFetched <= CACHE_DURATION
+
+		if (!hasValidCache) {
+			dispatch(fetchSectionsWithResources(sectionId))
+		}
+	}, [sectionId, result.section, dispatch])
 
 	return result
 }
