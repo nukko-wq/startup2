@@ -136,10 +136,10 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 		return <div>スペースが選択されていません</div>
 	}
 
-	if (loading) {
-		console.log('Loading state:', { spaceId, loading })
-		return <div className="p-4">Loading sections...</div>
-	}
+	// if (loading) {
+	// 	console.log('Loading state:', { spaceId, loading })
+	// 	return <div className="p-4">Loading sections...</div>
+	// }
 
 	if (error) {
 		console.error('Section error:', { spaceId, error })
