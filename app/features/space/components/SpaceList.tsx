@@ -17,16 +17,12 @@ import {
 	DropIndicator,
 	GridList,
 	GridListItem,
-	isTextDropItem,
 	useDragAndDrop,
-	type DroppableCollectionReorderEvent,
 	type DroppableCollectionInsertDropEvent,
 	type TextDropItem,
 } from 'react-aria-components'
 import SpaceMenu from '@/app/features/space/components/SpaceMenu'
 import CreateSpaceInWorkspace from '@/app/features/space/components/CreateSpaceInWorkspace'
-import { fetchSectionsWithResources } from '@/app/features/section/sectionSlice'
-import { persistor } from '@/app/store/store'
 
 interface SpaceListProps {
 	workspaceId: string

@@ -2,7 +2,6 @@
 import { memo, useCallback } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import type { RootState, AppDispatch } from '@/app/store/store'
-import { createSelector } from '@reduxjs/toolkit'
 import SectionList from './SectionList'
 import { Plus } from 'lucide-react'
 import { Button } from 'react-aria-components'
