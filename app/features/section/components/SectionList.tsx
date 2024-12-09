@@ -15,6 +15,10 @@ import {
 	useDragAndDrop,
 } from 'react-aria-components'
 import SectionItem from './SectionItem'
+import {
+	selectCurrentSections,
+	selectSectionLoadingState,
+} from '@/app/features/space/selectors'
 
 interface SectionListProps {
 	spaceId: string | null
@@ -22,18 +26,10 @@ interface SectionListProps {
 
 const SectionList = ({ spaceId }: SectionListProps) => {
 	const dispatch = useDispatch<AppDispatch>()
-	const sectionState = useSelector(
-		(state: RootState) => state.section.sectionsBySpace[spaceId || ''],
+	const sections = useSelector((state: RootState) =>
+		selectCurrentSections(state),
 	)
-
-	const { sections, loading, error } = useSelector(
-		(state: RootState) =>
-			state.section.sectionsBySpace[spaceId || ''] || {
-				sections: [],
-				loading: false,
-				error: null,
-			},
-	)
+	const { loading, error, lastFetched } = useSelector(selectSectionLoadingState)
 
 	const { dragAndDropHooks } = useDragAndDrop({
 		getItems: (keys) => {
@@ -85,20 +81,18 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 
 	useEffect(() => {
 		if (spaceId) {
-			const lastFetched = sectionState?.lastFetched
 			const CACHE_DURATION = 5 * 60 * 1000
 
 			console.log('SectionList fetch check:', {
 				spaceId,
 				lastFetched,
-				sections: sectionState?.sections,
+				sections,
 				shouldFetch:
-					!sectionState?.sections ||
-					Date.now() - (lastFetched || 0) > CACHE_DURATION,
+					!sections.length || Date.now() - (lastFetched || 0) > CACHE_DURATION,
 			})
 
 			if (
-				!sectionState?.sections ||
+				!sections.length ||
 				Date.now() - (lastFetched || 0) > CACHE_DURATION
 			) {
 				console.log('Dispatching fetchSectionsWithResources for:', spaceId)
@@ -115,22 +109,20 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 					})
 			}
 		}
-	}, [dispatch, spaceId, sectionState])
+	}, [dispatch, spaceId, sections, lastFetched])
 
 	useEffect(() => {
 		if (process.env.NODE_ENV === 'development') {
 			console.log('SectionList state update:', {
 				spaceId,
-				sectionState: {
-					sections: sectionState?.sections || [],
-					loading: sectionState?.loading || false,
-					error: sectionState?.error || null,
-					lastFetched: sectionState?.lastFetched,
-				},
+				sections,
+				loading,
+				error,
+				lastFetched,
 				reduxState: store.getState().section.sectionsBySpace[spaceId || ''],
 			})
 		}
-	}, [spaceId, sectionState])
+	}, [spaceId, sections, loading, error, lastFetched])
 
 	// if (!spaceId) {
 	// 	return <div>スペースが選択されていません</div>
