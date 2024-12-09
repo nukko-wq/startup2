@@ -10,6 +10,11 @@ import {
 import { createResource } from '@/app/features/resource/resourceSlice'
 import type { TabAction } from '@/app/features/tabs/types/tabs'
 import type { AppDispatch, RootState } from '@/app/store/store'
+import {
+	addResourceOptimistically,
+	removeResourceOptimistically,
+} from '@/app/features/resource/resourceSlice'
+import { v4 as uuidv4 } from 'uuid'
 
 interface TabSaveButtonProps extends TabAction {
 	title: string
@@ -26,18 +31,14 @@ const TabSaveButton = ({
 	const [isOpen, setIsOpen] = useState(false)
 	const dispatch = useDispatch<AppDispatch>()
 
-	// 現在のアクティブなスペースIDを取得
 	const activeSpaceId = useSelector(
 		(state: RootState) => state.space.activeSpaceId,
 	)
 
-	// アクティブなスペースの最初のセクションを取得
 	const firstSection = useSelector((state: RootState) => {
 		if (!activeSpaceId) return null
 		const spaceState = state.section.sectionsBySpace[activeSpaceId]
 		if (!spaceState?.sections.length) return null
-
-		// order順でソートして最初のセクションを返す
 		return spaceState.sections.slice().sort((a, b) => a.order - b.order)[0]
 	})
 
@@ -47,16 +48,45 @@ const TabSaveButton = ({
 			return
 		}
 
+		// 楽観的更新用の一時的なリソースを作成
+		const optimisticResource = {
+			id: uuidv4(),
+			title,
+			url,
+			sectionId: firstSection.id,
+			faviconUrl,
+			order: 0,
+			createdAt: new Date().toISOString(),
+			updatedAt: new Date().toISOString(),
+		}
+
 		try {
+			// 楽観的に更新
+			dispatch(
+				addResourceOptimistically({
+					sectionId: firstSection.id,
+					resource: optimisticResource,
+				}),
+			)
+
+			// 実際のリソース作成
 			await dispatch(
 				createResource({
 					title,
 					url,
 					sectionId: firstSection.id,
 					faviconUrl,
+					optimisticId: optimisticResource.id,
 				}),
 			).unwrap()
 		} catch (error) {
+			// エラーの場合は楽観的に追加したリソースを削除
+			dispatch(
+				removeResourceOptimistically({
+					sectionId: firstSection.id,
+					resourceId: optimisticResource.id,
+				}),
+			)
 			console.error('Failed to save tab:', error)
 		}
 	}

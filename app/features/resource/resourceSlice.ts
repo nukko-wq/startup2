@@ -143,14 +143,28 @@ const resourceSlice = createSlice({
 			// createResource
 			.addCase(createResource.fulfilled, (state, action) => {
 				const sectionId = action.payload.sectionId
-				if (state.resourcesBySection[sectionId]) {
-					state.resourcesBySection[sectionId].resources =
-						state.resourcesBySection[sectionId].resources.map((resource) =>
-							resource.id === action.meta.arg.optimisticId
-								? action.payload
-								: resource,
-						)
+				const optimisticId = action.meta.arg.optimisticId
+
+				if (!state.resourcesBySection[sectionId]) {
+					state.resourcesBySection[sectionId] = {
+						resources: [],
+						loading: false,
+						error: null,
+						lastFetched: Date.now(),
+					}
 				}
+
+				state.resourcesBySection[sectionId].resources =
+					state.resourcesBySection[sectionId].resources.filter(
+						(r) => r.id !== optimisticId,
+					)
+
+				state.resourcesBySection[sectionId].resources = [
+					...state.resourcesBySection[sectionId].resources,
+					action.payload,
+				].sort((a, b) => a.order - b.order)
+
+				state.resourcesBySection[sectionId].lastFetched = Date.now()
 			})
 			.addCase(createResource.rejected, (state, action) => {
 				const { sectionId, optimisticId } = action.meta.arg
@@ -159,6 +173,8 @@ const resourceSlice = createSlice({
 						state.resourcesBySection[sectionId].resources.filter(
 							(resource) => resource.id !== optimisticId,
 						)
+					state.resourcesBySection[sectionId].error =
+						action.error.message || 'リソースの作成に失敗しました'
 				}
 			})
 			// deleteResource
