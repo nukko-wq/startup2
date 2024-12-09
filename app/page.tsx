@@ -71,7 +71,7 @@ export default function Home() {
 					console.error('Error during initial load:', error)
 				})
 		}
-	}, [dispatch, initialLoaded])
+	}, [initialLoaded, dispatch])
 
 	useEffect(() => {
 		const handleMessage = (event: MessageEvent) => {
