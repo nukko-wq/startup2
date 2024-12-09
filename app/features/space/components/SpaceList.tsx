@@ -58,13 +58,21 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 			workspaceId &&
 			(!workspaceSpaces.lastFetched || workspaceSpaces.spaces.length === 0)
 		) {
-			dispatch(fetchSpaces(workspaceId))
-				.unwrap()
-				.then(() => {
-					for (const space of workspaceSpaces.spaces) {
-						dispatch(fetchSectionsWithResources(space.id))
-					}
-				})
+			if (workspaceSpaces.spaces.length > 0) {
+				for (const space of workspaceSpaces.spaces) {
+					dispatch(fetchSectionsWithResources(space.id))
+				}
+			} else {
+				dispatch(fetchSpaces(workspaceId))
+					.unwrap()
+					.then((result) => {
+						if (result.spaces.length > 0) {
+							for (const space of result.spaces) {
+								dispatch(fetchSectionsWithResources(space.id))
+							}
+						}
+					})
+			}
 		}
 	}, [
 		dispatch,

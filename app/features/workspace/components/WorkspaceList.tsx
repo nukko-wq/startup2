@@ -53,14 +53,6 @@ const WorkspaceList = () => {
 		}
 	}, [workspaces, activeWorkspaceId, dispatch])
 
-	useEffect(() => {
-		if (status === 'authenticated' && !loading) {
-			if (defaultWorkspace) {
-				dispatch(fetchSpaces(defaultWorkspace.id))
-			}
-		}
-	}, [dispatch, status, defaultWorkspace, loading])
-
 	const { dragAndDropHooks } = useDragAndDrop({
 		getItems: (keys) => {
 			const workspace = workspaces.find((w) => keys.has(w.id))
