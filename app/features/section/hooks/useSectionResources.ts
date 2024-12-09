@@ -30,17 +30,19 @@ export const useSectionResources = (sectionId: string) => {
 	const result = useSelector(selectSectionResources, shallowEqual)
 	const dispatch = useDispatch<AppDispatch>()
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		const lastFetched = result.section?.lastFetched
-		if (
-			!result.resources.length ||
-			!lastFetched ||
-			Date.now() - lastFetched > CACHE_DURATION
-		) {
-			dispatch(fetchSectionsWithResources(sectionId))
+		const hasValidCache =
+			lastFetched && Date.now() - lastFetched <= CACHE_DURATION
+		const hasData = result.section && result.resources.length > 0
+
+		// キャッシュが有効か、データが既に存在する場合はスキップ
+		if (hasValidCache || hasData) {
+			return
 		}
-	}, [sectionId, result.resources.length, dispatch])
+
+		dispatch(fetchSectionsWithResources(sectionId))
+	}, [sectionId, result.section, result.resources.length, dispatch])
 
 	return result
 }
