@@ -23,6 +23,7 @@ export interface SpaceState {
 	}
 	activeSpaceId: string | null
 	error: string | null
+	recentSpaces: Space[]
 }
 
 export interface CreateSpacePayload {

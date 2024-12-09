@@ -25,6 +25,7 @@ const initialState: SpaceState = {
 		error: null,
 	},
 	error: null,
+	recentSpaces: [],
 }
 
 export const fetchSpaces = createAsyncThunk(
@@ -376,6 +377,21 @@ const spaceSlice = createSlice({
 
 				state.activeSpaceId = action.payload
 				state.error = null
+
+				// アクティブなスペースを探す
+				let activeSpace: Space | undefined
+				for (const workspace of Object.values(state.spacesByWorkspace)) {
+					activeSpace = workspace.spaces.find((s) => s.id === action.payload)
+					if (activeSpace) break
+				}
+
+				if (activeSpace) {
+					// 最近アクセスしたスペースリストを更新
+					state.recentSpaces = [
+						activeSpace,
+						...state.recentSpaces.filter((s) => s.id !== activeSpace?.id),
+					].slice(0, 5) // 最大5件まで保持
+				}
 
 				// 全てのスペースのisLastActiveをfalseに設定
 				for (const workspace of Object.values(state.spacesByWorkspace)) {
