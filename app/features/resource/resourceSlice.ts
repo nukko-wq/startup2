@@ -143,6 +143,8 @@ const resourceSlice = createSlice({
 			// createResource
 			.addCase(createResource.fulfilled, (state, action) => {
 				const sectionId = action.payload.sectionId
+				const optimisticId = action.meta.arg.optimisticId
+
 				if (!state.resourcesBySection[sectionId]) {
 					state.resourcesBySection[sectionId] = {
 						resources: [],
@@ -154,7 +156,7 @@ const resourceSlice = createSlice({
 
 				state.resourcesBySection[sectionId].resources =
 					state.resourcesBySection[sectionId].resources.filter(
-						(r) => r.id !== action.payload.id,
+						(r) => r.id !== optimisticId,
 					)
 
 				state.resourcesBySection[sectionId].resources = [
@@ -171,6 +173,8 @@ const resourceSlice = createSlice({
 						state.resourcesBySection[sectionId].resources.filter(
 							(resource) => resource.id !== optimisticId,
 						)
+					state.resourcesBySection[sectionId].error =
+						action.error.message || 'リソースの作成に失敗しました'
 				}
 			})
 			// deleteResource
