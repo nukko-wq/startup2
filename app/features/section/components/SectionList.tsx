@@ -146,10 +146,10 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 		return <div className="p-4 text-red-500">Error: {error}</div>
 	}
 
-	if (!sections || sections.length === 0) {
-		console.log('No sections:', { spaceId, sections })
-		return <div className="p-4">No sections available</div>
-	}
+	// if (!sections || sections.length === 0) {
+	// 	console.log('No sections:', { spaceId, sections })
+	// 	return <div className="p-4">No sections available</div>
+	// }
 
 	return (
 		<GridList
