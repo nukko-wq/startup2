@@ -81,35 +81,13 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 
 	useEffect(() => {
 		if (spaceId) {
-			const CACHE_DURATION = 5 * 60 * 1000
+			const CACHE_DURATION = 2 * 60 * 1000
 
-			console.log('SectionList fetch check:', {
-				spaceId,
-				lastFetched,
-				sections,
-				shouldFetch:
-					!sections.length || Date.now() - (lastFetched || 0) > CACHE_DURATION,
-			})
-
-			if (
-				!sections.length ||
-				Date.now() - (lastFetched || 0) > CACHE_DURATION
-			) {
-				console.log('Dispatching fetchSectionsWithResources for:', spaceId)
+			if (!lastFetched || Date.now() - lastFetched > CACHE_DURATION) {
 				dispatch(fetchSectionsWithResources(spaceId))
-					.unwrap()
-					.then((result) => {
-						console.log('Fetch result:', result)
-					})
-					.catch((error) => {
-						// ConditionErrorの場合は無視（正常な動作）
-						if (error.name !== 'ConditionError') {
-							console.error('Fetch error:', error)
-						}
-					})
 			}
 		}
-	}, [dispatch, spaceId, sections, lastFetched])
+	}, [dispatch, spaceId, lastFetched])
 
 	useEffect(() => {
 		if (process.env.NODE_ENV === 'development') {
