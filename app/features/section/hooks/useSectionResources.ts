@@ -11,12 +11,17 @@ const createSectionResourceSelector = (sectionId: string) =>
 			(state: RootState) => state.section.sectionsBySpace[sectionId],
 			(state: RootState) => state.resource.resourcesBySection[sectionId],
 		],
-		(section, resources) => ({
-			section,
-			resources: resources?.resources || [],
-			loading: section?.loading || resources?.loading,
-			error: section?.error || resources?.error,
-		}),
+		(section, resources) => {
+			// メモ化されたオブジェクトを返す
+			const result = {
+				section,
+				resources: resources?.resources || [],
+				loading: section?.loading || resources?.loading,
+				error: section?.error || resources?.error,
+			}
+
+			return result
+		},
 	)
 
 const CACHE_DURATION = 5 * 60 * 1000 // 5分
