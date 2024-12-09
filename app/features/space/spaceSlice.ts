@@ -244,6 +244,13 @@ const spaceSlice = createSlice({
 				}
 			}
 		},
+		clearSpaceError: (state, action: PayloadAction<string>) => {
+			const workspaceId = action.payload
+			if (state.spacesByWorkspace[workspaceId]) {
+				state.spacesByWorkspace[workspaceId].error = null
+			}
+			state.error = null
+		},
 	},
 	extraReducers: (builder) => {
 		builder
@@ -361,8 +368,6 @@ const spaceSlice = createSlice({
 				if (state.spacesByWorkspace[workspaceId]) {
 					state.spacesByWorkspace[workspaceId].error =
 						action.error.message || 'スペースの削除に失敗しました'
-					// エラー時は再フェッチで状態を復元
-					state.spacesByWorkspace[workspaceId].loading = true
 				}
 			})
 			.addCase(setActiveSpace.pending, (state) => {
@@ -387,7 +392,7 @@ const spaceSlice = createSlice({
 			.addCase(setActiveSpace.rejected, (state, action) => {
 				console.error('setActiveSpace rejected:', action.payload)
 				state.error =
-					(action.payload as string) || 'アクティブスペースの設定に失敗しました'
+					(action.payload as string) || 'アクティブスペー��の設定に失敗しました'
 				// エラー時は現在のactiveSpaceIdを維持
 			})
 			.addCase(renameSpace.fulfilled, (state, action) => {
@@ -461,6 +466,7 @@ export const {
 	addSpaceOptimistically,
 	removeSpaceOptimistically,
 	renameSpaceOptimistically,
+	clearSpaceError,
 } = spaceSlice.actions
 
 export default spaceSlice.reducer

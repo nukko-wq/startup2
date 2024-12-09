@@ -8,6 +8,8 @@ import {
 	setActiveSpace,
 	reorderSpace,
 	moveSpace,
+	deleteSpace,
+	clearSpaceError,
 } from '@/app/features/space/spaceSlice'
 import { GripVertical } from 'lucide-react'
 import {
@@ -83,6 +85,21 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 		}
 	}, [workspaceId, workspaceSpaces])
 
+	useEffect(() => {
+		return () => {
+			dispatch(clearSpaceError(workspaceId))
+		}
+	}, [dispatch, workspaceId])
+
+	useEffect(() => {
+		if (workspaceSpaces.error) {
+			const timer = setTimeout(() => {
+				dispatch(clearSpaceError(workspaceId))
+			}, 5000)
+			return () => clearTimeout(timer)
+		}
+	}, [workspaceSpaces.error, dispatch, workspaceId])
+
 	const handleSpaceClick = async (spaceId: string) => {
 		if (activeSpaceId === spaceId) {
 			return
@@ -92,6 +109,18 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 			await dispatch(setActiveSpace(spaceId)).unwrap()
 		} catch (error) {
 			console.error('Failed to set active space:', error)
+		}
+	}
+
+	const handleDeleteSpace = async (spaceId: string) => {
+		try {
+			await dispatch(deleteSpace({ spaceId, workspaceId })).unwrap()
+			dispatch(fetchSpaces(workspaceId))
+		} catch (error) {
+			console.error('Failed to delete space:', error)
+			setTimeout(() => {
+				dispatch(clearSpaceError(workspaceId))
+			}, 5000)
 		}
 	}
 
@@ -285,8 +314,20 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 		handleSpaceClick(spaceId)
 	}
 
-	if (workspaceSpaces.error)
-		return <div className="text-zinc-50">{workspaceSpaces.error}</div>
+	if (workspaceSpaces.error) {
+		return (
+			<div className="text-red-500 p-2 rounded bg-red-100/10">
+				{workspaceSpaces.error}
+				<button
+					type="button"
+					onClick={() => dispatch(clearSpaceError(workspaceId))}
+					className="ml-2 text-sm text-red-400 hover:text-red-300"
+				>
+					✕
+				</button>
+			</div>
+		)
+	}
 
 	return (
 		<>

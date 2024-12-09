@@ -93,3 +93,7 @@ export interface NormalizedSpaceState {
 	}
 	activeSpaceId: string | null
 }
+
+export interface ClearSpaceErrorPayload {
+	workspaceId: string
+}
