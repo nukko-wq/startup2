@@ -70,10 +70,11 @@ export const spaceApi = {
 				method: 'PUT',
 				headers: {
 					'Content-Type': 'application/json',
+					'Cache-Control': 'no-cache',
 				},
 				credentials: 'include',
 				body: JSON.stringify({
-					updatedAt: new Date().toISOString(),
+					updatedAt: Date.now(),
 				}),
 			})
 
@@ -138,7 +139,7 @@ export const spaceApi = {
 			},
 		)
 		if (!response.ok) {
-			throw new Error('スペースの並び替えに���敗しました')
+			throw new Error('スペースの並び替えに失敗しました')
 		}
 		const data = await response.json()
 		return {
