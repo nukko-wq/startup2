@@ -11,6 +11,7 @@ import {
 	deleteSpace,
 	clearSpaceError,
 } from '@/app/features/space/spaceSlice'
+import { fetchSectionsWithResources } from '@/app/features/section/sectionSlice'
 import { GripVertical } from 'lucide-react'
 import {
 	Button,
@@ -99,19 +100,13 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 	}, [workspaceSpaces.error, dispatch, workspaceId])
 
 	const handleSpaceClick = async (spaceId: string) => {
-		if (activeSpaceId === spaceId) {
-			return
-		}
+		if (activeSpaceId === spaceId) return
 
-		try {
-			await dispatch(setActiveSpace(spaceId)).unwrap()
-		} catch (error) {
-			console.error('Failed to set active space:', error)
-			const errorMessage =
-				error instanceof Error
-					? error.message
-					: 'スペースの切り替えに失敗しました'
-		}
+		const sectionPromise = dispatch(fetchSectionsWithResources(spaceId))
+
+		await dispatch(setActiveSpace(spaceId)).unwrap()
+
+		await sectionPromise
 	}
 
 	const handleDeleteSpace = async (spaceId: string) => {
