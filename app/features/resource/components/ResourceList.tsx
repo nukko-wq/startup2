@@ -91,6 +91,9 @@ const ResourceList = memo(({ resources, sectionId }: ResourceListProps) => {
 			if (hostname === 'mail.google.com') {
 				return 'Gmail'
 			}
+			if (hostname === 'drive.google.com') {
+				return 'Google Drive'
+			}
 			if (hostname === 'github.com') {
 				return 'GitHub'
 			}
