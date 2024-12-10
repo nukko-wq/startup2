@@ -24,6 +24,7 @@ import {
 } from 'react-aria-components'
 import SpaceMenu from '@/app/features/space/components/SpaceMenu'
 import CreateSpaceInWorkspace from '@/app/features/space/components/CreateSpaceInWorkspace'
+import { measurePerformance } from '../../performance/performance'
 
 interface SpaceListProps {
 	workspaceId: string
@@ -58,11 +59,16 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 			workspaceId &&
 			(!workspaceSpaces.lastFetched || workspaceSpaces.spaces.length === 0)
 		) {
+			const endMeasure = measurePerformance('Initial Spaces Load')
+
 			dispatch(fetchSpaces(workspaceId))
 				.unwrap()
 				.then((result) => {
 					if (result.spaces.length > 0) {
 					}
+				})
+				.finally(() => {
+					endMeasure()
 				})
 		}
 	}, [
@@ -102,22 +108,16 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 	const handleSpaceClick = async (spaceId: string) => {
 		if (activeSpaceId === spaceId) return
 
-		const sectionPromise = dispatch(fetchSectionsWithResources(spaceId))
+		const endMeasure = measurePerformance('Space Switch Operation')
 
-		await dispatch(setActiveSpace(spaceId)).unwrap()
-
-		await sectionPromise
-	}
-
-	const handleDeleteSpace = async (spaceId: string) => {
 		try {
-			await dispatch(deleteSpace({ spaceId, workspaceId })).unwrap()
-			dispatch(fetchSpaces(workspaceId))
-		} catch (error) {
-			console.error('Failed to delete space:', error)
-			setTimeout(() => {
-				dispatch(clearSpaceError(workspaceId))
-			}, 5000)
+			const sectionPromise = dispatch(fetchSectionsWithResources(spaceId))
+
+			await dispatch(setActiveSpace(spaceId)).unwrap()
+
+			await sectionPromise
+		} finally {
+			endMeasure()
 		}
 	}
 
