@@ -15,6 +15,7 @@ export interface SectionState {
 			loading: boolean
 			error: string | null
 			lastFetched?: number | null
+			cachedSortedSections?: Section[]
 		}
 	}
 }

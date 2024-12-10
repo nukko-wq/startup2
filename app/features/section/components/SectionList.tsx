@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { memo, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from '@/app/store/store'
 import { store } from '@/app/store/store'
@@ -19,17 +19,16 @@ import {
 	selectCurrentSections,
 	selectSectionLoadingState,
 } from '@/app/features/space/selectors'
+import { shallowEqual } from 'react-redux'
 
 interface SectionListProps {
 	spaceId: string | null
 }
 
-const SectionList = ({ spaceId }: SectionListProps) => {
+const SectionList = memo(({ spaceId }: SectionListProps) => {
 	const dispatch = useDispatch<AppDispatch>()
-	const sections = useSelector((state: RootState) =>
-		selectCurrentSections(state),
-	)
-	const { loading, error, lastFetched } = useSelector(selectSectionLoadingState)
+	const sections = useSelector(selectCurrentSections, shallowEqual)
+	const loadingState = useSelector(selectSectionLoadingState, shallowEqual)
 
 	const { dragAndDropHooks } = useDragAndDrop({
 		getItems: (keys) => {
@@ -72,7 +71,9 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 				<DropIndicator
 					target={target}
 					className={({ isDropTarget }) =>
-						`h-[2px] bg-blue-500/50 rounded transition-all ${isDropTarget ? 'bg-blue-500' : ''}`
+						`h-[2px] bg-blue-500/50 rounded transition-all ${
+							isDropTarget ? 'bg-blue-500' : ''
+						}`
 					}
 				/>
 			)
@@ -83,43 +84,19 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 		if (spaceId) {
 			const CACHE_DURATION = 2 * 60 * 1000
 
-			if (!lastFetched || Date.now() - lastFetched > CACHE_DURATION) {
+			if (
+				!loadingState.lastFetched ||
+				Date.now() - loadingState.lastFetched > CACHE_DURATION
+			) {
 				dispatch(fetchSectionsWithResources(spaceId))
 			}
 		}
-	}, [dispatch, spaceId, lastFetched])
+	}, [dispatch, spaceId, loadingState.lastFetched])
 
-	useEffect(() => {
-		if (process.env.NODE_ENV === 'development') {
-			console.log('SectionList state update:', {
-				spaceId,
-				sections,
-				loading,
-				error,
-				lastFetched,
-				reduxState: store.getState().section.sectionsBySpace[spaceId || ''],
-			})
-		}
-	}, [spaceId, sections, loading, error, lastFetched])
-
-	// if (!spaceId) {
-	// 	return <div>スペースが選択されていません</div>
-	// }
-
-	// if (loading) {
-	// 	console.log('Loading state:', { spaceId, loading })
-	// 	return <div className="p-4">Loading sections...</div>
-	// }
-
-	if (error) {
-		console.error('Section error:', { spaceId, error })
-		return <div className="p-4 text-red-500">Error: {error}</div>
+	if (loadingState.error) {
+		console.error('Section error:', { spaceId, error: loadingState.error })
+		return <div className="p-4 text-red-500">Error: {loadingState.error}</div>
 	}
-
-	// if (!sections || sections.length === 0) {
-	// 	console.log('No sections:', { spaceId, sections })
-	// 	return <div className="p-4">No sections available</div>
-	// }
 
 	return (
 		<GridList
@@ -135,6 +112,8 @@ const SectionList = ({ spaceId }: SectionListProps) => {
 			)}
 		</GridList>
 	)
-}
+})
+
+SectionList.displayName = 'SectionList'
 
 export default SectionList
