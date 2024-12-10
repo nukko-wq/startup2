@@ -47,14 +47,7 @@ const storage =
 const persistConfig = {
 	key: 'root',
 	storage,
-	whitelist: [
-		'workspace',
-		'space',
-		'section',
-		'resource',
-		'googleDrive',
-		'tabs',
-	],
+	whitelist: ['workspace', 'space', 'section', 'resource', 'googleDrive'],
 	debug: process.env.NODE_ENV === 'development',
 }
 
