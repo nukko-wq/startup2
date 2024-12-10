@@ -111,11 +111,8 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 		const endMeasure = measurePerformance('Space Switch Operation')
 
 		try {
-			const sectionPromise = dispatch(fetchSectionsWithResources(spaceId))
-
 			await dispatch(setActiveSpace(spaceId)).unwrap()
-
-			await sectionPromise
+			await dispatch(fetchSectionsWithResources(spaceId))
 		} finally {
 			endMeasure()
 		}
