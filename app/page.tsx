@@ -177,7 +177,7 @@ export default function Home() {
 					<Sidebar />
 					<main className="flex flex-col flex-grow items-center bg-slate-100">
 						<Header />
-						<div className="flex flex-grow w-full">
+						<div className="flex flex-grow w-full h-[calc(100vh-68px)]">
 							<div className="flex justify-center w-1/2">
 								<TabListWrapper />
 							</div>
