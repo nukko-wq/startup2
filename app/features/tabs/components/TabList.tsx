@@ -117,7 +117,7 @@ const TabList = () => {
 
 	if (!isExtensionInstalled) {
 		return (
-			<div className="flex-grow py-5 pr-[16px] pl-[32px] max-w-[920px]">
+			<div className="flex-grow py-5 pr-[16px] pl-[32px] max-w-[920px] overflow-y-auto">
 				<div className="flex items-center justify-between gap-2 ml-4 mb-2">
 					<div className="flex items-center gap-2">
 						<Diamond className="w-6 h-6" />

@@ -69,7 +69,7 @@ const SectionListWrapper = memo(() => {
 	// }
 
 	return (
-		<div className="flex flex-col flex-grow w-full max-w-[920px]">
+		<div className="flex flex-col flex-grow w-full max-w-[920px] overflow-y-auto">
 			<div className="flex flex-col w-full">
 				<SectionList spaceId={activeSpaceId} />
 			</div>
