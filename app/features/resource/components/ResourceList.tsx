@@ -57,15 +57,16 @@ const ResourceList = memo(({ resources, sectionId }: ResourceListProps) => {
 
 	const handleResourceClick = useCallback(async (resource: Resource) => {
 		try {
-			const response = await sendMessageToExtension({
-				type: 'FIND_TAB',
-				url: resource.url,
+			const tabs = await sendMessageToExtension({
+				type: 'REQUEST_TABS_UPDATE',
 			})
 
-			if (response?.tabId) {
+			const matchingTab = tabs.tabs?.find((tab) => tab.url === resource.url)
+
+			if (matchingTab) {
 				const switchResponse = await sendMessageToExtension({
 					type: 'SWITCH_TO_TAB',
-					tabId: response.tabId,
+					tabId: matchingTab.id,
 				})
 
 				if (switchResponse?.success) {
@@ -76,7 +77,6 @@ const ResourceList = memo(({ resources, sectionId }: ResourceListProps) => {
 			window.open(resource.url, '_blank')
 		} catch (error) {
 			console.error('Failed to handle resource click:', error)
-
 			window.open(resource.url, '_blank')
 		}
 	}, [])
