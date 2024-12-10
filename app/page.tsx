@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchWorkspaces } from '@/app/features/workspace/workspaceSlice'
 import { fetchAllSpaces } from '@/app/features/space/spaceSlice'
@@ -15,6 +15,7 @@ import type { RootState } from '@/app/store/store'
 import { fetchSectionsWithResources } from '@/app/features/section/sectionSlice'
 import { store } from '@/app/store/store'
 import { persistor } from '@/app/store/store'
+import { measurePerformance } from './features/performance/performance'
 
 export default function Home() {
 	const dispatch = useDispatch<AppDispatch>()
@@ -25,6 +26,10 @@ export default function Home() {
 	const activeSpaceId = useSelector(
 		(state: RootState) => state.space.activeSpaceId,
 	)
+
+	const prefetchRelatedSpaces = useCallback(() => {
+		dispatch(fetchAllSpaces())
+	}, [dispatch])
 
 	useEffect(() => {
 		if (!initialLoaded) {
@@ -90,34 +95,22 @@ export default function Home() {
 
 	useEffect(() => {
 		if (activeSpaceId) {
-			// アクティブなスペースのデータを即時取得
-			dispatch(fetchSectionsWithResources(activeSpaceId))
+			const loadSpaceData = async () => {
+				const endMeasure = measurePerformance('Space Switch Operation')
 
-			// 関連するスペースのデータを優先度付きでプリフェッチ
-			const prefetchRelatedSpaces = async () => {
-				const state = store.getState()
-				const currentWorkspace = state.workspace.workspaces.find((workspace) =>
-					workspace?.spaces?.some?.((space) => space.id === activeSpaceId),
-				)
+				// 優先度の高いデータを先に取得
+				await dispatch(fetchSectionsWithResources(activeSpaceId))
+				endMeasure()
 
-				// 最近アクセスしたスペースを優先的にプリフェッチ
-				const recentSpaces = state.space.recentSpaces || []
-				const relatedSpaces = [
-					...new Set([...recentSpaces, ...(currentWorkspace?.spaces || [])]),
-				].slice(0, 5)
-
-				// 優先度の高いスペースから順にフェッチ
-				for (const space of relatedSpaces) {
-					if (space.id !== activeSpaceId) {
-						await dispatch(fetchSectionsWithResources(space.id))
-						await new Promise((resolve) => setTimeout(resolve, 100)) // レート制限回避
-					}
-				}
+				// 関連データは後で非同期に取得
+				setTimeout(() => {
+					prefetchRelatedSpaces()
+				}, 0)
 			}
 
-			prefetchRelatedSpaces()
+			loadSpaceData()
 		}
-	}, [activeSpaceId, dispatch])
+	}, [activeSpaceId, dispatch, prefetchRelatedSpaces])
 
 	useEffect(() => {
 		const handleKeyPress = (e: KeyboardEvent) => {

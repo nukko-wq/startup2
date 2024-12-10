@@ -6,6 +6,10 @@ import type { Section } from '@/app/features/section/types/section'
 const selectSpaceState = (state: RootState) => state.space
 const selectSectionState = (state: RootState) => state.section
 
+// メモ化されたソート関数
+const sortSections = (sections: Section[]) =>
+	[...sections].sort((a, b) => a.order - b.order)
+
 export const selectActiveSpace = createSelector(
 	[selectSpaceState, (state: RootState) => state.space.activeSpaceId],
 	(spaceState, activeSpaceId) => {
@@ -27,20 +31,10 @@ export const selectCurrentSections = createSelector(
 	(sectionState, activeSpaceId, sectionsBySpace) => {
 		if (!activeSpaceId) return []
 		const spaceData = sectionsBySpace[activeSpaceId]
-		// メモ化されたソート処理
-		return (
-			spaceData?.sections
-				?.slice()
-				?.sort((a: Section, b: Section) => a.order - b.order) || []
-		)
-	},
-	{
-		// セレクターの等価性チェックをカスタマイズ
-		memoizeOptions: {
-			resultEqualityCheck: (a: Section[], b: Section[]) =>
-				a.length === b.length &&
-				a.every((section, i) => section.id === b[i].id),
-		},
+		if (!spaceData?.sections) return []
+
+		// セクションを直接ソートして返す
+		return sortSections(spaceData.sections)
 	},
 )
 
