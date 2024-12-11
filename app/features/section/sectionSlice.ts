@@ -53,10 +53,8 @@ export const reorderSection = createAsyncThunk(
 
 export const fetchSectionsWithResources = createAsyncThunk(
 	'section/fetchSectionsWithResources',
-	async (spaceId: string, { dispatch, getState }) => {
+	async (spaceId: string, { dispatch }) => {
 		console.log('Starting fetchSectionsWithResources:', spaceId)
-		const state = getState() as RootState
-		const sectionState = state.section.sectionsBySpace[spaceId]
 
 		try {
 			console.log('Fetching from API for spaceId:', spaceId)
