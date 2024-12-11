@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useEffect } from 'react'
+import { memo, useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from '@/app/store/store'
 import { store } from '@/app/store/store'
@@ -29,6 +29,8 @@ const SectionList = memo(({ spaceId }: SectionListProps) => {
 	const dispatch = useDispatch<AppDispatch>()
 	const sections = useSelector(selectCurrentSections, shallowEqual)
 	const loadingState = useSelector(selectSectionLoadingState, shallowEqual)
+
+	const memoizedSections = useMemo(() => sections, [sections])
 
 	const { dragAndDropHooks } = useDragAndDrop({
 		getItems: (keys) => {
@@ -101,7 +103,7 @@ const SectionList = memo(({ spaceId }: SectionListProps) => {
 	return (
 		<GridList
 			aria-label="Sections"
-			items={sections}
+			items={memoizedSections}
 			dragAndDropHooks={dragAndDropHooks}
 			className="flex flex-col w-full gap-2"
 		>
