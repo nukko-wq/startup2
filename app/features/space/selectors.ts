@@ -53,3 +53,25 @@ export const selectSectionLoadingState = createSelector(
 		}
 	},
 )
+
+export const selectActiveSpaceWithSections = createSelector(
+	[
+		selectSpaceState,
+		selectSectionState,
+		(state: RootState) => state.space.activeSpaceId,
+	],
+	(spaceState, sectionState, activeSpaceId) => {
+		if (!activeSpaceId) return null
+
+		const activeSpace = Object.values(spaceState.spacesByWorkspace)
+			.flatMap((ws) => ws.spaces)
+			.find((s) => s.id === activeSpaceId)
+
+		const sections = sectionState.sectionsBySpace[activeSpaceId]?.sections || []
+
+		return {
+			space: activeSpace,
+			sections: sortSections(sections),
+		}
+	},
+)
