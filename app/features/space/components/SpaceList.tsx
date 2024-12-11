@@ -25,12 +25,18 @@ import {
 import SpaceMenu from '@/app/features/space/components/SpaceMenu'
 import CreateSpaceInWorkspace from '@/app/features/space/components/CreateSpaceInWorkspace'
 import { measurePerformance } from '../../performance/performance'
+import {
+	selectActiveSpaceWithSections,
+	selectSectionLoadingState,
+} from '@/app/features/space/selectors'
 
 interface SpaceListProps {
 	workspaceId: string
 }
 
 const SpaceList = ({ workspaceId }: SpaceListProps) => {
+	const activeSpaceData = useSelector(selectActiveSpaceWithSections)
+	const { space, sections } = activeSpaceData || { space: null, sections: [] }
 	const dispatch = useDispatch<AppDispatch>()
 	const workspaceSpaces = useSelector((state: RootState) => {
 		if (!workspaceId) {
@@ -53,6 +59,7 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 	const activeSpaceId = useSelector(
 		(state: RootState) => state.space.activeSpaceId,
 	)
+	const { loading, error } = useSelector(selectSectionLoadingState)
 
 	useEffect(() => {
 		if (
@@ -308,19 +315,16 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 		handleSpaceClick(spaceId)
 	}
 
-	if (workspaceSpaces.error) {
-		return (
-			<div className="text-red-500 p-2 rounded bg-red-100/10">
-				{workspaceSpaces.error}
-				<button
-					type="button"
-					onClick={() => dispatch(clearSpaceError(workspaceId))}
-					className="ml-2 text-sm text-red-400 hover:text-red-300"
-				>
-					✕
-				</button>
-			</div>
-		)
+	if (loading) {
+		return <div>読み込み中...</div>
+	}
+
+	if (error) {
+		return <div>エラー: {error}</div>
+	}
+
+	if (!space) {
+		return <div>スペースが選択されていません</div>
 	}
 
 	return (
