@@ -69,41 +69,25 @@ export const deleteSpace = createAsyncThunk(
 export const setActiveSpace = createAsyncThunk(
 	'space/setActiveSpace',
 	async (spaceId: string, { getState, dispatch }) => {
-		try {
-			const state = getState() as RootState
-			const currentActiveSpaceId = state.space.activeSpaceId
+		const state = getState() as RootState
+		const currentActiveSpaceId = state.space.activeSpaceId
 
-			if (currentActiveSpaceId === spaceId) {
-				return spaceId
-			}
-
-			// 先にセクションのフェッチを開始
-			const fetchPromise = dispatch(fetchSectionsWithResources(spaceId))
-
-			// APIコールを並列実行
-			const [result] = await Promise.all([
-				spaceApi.setActiveSpace(spaceId),
-				fetchPromise,
-			])
-
-			return result
-		} catch (error) {
-			console.error('setActiveSpace error:', error)
-			throw error instanceof Error
-				? error
-				: new Error('アクティブスペースの設定に失敗しました')
+		if (currentActiveSpaceId === spaceId) {
+			return spaceId
 		}
-	},
-	{
-		// 条件チェックを削除または修正
-		condition: (spaceId, { getState }) => {
-			const state = getState() as RootState
-			// スペースが存在するかチェック
-			const spaceExists = Object.values(state.space.spacesByWorkspace).some(
-				(workspace) => workspace.spaces.some((space) => space.id === spaceId),
-			)
-			return spaceExists
-		},
+
+		// キャッシュチェックを追加
+		const sectionState = state.section.sectionsBySpace[spaceId]
+		const hasFreshCache =
+			sectionState?.lastFetched &&
+			Date.now() - sectionState.lastFetched < 5 * 60 * 1000
+
+		// セクションデータが新鮮な場合はAPIコールをスキップ
+		if (!hasFreshCache) {
+			dispatch(fetchSectionsWithResources(spaceId))
+		}
+
+		return await spaceApi.setActiveSpace(spaceId)
 	},
 )
 
