@@ -106,8 +106,8 @@ export const sectionApi = {
 				`/api/spaces/${spaceId}/sections/with-resources`,
 				{
 					headers: {
-						'Cache-Control': 'max-age=60, stale-while-revalidate=300',
-						Accept: 'application/json',
+						'Cache-Control': 'max-age=300, stale-while-revalidate=3600',
+						Purpose: 'prefetch',
 						Priority: 'high',
 					},
 				},
