@@ -8,10 +8,23 @@ export const measurePerformance = (actionName: string) => {
 		const endEntries = performance.getEntriesByType('resource')
 		const newEntries = endEntries.slice(startEntries.length)
 
+		const metrics = newEntries.map((entry) => {
+			const resourceEntry = entry as PerformanceResourceTiming
+			return {
+				name: resourceEntry.name,
+				duration: resourceEntry.duration,
+				startTime: resourceEntry.startTime,
+				dnsTime:
+					resourceEntry.domainLookupEnd - resourceEntry.domainLookupStart,
+				connectTime: resourceEntry.connectEnd - resourceEntry.connectStart,
+				ttfb: resourceEntry.responseStart - resourceEntry.requestStart,
+			}
+		})
+
 		console.log(`${actionName}:
 			Total Time: ${end - start}ms
 			Network Requests: ${newEntries.length}
-			Resources: ${newEntries.map((e) => e.name).join(', ')}
-		`)
+			Detailed Metrics: ${JSON.stringify(metrics, null, 2)}
+			`)
 	}
 }
