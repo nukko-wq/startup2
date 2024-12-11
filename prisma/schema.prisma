@@ -31,6 +31,9 @@ model User {
   workspaces  Workspace[]
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+
+  @@index([lastActiveSpaceId])
+  @@index([email])
 }
  
 model Account {
@@ -100,6 +103,7 @@ model Workspace {
   updatedAt DateTime  @updatedAt
 
   @@index([userId, order])
+  @@index([userId, isDefault])
   @@index([order])
 }
 
@@ -107,49 +111,60 @@ model Space {
   id          String    @id @default(cuid())
   name        String
   order       Int
-  userId      String
+  isDefault   Boolean   @default(false)
+  isLastActive Boolean  @default(false)
   workspaceId String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   sections    Section[]
-  isLastActive Boolean @default(false)
+  userId      String    // ユーザーIDを追加
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade) // User との関係を追加
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  @@index([order])
+  // パフォーマンスのためのインデックス
+  @@index([workspaceId, order])
+  @@index([workspaceId, isLastActive])
+  @@index([isLastActive])
+  @@index([userId]) // ユーザーIDのインデックスを追加
 }
 
 model Section {
-  id        String     @id @default(cuid())
+  id        String    @id @default(cuid())
   name      String
   order     Int
-  userId    String
   spaceId   String
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  space     Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  space     Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   resources Resource[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  userId    String    // ユーザーIDを追加
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade) // User との関係を追加
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
+  // パフォーマンスのためのインデックス
+  @@index([spaceId, order])
   @@index([order])
+  @@index([userId]) // ユーザーIDのインデックスを追加
 }
 
 model Resource {
-  id String @id @default(cuid())
-  title String
-  description String?
-  url String
-  order Int
-  faviconUrl String?
-  driveFileId String?
-  mimeType String?
-  isGoogleDrive Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sectionId String
-  section Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  id            String   @id @default(cuid())
+  title         String
+  url           String
+  faviconUrl    String?
+  mimeType      String?
+  description   String?
+  isGoogleDrive Boolean  @default(false)
+  order         Int
+  sectionId     String
+  section       Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
+  // パフォーマンスのためのインデックス
+  @@index([sectionId, order])
   @@index([order])
+  @@index([url])
+  @@index([userId])
 }
