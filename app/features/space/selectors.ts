@@ -63,6 +63,7 @@ export const selectActiveSpaceWithSections = createSelector(
 	(spaceState, sectionState, activeSpaceId) => {
 		if (!activeSpaceId) return null
 
+		// スペースの検索を最適化
 		const activeSpace = Object.values(spaceState.spacesByWorkspace)
 			.flatMap((ws) => ws.spaces)
 			.find((s) => s.id === activeSpaceId)
@@ -71,7 +72,15 @@ export const selectActiveSpaceWithSections = createSelector(
 
 		return {
 			space: activeSpace,
-			sections: sortSections(sections),
+			sections: sections.slice().sort((a, b) => a.order - b.order),
 		}
+	},
+	{
+		// リセレクト防止のための等価性チェックを追加
+		memoizeOptions: {
+			resultEqualityCheck: (a, b) =>
+				a?.space?.id === b?.space?.id &&
+				a?.sections?.length === b?.sections?.length,
+		},
 	},
 )
