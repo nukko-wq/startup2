@@ -119,7 +119,6 @@ const SpaceList = ({ workspaceId }: SpaceListProps) => {
 
 		try {
 			await dispatch(setActiveSpace(spaceId)).unwrap()
-			await dispatch(fetchSectionsWithResources(spaceId))
 		} finally {
 			endMeasure()
 		}
